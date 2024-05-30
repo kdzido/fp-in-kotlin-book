@@ -1,10 +1,20 @@
 package funkotlin.fp_in_kotlin_book.chapter01
 
-// Listing 1.3
+// Listing 1.4
 class Cafe {
-    fun buyCoffee(cc: CreditCard, p: Payments): Pair<Coffee, Charge> {
-        val cup = Coffee()
-        return Pair(cup, Charge(cc, cup.price))
+    fun buyCoffee(cc: CreditCard): Pair<Coffee, Charge> = TODO()
+
+    fun buyCoffees(
+        cc: CreditCard,
+        n: Int
+    ): Pair<List<Coffee>, Charge> {
+        val purchases: List<Pair<Coffee, Charge>> = List(n) { buyCoffee(cc)}
+        val (coffees, charges) = purchases.unzip()
+
+        return Pair(
+            coffees,
+            charges.reduce { c1, c2 -> c1.combine(c2)}
+        )
     }
 }
 
