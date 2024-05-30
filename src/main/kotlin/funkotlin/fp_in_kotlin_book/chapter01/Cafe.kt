@@ -18,6 +18,11 @@ class Cafe {
     }
 }
 
+// Listing 1.6
+fun List<Charge>.coalesce(): List<Charge> =
+    this.groupBy { it.cc }.values
+        .map { it.reduce { a, b -> a.combine(b) } }
+
 class Coffee {
     val price: Float = 0.0F
 }
