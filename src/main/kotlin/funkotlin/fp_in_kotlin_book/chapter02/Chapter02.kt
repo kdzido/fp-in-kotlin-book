@@ -18,6 +18,28 @@ fun fib(n: Int): Int {
    return go(0,1, 1)
 }
 
+// listing 2.2
+object Example {
+    private fun abs(n: Int): Int =
+        if (n < 0) -n else n
+
+    private fun factorial(n: Int): Int {
+        fun go(n: Int, acc: Int): Int =
+            if (n <= 0) acc else go(n-1, n*acc)
+        return go(n, 1)
+    }
+
+    fun formatAbs(x: Int): String {
+        val msg = "The absolute value of %d is %d"
+        return msg.format(x, abs(x))
+    }
+
+    fun formatFactorial(x: Int): String {
+        val msg = "The factorial of %d is %d"
+        return msg.format(x, factorial(x))
+    }
+}
+
 fun main() {
     println("Chapter 02 ===")
 
@@ -27,8 +49,8 @@ fun main() {
     println("fib(0)= " + fib(0))        // 0
     println("fib(1)= " + fib(1))        // 0
     println("fib(2)= " + fib(2))        // 1
-    println("fib(3)= " + fib(3))        // 1
-    println("fib(4)= " + fib(4))        // 2
-    println("fib(5)= " + fib(5))        // 3
     println("fib(6)= " + fib(6))        // 5
+
+    println(Example.formatAbs(-1))
+    println(Example.formatFactorial(3))
 }
