@@ -1,5 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter02
 
+import kotlin.math.abs
+
 // listing 2.1
 fun factorial(i: Int): Int {
     tailrec fun go(n: Int, acc: Int): Int {
@@ -20,23 +22,24 @@ fun fib(n: Int): Int {
 
 // listing 2.2
 object Example {
-    private fun abs(n: Int): Int =
+    fun formatAbs(x: Int): String =
+        formatResult("absolute value", x, ::abs)
+
+    fun formatFactorial(x: Int): String =
+        formatResult("factorial", x, ::factorial)
+
+    fun formatResult(name: String, n: Int, f: (Int) -> Int): String {
+        val msg = "The %s of %d is %d"
+        return msg.format(name, n, f(n))
+    }
+
+    fun abs(n: Int): Int =
         if (n < 0) -n else n
 
-    private fun factorial(n: Int): Int {
+    fun factorial(n: Int): Int {
         fun go(n: Int, acc: Int): Int =
             if (n <= 0) acc else go(n-1, n*acc)
         return go(n, 1)
-    }
-
-    fun formatAbs(x: Int): String {
-        val msg = "The absolute value of %d is %d"
-        return msg.format(x, abs(x))
-    }
-
-    fun formatFactorial(x: Int): String {
-        val msg = "The factorial of %d is %d"
-        return msg.format(x, factorial(x))
     }
 }
 
@@ -53,4 +56,6 @@ fun main() {
 
     println(Example.formatAbs(-1))
     println(Example.formatFactorial(3))
+    println(Example.formatResult("absolute value", -1, Example::abs))
+    println(Example.formatResult("factorial", 3, Example::factorial))
 }
