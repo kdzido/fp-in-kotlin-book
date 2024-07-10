@@ -1,7 +1,5 @@
 package funkotlin.fp_in_kotlin_book.chapter02
 
-import kotlin.math.abs
-
 // listing 2.1
 fun factorial(i: Int): Int {
     tailrec fun go(n: Int, acc: Int): Int {
@@ -58,4 +56,11 @@ fun main() {
     println(Example.formatFactorial(3))
     println(Example.formatResult("absolute value", -1, Example::abs))
     println(Example.formatResult("factorial", 3, Example::factorial))
+
+    println(Example.formatResult("absolute value", -1,
+        fun(n: Int): Int = if (n < 0) -n else n))   // anonymous function
+    println(Example.formatResult("absolute value", -1,
+        { n -> if (n < 0) -n else n }))             // lambda
+    println(Example.formatResult("absolute value", -1,
+        { if (it < 0) -it else it }))               // lambda
 }
