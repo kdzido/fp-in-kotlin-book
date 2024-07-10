@@ -41,6 +41,17 @@ object Example {
     }
 }
 
+// Listing 2.3 Monomorphic function to find a string in an array
+fun findFirst(ss: Array<String>, key: String): Int {
+    tailrec fun loop(n: Int, ): Int =
+        when {
+            n >= ss.size -> -1
+            ss[n] == key -> n
+            else -> loop(n + 1)
+        }
+    return loop(0)
+}
+
 fun main() {
     println("Chapter 02 ===")
 
@@ -63,4 +74,8 @@ fun main() {
         { n -> if (n < 0) -n else n }))             // lambda
     println(Example.formatResult("absolute value", -1,
         { if (it < 0) -it else it }))               // lambda
+
+    println("findFirst(one): " + findFirst(listOf("one", "two", "three").toTypedArray(), "one"))
+    println("findFirst(three): " + findFirst(listOf("one", "two", "three").toTypedArray(), "three"))
+    println("findFirst(NONE): " + findFirst(listOf("one", "two", "three").toTypedArray(), "NONE"))
 }
