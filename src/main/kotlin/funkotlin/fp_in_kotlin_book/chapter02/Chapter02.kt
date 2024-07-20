@@ -52,6 +52,17 @@ fun findFirst(ss: Array<String>, key: String): Int {
     return loop(0)
 }
 
+// Listing 2.4 Polymorphic function to find an element in an array
+fun <A> findFirst(xs: Array<A>, p: (A) -> Boolean): Int {
+    tailrec fun loop(n: Int): Int =
+        when {
+            n >= xs.size -> -1
+            p(xs[n]) -> n
+            else -> loop(n + 1)
+        }
+    return loop(0)
+}
+
 fun main() {
     println("Chapter 02 ===")
 
@@ -78,4 +89,8 @@ fun main() {
     println("findFirst(one): " + findFirst(listOf("one", "two", "three").toTypedArray(), "one"))
     println("findFirst(three): " + findFirst(listOf("one", "two", "three").toTypedArray(), "three"))
     println("findFirst(NONE): " + findFirst(listOf("one", "two", "three").toTypedArray(), "NONE"))
+
+    println("<A>findFirst(two): " + findFirst(listOf("one", "two", "three").toTypedArray(), {it == "two"}))
+    println("<A>findFirst(NONE): " + findFirst(listOf("one", "two", "three").toTypedArray(), {it == "NONE"}))
+
 }
