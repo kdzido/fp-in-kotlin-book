@@ -12,8 +12,8 @@ fun factorial(i: Int): Int {
 // Exercise 2.1
 fun fib(n: Int): Int {
     fun go(acc1: Int, acc2: Int, nn: Int): Int {
-       return if (nn >= n) acc1
-        else go(acc2, acc1 +  acc2, nn + 1)
+        return if (nn >= n) acc1
+        else go(acc2, acc1 + acc2, nn + 1)
     }
    return go(0,1, 1)
 }
@@ -61,6 +61,24 @@ fun <A> findFirst(xs: Array<A>, p: (A) -> Boolean): Int {
             else -> loop(n + 1)
         }
     return loop(0)
+}
+
+val <T> List<T>.head: T
+    get() = first()
+
+val <T> List<T>.tail: List<T>
+    get() = drop(1)
+
+// Exercise 2-2, implement isSorted
+fun <A> isSorted(aa: List<A>, order: (A, A) -> Boolean): Boolean {
+    tailrec fun go(h: A, ts: List<A>, sortedAcc: Boolean): Boolean {
+        return when {
+            !sortedAcc -> false
+            ts.isEmpty() -> sortedAcc
+            else -> go(ts.head, ts.tail, sortedAcc && order(h, ts.head))
+        }
+    }
+    return go(aa.head, aa.tail, true)
 }
 
 fun main() {

@@ -10,6 +10,11 @@ plugins {
 group = "funkotlin"
 version = "0.0.1-SNAPSHOT"
 
+object Versions {
+	const val kotestVersion = "4.6.0"
+	const val kotlinxCoroutinesVersion = "1.5.1"
+}
+
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
 }
@@ -40,6 +45,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("io.kotest:kotest-framework-api-jvm:${Versions.kotestVersion}")
+	testImplementation("io.kotest:kotest-property:${Versions.kotestVersion}")
+	testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotestVersion}")
 }
 
 tasks.withType<KotlinCompile> {
