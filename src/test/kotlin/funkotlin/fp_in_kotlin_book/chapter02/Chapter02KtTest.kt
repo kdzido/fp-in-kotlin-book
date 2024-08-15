@@ -5,6 +5,16 @@ import io.kotest.matchers.shouldBe
 
 class Chapter02KtTest : FunSpec({
 
+    test("findFirst should return index of first matching element") {
+        val ls = arrayOf("one", "two", "three")
+        findFirst(ls, "one") shouldBe 0
+        findFirst(ls, "three") shouldBe 2
+        findFirst(ls, "NONE") shouldBe -1
+
+        findFirst(ls, {it == "two"}) shouldBe 1
+        findFirst(ls, {it == "NONE"}) shouldBe -1
+    }
+
     // Exercise 2-2, implement isSorted
     test("isSorted should check if collection is sorted as per predicate") {
         val gteq: (Int, Int) -> Boolean = { a, b -> a >= b }
@@ -21,4 +31,13 @@ class Chapter02KtTest : FunSpec({
         isSorted(listOf(3, 3, 3), gt) shouldBe false
         isSorted(listOf(3, 3, 3), gt) shouldBe false
     }
+
+    test("learning extension methods and properties") {
+        println(1.show())
+        println(1.showProp)
+    }
 })
+
+fun Int.show(): String = "The fun value is $this"
+val Int.showProp: String
+    get() = "The prop value is $this"

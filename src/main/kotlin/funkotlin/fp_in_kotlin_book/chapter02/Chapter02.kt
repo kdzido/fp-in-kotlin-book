@@ -104,11 +104,4 @@ fun main() {
     println(Example.formatResult("absolute value", -1,
         { if (it < 0) -it else it }))               // lambda
 
-    println("findFirst(one): " + findFirst(listOf("one", "two", "three").toTypedArray(), "one"))
-    println("findFirst(three): " + findFirst(listOf("one", "two", "three").toTypedArray(), "three"))
-    println("findFirst(NONE): " + findFirst(listOf("one", "two", "three").toTypedArray(), "NONE"))
-
-    println("<A>findFirst(two): " + findFirst(listOf("one", "two", "three").toTypedArray(), {it == "two"}))
-    println("<A>findFirst(NONE): " + findFirst(listOf("one", "two", "three").toTypedArray(), {it == "NONE"}))
-
 }
