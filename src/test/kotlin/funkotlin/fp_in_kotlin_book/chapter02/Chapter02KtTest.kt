@@ -48,6 +48,15 @@ class Chapter02KtTest : FunSpec({
         cf("one")(2) shouldBe "one2"
     }
 
+    // Exercise 2-4, implement uncurry
+    test("uncurry should reverse curried function") {
+        // given
+        val curriedF = curry<String, Int, String>({ a, b -> a + b })
+        curriedF("one")(2) shouldBe "one2"
+
+        // expect
+        uncurry(curriedF)("one", 2) shouldBe "one2"
+    }
 })
 
 fun Int.show(): String = "The fun value is $this"

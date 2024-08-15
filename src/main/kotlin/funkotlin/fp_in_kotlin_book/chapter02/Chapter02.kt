@@ -88,6 +88,10 @@ fun <A, B, C> partial1(a: A, f: (A, B) -> C): (B) -> C =
 fun <A, B, C> curry(f: (A, B) -> C): (A) -> (B) -> C =
     { a -> { b -> f(a, b) } }
 
+// Exercise 2-4, implement uncurry
+fun <A, B, C> uncurry(f: (A) -> (B) -> C): (A, B) -> C =
+    { a, b -> f(a)(b) }
+
 
 fun main() {
     println("Chapter 02 ===")
