@@ -57,6 +57,14 @@ class Chapter02KtTest : FunSpec({
         // expect
         uncurry(curriedF)("one", 2) shouldBe "one2"
     }
+
+    // Exercise 2-5, implement compose
+    test("compose should chain two functions") {
+        val len: (String) -> Int = { str -> str.length }
+        val plusVat: (Int) -> Double = {n -> n.toDouble() * 1.23}
+
+        compose(plusVat, len)("Hello world") shouldBe 13.53
+    }
 })
 
 fun Int.show(): String = "The fun value is $this"

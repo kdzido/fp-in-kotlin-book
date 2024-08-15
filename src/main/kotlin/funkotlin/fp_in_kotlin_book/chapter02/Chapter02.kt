@@ -92,6 +92,13 @@ fun <A, B, C> curry(f: (A, B) -> C): (A) -> (B) -> C =
 fun <A, B, C> uncurry(f: (A) -> (B) -> C): (A, B) -> C =
     { a, b -> f(a)(b) }
 
+// Exercise 2-5, implement compose
+fun <A, B, C> compose(f: (B) -> C, g: (A) -> B): (A) -> C =
+    { a -> f(g(a)) }
+
+fun <A, B, C> leftAssociativeFunSignature(f: ((A) -> (B)) -> C): (A, B) -> C =
+    { a, b -> f({ b}) } // TODO does it make any sense?
+
 
 fun main() {
     println("Chapter 02 ===")
