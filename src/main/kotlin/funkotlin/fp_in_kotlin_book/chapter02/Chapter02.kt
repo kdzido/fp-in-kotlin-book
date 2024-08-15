@@ -81,6 +81,14 @@ fun <A> isSorted(aa: List<A>, order: (A, A) -> Boolean): Boolean {
     return go(aa.head, aa.tail, true)
 }
 
+fun <A, B, C> partial1(a: A, f: (A, B) -> C): (B) -> C =
+    { b: B -> f(a, b) }
+
+// Exercise 2-3, implement curry
+fun <A, B, C> curry(f: (A, B) -> C): (A) -> (B) -> C =
+    { a -> { b -> f(a, b) } }
+
+
 fun main() {
     println("Chapter 02 ===")
 

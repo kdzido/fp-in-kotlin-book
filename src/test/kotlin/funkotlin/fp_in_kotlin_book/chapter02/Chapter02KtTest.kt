@@ -36,6 +36,18 @@ class Chapter02KtTest : FunSpec({
         println(1.show())
         println(1.showProp)
     }
+
+    test("partial1 should return parially applied HOC") {
+        val pf = partial1<String, Int, String>("one", { a, b -> a + b })
+        pf(2) shouldBe "one2"
+    }
+
+    // Exercise 2-3, implement curry
+    test("curry should return composed single arg functions") {
+        val cf = curry<String, Int, String>({a, b -> a + b})
+        cf("one")(2) shouldBe "one2"
+    }
+
 })
 
 fun Int.show(): String = "The fun value is $this"
