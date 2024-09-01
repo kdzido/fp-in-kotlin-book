@@ -17,9 +17,16 @@ class Chapter03KtTest : FunSpec({
     }
 
     // Exercise 3.1
-    test("should return tail") {
+    test("should return tail of list") {
         List.tail(Nil) shouldBe Nil
         List.tail(List.of(1)) shouldBe Nil
         List.tail(List.of(1, 2, 3)) shouldBe List.of(2, 3)
+    }
+
+    // Exercise 3.2
+    test("should replace head of list") {
+        List.setHead(Nil, 1) shouldBe List.of(1)
+        List.setHead(List.of(1), 0) shouldBe List.of(0)
+        List.setHead(List.of(1, 2, 3), 0) shouldBe List.of(0, 2, 3)
     }
 })

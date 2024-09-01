@@ -25,6 +25,11 @@ sealed class List<out A> {
             is Nil -> Nil
             is Cons -> xs.tail
         }
+
+        fun <A> setHead(xs: List<A>, h: A): List<A> = when (xs) {
+            is Nil -> Cons(h, Nil)
+            is Cons -> Cons(h, xs.tail)
+        }
     }
 }
 
