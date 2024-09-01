@@ -48,4 +48,12 @@ class Chapter03KtTest : FunSpec({
         List.dropWhile(List.of(1, 2, 3), { it <= 2 }) shouldBe List.of(3)
         List.dropWhile(List.of(1, 2, 3), { it <= 3 }) shouldBe Nil
     }
+
+    // Listing 3.9
+    test("should append two lists") {
+        List.append(Nil, Nil) shouldBe Nil
+        List.append(Nil, List.of(1, 2, 3)) shouldBe List.of(1, 2, 3)
+        List.append(List.of(1, 2, 3), Nil) shouldBe List.of(1, 2, 3)
+        List.append(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(1, 2, 3, 4, 5,6)
+    }
 })

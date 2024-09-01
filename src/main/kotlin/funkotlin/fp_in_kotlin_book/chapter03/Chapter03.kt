@@ -42,6 +42,12 @@ sealed class List<out A> {
             is Nil -> Nil
             is Cons -> if (!f(xs.head)) xs else dropWhile(xs.tail, f)
         }
+
+        // Listing 3.9
+        fun <A> append(l1: List<A>, l2: List<A>): List<A> = when(l1) {
+            is Nil -> l2
+            is Cons -> Cons(l1. head, append(l1.tail, l2))
+        }
     }
 }
 
