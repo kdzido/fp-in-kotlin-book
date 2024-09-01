@@ -40,4 +40,12 @@ class Chapter03KtTest : FunSpec({
         List.drop(List.of(1, 2, 3), 2) shouldBe List.of(3)
         List.drop(List.of(1, 2, 3), 3) shouldBe Nil
     }
+
+    // Exercise 3.4
+    test("should dropWhile elements of list") {
+        List.dropWhile(List.of(1, 2, 3), { it <= 0 }) shouldBe List.of(1, 2, 3)
+        List.dropWhile(List.of(1, 2, 3), { it <= 1 }) shouldBe List.of(2, 3)
+        List.dropWhile(List.of(1, 2, 3), { it <= 2 }) shouldBe List.of(3)
+        List.dropWhile(List.of(1, 2, 3), { it <= 3 }) shouldBe Nil
+    }
 })
