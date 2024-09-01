@@ -30,6 +30,12 @@ sealed class List<out A> {
             is Nil -> Cons(h, Nil)
             is Cons -> Cons(h, xs.tail)
         }
+
+        // Exercise 3.3
+        fun <A> drop(xs: List<A>, n: Int): List<A> = when (xs) {
+            is Nil -> Nil
+            is Cons -> if (n == 0) xs else drop(xs.tail, n-1)
+        }
     }
 }
 

@@ -29,4 +29,15 @@ class Chapter03KtTest : FunSpec({
         List.setHead(List.of(1), 0) shouldBe List.of(0)
         List.setHead(List.of(1, 2, 3), 0) shouldBe List.of(0, 2, 3)
     }
+
+    // Exercise 3.3
+    test("should drop n elements of list") {
+        List.drop(Nil, 0) shouldBe Nil
+        List.drop(Nil, 1) shouldBe Nil
+        List.drop(List.of(1), 0) shouldBe List.of(1)
+        List.drop(List.of(1), 1) shouldBe Nil
+        List.drop(List.of(1, 2, 3), 1) shouldBe List.of(2, 3)
+        List.drop(List.of(1, 2, 3), 2) shouldBe List.of(3)
+        List.drop(List.of(1, 2, 3), 3) shouldBe Nil
+    }
 })
