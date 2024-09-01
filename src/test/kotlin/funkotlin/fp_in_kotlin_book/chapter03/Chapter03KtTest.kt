@@ -15,4 +15,11 @@ class Chapter03KtTest : FunSpec({
         List.product(List.of(6.0)) shouldBe 6.0
         List.product(List.of(2.0, 3.0)) shouldBe 6.0
     }
+
+    // Exercise 3.1
+    test("should return tail") {
+        List.tail(Nil) shouldBe Nil
+        List.tail(List.of(1)) shouldBe Nil
+        List.tail(List.of(1, 2, 3)) shouldBe List.of(2, 3)
+    }
 })

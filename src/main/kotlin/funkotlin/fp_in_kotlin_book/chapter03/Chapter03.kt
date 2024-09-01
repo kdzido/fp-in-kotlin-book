@@ -19,6 +19,12 @@ sealed class List<out A> {
                 is Cons ->
                     if (doubles.head == 0.0) 0.0 else doubles.head * product(doubles.tail)
             }
+
+        // Exercise 3.1
+        fun <A> tail(xs: List<A>): List<A> = when (xs) {
+            is Nil -> Nil
+            is Cons -> xs.tail
+        }
     }
 }
 
