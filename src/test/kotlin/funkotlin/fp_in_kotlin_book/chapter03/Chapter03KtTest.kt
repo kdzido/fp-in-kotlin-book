@@ -56,4 +56,13 @@ class Chapter03KtTest : FunSpec({
         List.append(List.of(1, 2, 3), Nil) shouldBe List.of(1, 2, 3)
         List.append(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(1, 2, 3, 4, 5,6)
     }
+
+    // Exercise 3.5
+    test("should return init of list") {
+        List.init(Nil) shouldBe Nil
+        List.init(List.of(1)) shouldBe Nil
+        List.init(List.of(1, 2)) shouldBe List.of(1)
+        List.init(List.of(1, 2, 3)) shouldBe List.of(1, 2)
+        List.init(List.of(1, 2, 3, 4)) shouldBe List.of(1, 2, 3)
+    }
 })
