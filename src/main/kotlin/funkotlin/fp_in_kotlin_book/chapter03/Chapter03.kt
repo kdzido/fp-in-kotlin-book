@@ -35,6 +35,13 @@ sealed class List<out A> {
                 is Cons -> f(xs.head, foldRight(xs.tail, z, f))
             }
 
+        // Exercise 3.9
+        tailrec fun <A, B> foldLeft(xs: List<A>, z: B, f: (B, A) -> B): B =
+            when (xs) {
+                is Nil -> z
+                is Cons -> foldLeft(xs.tail, f(z, xs.head), f)
+            }
+
         // Exercise 3.1
         fun <A> tail(xs: List<A>): List<A> = when (xs) {
             is Nil -> Nil

@@ -88,4 +88,19 @@ class Chapter03KtTest : FunSpec({
         List.length(List.of(1, 2)) shouldBe 2
         List.length(List.of(1, 2, 3)) shouldBe 3
     }
+
+    // Exercise 3.9
+    test("should foldLeft") {
+        List.foldLeft(Nil as List<Int>, 0, { x, y -> x + y }) shouldBe 0
+        List.foldLeft(List.of(1), 0, { x, y -> x + y }) shouldBe 1
+        List.foldLeft(List.of(1, 2), 0, { x, y -> x + y }) shouldBe 3
+        List.foldLeft(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 3
+    }
+
+    test("should foldLeft with type constructors of List") {
+        List.foldLeft(Cons(1, Cons(2, Cons(3, Nil))),
+            Nil as List<Int>,
+            { x, y -> Cons(y, x) }) shouldBe List.of(3, 2, 1)
+    }
+
 })
