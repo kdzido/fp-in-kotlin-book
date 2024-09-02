@@ -97,8 +97,9 @@ class Chapter03KtTest : FunSpec({
         List.foldLeft(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 6
     }
 
-    test("should foldLeft with type constructors of List") {
-        List.foldLeft(Cons(1, Cons(2, Cons(3, Nil))),
+    // Exercise 3.11
+    test("should reverse list") {
+        List.foldLeft(List.of(1, 2, 3),
             Nil as List<Int>,
             { x, y -> Cons(y, x) }) shouldBe List.of(3, 2, 1)
     }
