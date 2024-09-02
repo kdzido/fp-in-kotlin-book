@@ -73,4 +73,11 @@ class Chapter03KtTest : FunSpec({
         List.init(List.of(1, 2, 3)) shouldBe List.of(1, 2)
         List.init(List.of(1, 2, 3, 4)) shouldBe List.of(1, 2, 3)
     }
+
+    // Exercise 3.7
+    test("should foldRight with type constructors of List") {
+        List.foldRight(Cons(1, Cons(2, Cons(3, Nil))),
+            Nil as List<Int>,
+            { x, y -> Cons(x, y) }) shouldBe List.of(1, 2, 3)
+    }
 })

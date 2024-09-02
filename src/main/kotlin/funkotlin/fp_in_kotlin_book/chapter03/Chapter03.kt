@@ -7,6 +7,8 @@ sealed class List<out A> {
             return if (aa.isEmpty()) Nil else Cons(aa[0], of(*tail))
         }
 
+        fun <A> empty(): List<A> = Nil
+
         fun sum(ints: List<Int>): Int =
             when(ints) {
                 is Nil -> 0
