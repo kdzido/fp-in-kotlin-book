@@ -10,17 +10,10 @@ sealed class List<out A> {
         fun <A> empty(): List<A> = Nil
 
         fun sum(ints: List<Int>): Int =
-            when(ints) {
-                is Nil -> 0
-                is Cons -> ints.head + sum(ints.tail)
-            }
+            foldLeft(ints, 0, { x, y -> x + y })
 
         fun product(doubles: List<Double>): Double =
-            when(doubles) {
-                is Nil -> 1.0
-                is Cons -> doubles.head * product(doubles.tail)
-//                is Cons -> if (doubles.head == 0.0) 0.0 else doubles.head * product(doubles.tail)
-            }
+            foldLeft(doubles, 1.0, { x, y -> x * y })
 
         fun sum2(ints: List<Int>): Int =
            foldRight(ints, 0, { x, y -> x + y })
@@ -89,7 +82,7 @@ sealed class List<out A> {
 
         // Exercise 3.8
         fun <A> length(xs: List<A>): Int =
-            foldRight(xs, 0, { _, acc -> acc + 1 })
+            foldLeft(xs, 0, { acc, _ -> acc + 1 })
     }
 }
 

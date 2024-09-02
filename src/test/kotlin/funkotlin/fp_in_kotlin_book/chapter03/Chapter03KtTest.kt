@@ -94,7 +94,7 @@ class Chapter03KtTest : FunSpec({
         List.foldLeft(Nil as List<Int>, 0, { x, y -> x + y }) shouldBe 0
         List.foldLeft(List.of(1), 0, { x, y -> x + y }) shouldBe 1
         List.foldLeft(List.of(1, 2), 0, { x, y -> x + y }) shouldBe 3
-        List.foldLeft(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 3
+        List.foldLeft(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 6
     }
 
     test("should foldLeft with type constructors of List") {
