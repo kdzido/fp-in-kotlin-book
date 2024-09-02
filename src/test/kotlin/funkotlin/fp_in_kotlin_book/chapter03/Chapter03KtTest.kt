@@ -8,12 +8,20 @@ class Chapter03KtTest : FunSpec({
         List.sum(Nil) shouldBe 0
         List.sum(List.of(6)) shouldBe 6
         List.sum(List.of(1, 2, 3)) shouldBe 6
+        // and
+        List.sum2(Nil) shouldBe 0
+        List.sum2(List.of(6)) shouldBe 6
+        List.sum2(List.of(1, 2, 3)) shouldBe 6
     }
 
     test("should get product of list") {
         List.product(Nil) shouldBe 1.0
         List.product(List.of(6.0)) shouldBe 6.0
         List.product(List.of(2.0, 3.0)) shouldBe 6.0
+        // and
+        List.product2(Nil) shouldBe 1.0
+        List.product2(List.of(6.0)) shouldBe 6.0
+        List.product2(List.of(2.0, 3.0)) shouldBe 6.0
     }
 
     // Exercise 3.1
