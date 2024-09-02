@@ -80,4 +80,12 @@ class Chapter03KtTest : FunSpec({
             Nil as List<Int>,
             { x, y -> Cons(x, y) }) shouldBe List.of(1, 2, 3)
     }
+
+    // Exercise 3.8
+    test("should return length of list") {
+        List.length(Nil) shouldBe 0
+        List.length(List.of(1)) shouldBe 1
+        List.length(List.of(1, 2)) shouldBe 2
+        List.length(List.of(1, 2, 3)) shouldBe 3
+    }
 })
