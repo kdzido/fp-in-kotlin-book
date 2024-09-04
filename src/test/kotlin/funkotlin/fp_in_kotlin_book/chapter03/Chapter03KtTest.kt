@@ -117,4 +117,11 @@ class Chapter03KtTest : FunSpec({
         List.foldRight2(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 6
     }
 
+    // Listing 3.14
+    test("should concat list of lists") {
+        List.concat(Nil as List<List<Int>>) shouldBe Nil
+        List.concat(List.of(List.of(1))) shouldBe List.of(1)
+        List.concat(List.of(List.of(1), List.of(2), List.of(3))) shouldBe List.of(1, 2, 3)
+        List.concat(List.of(List.of(1, 2), List.of(3, 4), List.of(5, 6))) shouldBe List.of(1, 2, 3, 4, 5, 6)
+    }
 })

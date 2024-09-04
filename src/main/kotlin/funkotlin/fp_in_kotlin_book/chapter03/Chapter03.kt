@@ -74,6 +74,10 @@ sealed class List<out A> {
         tailrec fun <A> append2(l1: List<A>, l2: List<A>): List<A> =
             foldRight2(l1, l2, { x, y -> Cons(x, y)})
 
+        // Listing 3.14
+        tailrec fun <Int> concat(ls: List<List<Int>>): List<Int> =
+            foldRight2(ls, Nil as List<Int>, { xs, x -> append(xs, x)})
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =
