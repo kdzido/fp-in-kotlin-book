@@ -104,4 +104,12 @@ class Chapter03KtTest : FunSpec({
             { x, y -> Cons(y, x) }) shouldBe List.of(3, 2, 1)
     }
 
+    // Exercise 3.12
+    test("should foldRight in terms of foldLeft") {
+        List.foldRight2(Nil as List<Int>, 0, { x, y -> x + y }) shouldBe 0
+        List.foldRight2(List.of(1), 0, { x, y -> x + y }) shouldBe 1
+        List.foldRight2(List.of(1, 2), 0, { x, y -> x + y }) shouldBe 3
+        List.foldRight2(List.of(1, 2, 3), 0, { x, y -> x + y }) shouldBe 6
+    }
+
 })

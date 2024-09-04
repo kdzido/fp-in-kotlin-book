@@ -28,6 +28,12 @@ sealed class List<out A> {
                 is Cons -> f(xs.head, foldRight(xs.tail, z, f))
             }
 
+        // Listing 3.12
+        tailrec fun <A, B> foldRight2(xs: List<A>, z: B, f: (A, B) -> B): B  {
+           val reversed = foldLeft(xs, Nil as List<A>, { x, y -> Cons(y, x)})
+            return foldLeft(reversed, z, { b, a -> f(a, b)})
+        }
+
         // Exercise 3.9
         tailrec fun <A, B> foldLeft(xs: List<A>, z: B, f: (B, A) -> B): B =
             when (xs) {
