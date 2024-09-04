@@ -79,7 +79,7 @@ sealed class List<out A> {
             foldRight2(ls, Nil as List<Int>, { xs, x -> append(xs, x)})
 
         // Exercise 3.15, 3.16
-        tailrec fun <A, B> mapOver(xs: List<A>, f: (A) -> B): List<B> =
+        tailrec fun <A, B> map(xs: List<A>, f: (A) -> B): List<B> =
             List.foldRight2(xs, Nil as List<B>, { x, y -> Cons(f(x), y) })
 
         // Exercise 3.5, everything except last elem

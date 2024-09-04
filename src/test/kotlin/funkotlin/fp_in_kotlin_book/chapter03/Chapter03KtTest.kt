@@ -127,16 +127,16 @@ class Chapter03KtTest : FunSpec({
 
     // Exercise 3.15
     test("should transform over list with inc") {
-        List.mapOver(Nil as List<Int>, { x -> x + 1} ) shouldBe Nil
-        List.mapOver(List.of(1), { x -> x + 1} ) shouldBe List.of(2)
-        List.mapOver(List.of(1, 2, 3), { x -> x + 1} ) shouldBe List.of(2, 3, 4)
+        List.map(Nil as List<Int>, { x -> x + 1} ) shouldBe Nil
+        List.map(List.of(1), { x -> x + 1} ) shouldBe List.of(2)
+        List.map(List.of(1, 2, 3), { x -> x + 1} ) shouldBe List.of(2, 3, 4)
     }
 
-    // Exercise 3.16
+    // Exercise 3.16, 3.17
     test("should transform elements of list double to string") {
-        List.mapOver(Nil as List<Double>, { x -> x.toString() }) shouldBe Nil
-        List.mapOver(List.of<Double>(3.14), { x -> x.toString() }) shouldBe List.of("3.14")
-        List.mapOver(List.of(3.14, 2.18, 1.23), { x -> x.toString() }) shouldBe List.of(
+        List.map(Nil as List<Double>, { x -> x.toString() }) shouldBe Nil
+        List.map(List.of<Double>(3.14), { x -> x.toString() }) shouldBe List.of("3.14")
+        List.map(List.of(3.14, 2.18, 1.23), { x -> x.toString() }) shouldBe List.of(
             "3.14",
             "2.18",
             "1.23"
