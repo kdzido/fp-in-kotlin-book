@@ -124,4 +124,12 @@ class Chapter03KtTest : FunSpec({
         List.concat(List.of(List.of(1), List.of(2), List.of(3))) shouldBe List.of(1, 2, 3)
         List.concat(List.of(List.of(1, 2), List.of(3, 4), List.of(5, 6))) shouldBe List.of(1, 2, 3, 4, 5, 6)
     }
+
+    // Exercise 3.15
+    test("should transform over list with inc") {
+        List.transoverOver(Nil as List<Int>, { x -> x + 1} ) shouldBe Nil
+        List.transoverOver(List.of(1) as List<Int>, { x -> x + 1} ) shouldBe List.of(2)
+        List.transoverOver(List.of(1, 2, 3) as List<Int>, { x -> x + 1} ) shouldBe List.of(2, 3, 4)
+    }
+
 })
