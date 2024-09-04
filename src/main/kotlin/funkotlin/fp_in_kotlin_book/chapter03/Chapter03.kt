@@ -70,6 +70,10 @@ sealed class List<out A> {
             is Cons -> Cons(l1. head, append(l1.tail, l2))
         }
 
+        // Listing 3.13
+        tailrec fun <A> append2(l1: List<A>, l2: List<A>): List<A> =
+            foldRight2(l1, l2, { x, y -> Cons(x, y)})
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =

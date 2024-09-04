@@ -63,6 +63,11 @@ class Chapter03KtTest : FunSpec({
         List.append(Nil, List.of(1, 2, 3)) shouldBe List.of(1, 2, 3)
         List.append(List.of(1, 2, 3), Nil) shouldBe List.of(1, 2, 3)
         List.append(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(1, 2, 3, 4, 5,6)
+        // and: exercise 3.13
+        List.append2(Nil, Nil) shouldBe Nil
+        List.append2(Nil, List.of(1, 2, 3)) shouldBe List.of(1, 2, 3)
+        List.append2(List.of(1, 2, 3), Nil) shouldBe List.of(1, 2, 3)
+        List.append2(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(1, 2, 3, 4, 5,6)
     }
 
     // Exercise 3.5
