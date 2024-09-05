@@ -143,4 +143,12 @@ class Chapter03KtTest : FunSpec({
         )
     }
 
+    // Exercise 3.18
+    test("should filter out odd numbers") {
+        List.filter(Nil as List<Int>, { it % 2 == 0 }) shouldBe Nil
+        List.filter(List.of(1), { it % 2 == 0 }) shouldBe Nil
+        List.filter(List.of(2), { it % 2 == 0 }) shouldBe List.of(2)
+        List.filter(List.of(1, 2, 3, 4, 5, 6), { it % 2 == 0 }) shouldBe List.of(2, 4, 6)
+    }
+
 })

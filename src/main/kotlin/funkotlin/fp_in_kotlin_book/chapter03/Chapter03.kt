@@ -82,6 +82,10 @@ sealed class List<out A> {
         tailrec fun <A, B> map(xs: List<A>, f: (A) -> B): List<B> =
             List.foldRight2(xs, Nil as List<B>, { x, y -> Cons(f(x), y) })
 
+        // Exercise 3.18
+        fun <A> filter(xs: List<A>, f: (A) -> Boolean): List<A> =
+            foldRight2(xs, Nil as List<A>, { x, y -> if (f(x)) Cons(x, y) else y })
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =
