@@ -82,6 +82,10 @@ sealed class List<out A> {
         tailrec fun <A, B> map(xs: List<A>, f: (A) -> B): List<B> =
             List.foldRight2(xs, Nil as List<B>, { x, y -> Cons(f(x), y) })
 
+        // Exercise 3.19
+        tailrec fun <A, B> flatMap(xs: List<A>, f: (A) -> List<B>): List<B> =
+            foldRight2(xs, Nil as List<B>, { a, bs -> append(f(a), bs)})
+
         // Exercise 3.18
         fun <A> filter(xs: List<A>, f: (A) -> Boolean): List<A> =
             foldRight2(xs, Nil as List<A>, { x, y -> if (f(x)) Cons(x, y) else y })

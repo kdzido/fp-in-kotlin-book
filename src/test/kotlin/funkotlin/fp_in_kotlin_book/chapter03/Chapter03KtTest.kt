@@ -143,6 +143,18 @@ class Chapter03KtTest : FunSpec({
         )
     }
 
+    // Exercise 3.19
+    test("should flatMap") {
+        val f: (Double) -> List<String> = { x -> List.of(x.toString(), x.toString()) }
+        List.flatMap(Nil as List<Double>, f) shouldBe Nil
+        List.flatMap(List.of(3.14), f) shouldBe List.of("3.14", "3.14")
+        List.flatMap(List.of(3.14, 2.18, 1.23), f) shouldBe List.of(
+            "3.14", "3.14",
+            "2.18", "2.18",
+            "1.23", "1.23"
+        )
+    }
+
     // Exercise 3.18
     test("should filter out odd numbers") {
         List.filter(Nil as List<Int>, { it % 2 == 0 }) shouldBe Nil
