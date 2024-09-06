@@ -90,6 +90,10 @@ sealed class List<out A> {
         fun <A> filter(xs: List<A>, f: (A) -> Boolean): List<A> =
             foldRight2(xs, Nil as List<A>, { x, y -> if (f(x)) Cons(x, y) else y })
 
+        // Exercise 3.20
+        fun <A> filter2(xs: List<A>, f: (A) -> Boolean): List<A> =
+            flatMap(xs, {a -> if (f(a)) List.of(a) else Nil })
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =

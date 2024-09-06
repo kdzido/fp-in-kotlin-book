@@ -163,4 +163,12 @@ class Chapter03KtTest : FunSpec({
         List.filter(List.of(1, 2, 3, 4, 5, 6), { it % 2 == 0 }) shouldBe List.of(2, 4, 6)
     }
 
+    // Exercise 3.20
+    test("should filter2 in terms of flatMap") {
+        List.filter2(Nil as List<Int>, { it % 2 == 0 }) shouldBe Nil
+        List.filter2(List.of(1), { it % 2 == 0 }) shouldBe Nil
+        List.filter2(List.of(2), { it % 2 == 0 }) shouldBe List.of(2)
+        List.filter2(List.of(1, 2, 3, 4, 5, 6), { it % 2 == 0 }) shouldBe List.of(2, 4, 6)
+    }
+
 })
