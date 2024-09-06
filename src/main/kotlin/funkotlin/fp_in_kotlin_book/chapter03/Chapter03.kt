@@ -98,13 +98,28 @@ sealed class List<out A> {
         fun sumLists(xs: List<Int>, ys: List<Int>): List<Int> {
             fun go(l1: List<Int>, l2: List<Int>, acc: List<Int>): List<Int> = when(l1) {
                 is Nil -> acc
-                is Cons -> when (l2) {
+                is Cons ->
+                    when (l2) {
                     is Nil -> acc
                     is Cons -> go(l1.tail, l2.tail, Cons(l1.head + l2.head, acc))
                 }
             }
             val reversed = go(xs, ys, Nil)
             return foldLeft(reversed, Nil as List<Int>, { ls, l -> Cons(l, ls)})
+        }
+
+        // Exercise 3.22
+        fun <A, B> zipWith(xs: List<A>, ys: List<A>, f: (A, A) -> B): List<B> {
+            fun go(l1: List<A>, l2: List<A>, acc: List<B>): List<B> = when(l1) {
+                is Nil -> acc
+                is Cons ->
+                    when (l2) {
+                        is Nil -> acc
+                        is Cons -> go(l1.tail, l2.tail, Cons(f(l1.head, l2.head), acc))
+                    }
+            }
+            val reversed = go(xs, ys, Nil)
+            return foldLeft(reversed, Nil as List<B>, { ls, l -> Cons(l, ls)})
         }
 
         // Exercise 3.5, everything except last elem

@@ -181,4 +181,15 @@ class Chapter03KtTest : FunSpec({
         List.sumLists(List.of(1), List.of(2, 3)) shouldBe List.of(3)
         List.sumLists(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(5, 7, 9)
     }
+
+    // Exercise 3.22
+    test("should zipWith two lists") {
+        List.zipWith(Nil as List<Int>, Nil as List<Int>, {x, y -> x + y}) shouldBe Nil
+        List.zipWith(List.of(1), Nil as List<Int>, {x, y -> x + y}) shouldBe Nil
+        List.zipWith(Nil as List<Int>, List.of(2), {x, y -> x + y}) shouldBe Nil
+        List.zipWith(List.of(1), List.of(2), {x, y -> x + y}) shouldBe List.of(3)
+        List.zipWith(List.of(1, 3), List.of(2), {x, y -> x + y}) shouldBe List.of(3)
+        List.zipWith(List.of(1), List.of(2, 3), {x, y -> x + y}) shouldBe List.of(3)
+        List.zipWith(List.of(1, 2, 3), List.of(4, 5, 6), {x, y -> x + y}) shouldBe List.of(5, 7, 9)
+    }
 })
