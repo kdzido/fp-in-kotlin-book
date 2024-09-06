@@ -94,6 +94,19 @@ sealed class List<out A> {
         fun <A> filter2(xs: List<A>, f: (A) -> Boolean): List<A> =
             flatMap(xs, {a -> if (f(a)) List.of(a) else Nil })
 
+        // Exercise 3.21
+        fun sumLists(xs: List<Int>, ys: List<Int>): List<Int> {
+            fun go(l1: List<Int>, l2: List<Int>, acc: List<Int>): List<Int> = when(l1) {
+                is Nil -> acc
+                is Cons -> when (l2) {
+                    is Nil -> acc
+                    is Cons -> go(l1.tail, l2.tail, Cons(l1.head + l2.head, acc))
+                }
+            }
+            val reversed = go(xs, ys, Nil)
+            return foldLeft(reversed, Nil as List<Int>, { ls, l -> Cons(l, ls)})
+        }
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =

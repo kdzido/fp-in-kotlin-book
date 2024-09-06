@@ -171,4 +171,14 @@ class Chapter03KtTest : FunSpec({
         List.filter2(List.of(1, 2, 3, 4, 5, 6), { it % 2 == 0 }) shouldBe List.of(2, 4, 6)
     }
 
+    // Exercise 3.21
+    test("should sum two lists") {
+        List.sumLists(Nil as List<Int>, Nil as List<Int>) shouldBe Nil
+        List.sumLists(List.of(1), Nil as List<Int>) shouldBe Nil
+        List.sumLists(Nil as List<Int>, List.of(2)) shouldBe Nil
+        List.sumLists(List.of(1), List.of(2)) shouldBe List.of(3)
+        List.sumLists(List.of(1, 3), List.of(2)) shouldBe List.of(3)
+        List.sumLists(List.of(1), List.of(2, 3)) shouldBe List.of(3)
+        List.sumLists(List.of(1, 2, 3), List.of(4, 5, 6)) shouldBe List.of(5, 7, 9)
+    }
 })
