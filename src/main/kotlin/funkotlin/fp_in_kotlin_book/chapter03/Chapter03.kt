@@ -122,6 +122,25 @@ sealed class List<out A> {
             return foldLeft(reversed, Nil as List<B>, { ls, l -> Cons(l, ls)})
         }
 
+        // Exercise 3.23
+        tailrec fun <A> hasSubsequence(xs: List<A>, sub: List<A>): Boolean {
+            tailrec fun goMatchAgainstBeginningOf(ls: List<A>, pat: List<A>, acc: Boolean): Boolean = when(pat) {
+                is Nil -> acc
+                is Cons ->
+                    when (ls) {
+                        is Nil -> false
+                        is Cons -> goMatchAgainstBeginningOf(ls.tail, pat.tail, ls.head == pat.head && acc)
+                    }
+            }
+            tailrec fun go(ls: List<A>, foundAcc: Boolean): Boolean {
+                return when(ls) {
+                    is Nil -> foundAcc
+                    is Cons -> go(ls.tail,foundAcc || goMatchAgainstBeginningOf(ls, sub, true))
+                }
+            }
+            return go(xs, false)
+        }
+
         // Exercise 3.5, everything except last elem
         fun <A> init(xs: List<A>): List<A> {
             tailrec fun go(xss: List<A>, acc: List<A>): List<A> =

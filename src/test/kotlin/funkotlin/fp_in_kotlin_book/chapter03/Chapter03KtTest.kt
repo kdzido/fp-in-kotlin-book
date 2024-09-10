@@ -192,4 +192,27 @@ class Chapter03KtTest : FunSpec({
         List.zipWith(List.of(1), List.of(2, 3), {x, y -> x + y}) shouldBe List.of(3)
         List.zipWith(List.of(1, 2, 3), List.of(4, 5, 6), {x, y -> x + y}) shouldBe List.of(5, 7, 9)
     }
+
+    // Exercise 3.23
+    test("should hasSubsequent") {
+        List.hasSubsequence(Nil as List<Int>, Nil as List<Int>) shouldBe false
+        List.hasSubsequence(List.of(1), Nil as List<Int>) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4, 5), Nil as List<Int>) shouldBe true
+        //
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(1)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(1, 2)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(1, 2, 3)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(1, 2, 3, 4)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(0)) shouldBe false
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(5)) shouldBe false
+        // and
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(2)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(2, 3)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(3, 4)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(2, 3, 4)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(1, 2, 3, 4)) shouldBe true
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(2, 3, 4, 5)) shouldBe false
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(4, 5)) shouldBe false
+        List.hasSubsequence(List.of(1, 2, 3, 4), List.of(0, 1)) shouldBe false
+    }
 })
