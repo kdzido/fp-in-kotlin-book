@@ -215,4 +215,11 @@ class Chapter03KtTest : FunSpec({
         List.hasSubsequence(List.of(1, 2, 3, 4), List.of(4, 5)) shouldBe false
         List.hasSubsequence(List.of(1, 2, 3, 4), List.of(0, 1)) shouldBe false
     }
+
+    // exercise 3.24
+    test("should count nodes in tree") {
+        Tree.size(Leaf(1)) shouldBe 1
+        Tree.size(Branch(Leaf(1), Leaf(2))) shouldBe 3
+        Tree.size(Branch(Leaf(1), Branch(Leaf(2), Leaf(3)))) shouldBe 5
+    }
 })
