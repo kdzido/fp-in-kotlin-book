@@ -222,4 +222,12 @@ class Chapter03KtTest : FunSpec({
         Tree.size(Branch(Leaf(1), Leaf(2))) shouldBe 3
         Tree.size(Branch(Leaf(1), Branch(Leaf(2), Leaf(3)))) shouldBe 5
     }
+
+    // exercise 3.25
+    test("should find max element in Tree<Int") {
+        Tree.maximum(Leaf(1)) shouldBe 1
+        Tree.maximum(Branch(Leaf(1), Leaf(2))) shouldBe 2
+        Tree.maximum(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
+    }
+
 })

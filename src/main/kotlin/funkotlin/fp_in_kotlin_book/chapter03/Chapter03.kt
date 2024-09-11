@@ -174,11 +174,15 @@ data class Cons<out A>(val head: A, val tail: List<A>) : List<A>()
 sealed class Tree<out A> {
     companion object {
         // exercise 3.24
-        fun <A> size(t: Tree<A>): Int {
-            return when (t) {
-                is Leaf -> return 1
-                is Branch -> 1 + size(t.left) + size(t.right)
-            }
+        fun <A> size(t: Tree<A>): Int = when (t) {
+            is Leaf -> 1
+            is Branch -> 1 + size(t.left) + size(t.right)
+        }
+
+        // exercise 3.25
+        fun maximum(t: Tree<Int>): Int = when (t) {
+            is Leaf -> t.value
+            is Branch -> maxOf(maximum(t.left), maximum(t.right))
         }
     }
 }
