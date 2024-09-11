@@ -237,4 +237,10 @@ class Chapter03KtTest : FunSpec({
         Tree.depth(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
     }
 
+    // exercise 3.27
+    test("should map elements oTree") {
+        Tree.map(Leaf(1), {x -> x + 1}) shouldBe Leaf(2)
+        Tree.map(Branch(Leaf(1), Leaf(2)), {x -> x + 1}) shouldBe Branch(Leaf(2), Leaf(3))
+        Tree.map(Branch(Leaf(1), Branch(Leaf(3), Leaf(2))), {x -> x + 1}) shouldBe Branch(Leaf(2), Branch(Leaf(4), Leaf(3)))
+    }
 })
