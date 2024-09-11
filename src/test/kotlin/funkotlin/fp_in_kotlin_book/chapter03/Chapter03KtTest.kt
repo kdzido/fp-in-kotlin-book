@@ -230,4 +230,11 @@ class Chapter03KtTest : FunSpec({
         Tree.maximum(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
     }
 
+    // exercise 3.26
+    test("should get depth of Tree") {
+        Tree.depth(Leaf(1)) shouldBe 1
+        Tree.depth(Branch(Leaf(1), Leaf(2))) shouldBe 2
+        Tree.depth(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
+    }
+
 })

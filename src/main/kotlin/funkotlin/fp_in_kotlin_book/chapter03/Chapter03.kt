@@ -184,6 +184,12 @@ sealed class Tree<out A> {
             is Leaf -> t.value
             is Branch -> maxOf(maximum(t.left), maximum(t.right))
         }
+
+        // exercise 3.26
+        fun <A> depth(t: Tree<A>): Int = when (t) {
+            is Leaf -> 1
+            is Branch -> 1 + maxOf(depth(t.left), depth(t.right))
+        }
     }
 }
 
