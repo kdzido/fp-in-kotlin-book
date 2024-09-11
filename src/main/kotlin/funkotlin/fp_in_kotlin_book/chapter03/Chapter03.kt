@@ -170,6 +170,10 @@ object Nil : List<Nothing>() {
 }
 data class Cons<out A>(val head: A, val tail: List<A>) : List<A>()
 
+// Listing 3.12
+sealed class Tree<out A>
+data class Leaf<A>(val value: A): Tree<A>()
+data class Branch<A>(val left: Tree<A>, val right: Tree<A>): Tree<A>()
 
 fun main() {
     println("Ch03 - Functional data structures")
