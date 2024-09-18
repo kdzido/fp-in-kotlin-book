@@ -224,10 +224,15 @@ class Chapter03KtTest : FunSpec({
     }
 
     // exercise 3.25
-    test("should find max element in Tree<Int") {
+    test("should find maximum element in Tree<Int>") {
         Tree.maximum(Leaf(1)) shouldBe 1
         Tree.maximum(Branch(Leaf(1), Leaf(2))) shouldBe 2
         Tree.maximum(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
+        // exercise 3.29
+        Tree.maximumF(Leaf(1)) shouldBe 1
+        Tree.maximumF(Branch(Leaf(1), Leaf(5))) shouldBe 5
+        Tree.maximumF(Branch(Leaf(1), Branch(Leaf(5), Leaf(3)))) shouldBe 5
+
     }
 
     // exercise 3.26
@@ -235,12 +240,34 @@ class Chapter03KtTest : FunSpec({
         Tree.depth(Leaf(1)) shouldBe 1
         Tree.depth(Branch(Leaf(1), Leaf(2))) shouldBe 2
         Tree.depth(Branch(Leaf(1), Branch(Leaf(3), Leaf(2)))) shouldBe 3
+        // exercise 3.28
+        Tree.depthF(Leaf(1)) shouldBe 1
+        Tree.depthF(Branch(Leaf(1), Leaf(5))) shouldBe 2
+        Tree.depthF(Branch(Leaf(1), Branch(Leaf(5), Leaf(3)))) shouldBe 3
     }
 
     // exercise 3.27
-    test("should map elements oTree") {
+    test("should map elements of Tree") {
         Tree.map(Leaf(1), {x -> x + 1}) shouldBe Leaf(2)
         Tree.map(Branch(Leaf(1), Leaf(2)), {x -> x + 1}) shouldBe Branch(Leaf(2), Leaf(3))
-        Tree.map(Branch(Leaf(1), Branch(Leaf(3), Leaf(2))), {x -> x + 1}) shouldBe Branch(Leaf(2), Branch(Leaf(4), Leaf(3)))
+        Tree.map(Branch(Leaf(1), Branch(Leaf(5), Leaf(3))), {x -> x + 1}) shouldBe Branch(Leaf(2), Branch(Leaf(6), Leaf(4)))
+        // exercise 3.28
+        Tree.mapF(Leaf(1), {x -> x + 1}) shouldBe Leaf(2)
+        Tree.mapF(Branch(Leaf(1), Leaf(2)), {x -> x + 1}) shouldBe Branch(Leaf(2), Leaf(3))
+        Tree.mapF(Branch(Leaf(1), Branch(Leaf(5), Leaf(3))), {x -> x + 1}) shouldBe Branch(Leaf(2), Branch(Leaf(6), Leaf(4)))
+    }
+
+    // exercise 3.28
+    test("should fold Tree") {
+        Tree.fold(Leaf(1), {x -> x}, {x, y -> x + y}) shouldBe 1
+        Tree.fold(Branch(Leaf(1), Leaf(2)), {x -> x}, {x, y -> x + y}) shouldBe 3
+        Tree.fold(Branch(Leaf(1), Branch(Leaf(5), Leaf(3))), {x -> x}, {x, y -> x + y}) shouldBe 9
+    }
+
+    // exercise 3.28
+    test("should get sizeF of Tree") {
+        Tree.sizeF(Leaf(1)) shouldBe 1
+        Tree.sizeF(Branch(Leaf(1), Leaf(5))) shouldBe 3
+        Tree.sizeF(Branch(Leaf(1), Branch(Leaf(5), Leaf(3)))) shouldBe 5
     }
 })
