@@ -270,4 +270,16 @@ class Chapter03KtTest : FunSpec({
         Tree.sizeF(Branch(Leaf(1), Leaf(5))) shouldBe 3
         Tree.sizeF(Branch(Leaf(1), Branch(Leaf(5), Leaf(3)))) shouldBe 5
     }
+
+    test("should get Pair and Triple") {
+        val p: Pair<String, Int> = "Bob" to 42
+        p.first shouldBe "Bob"
+        p.second shouldBe 42
+        
+        // and
+        val t: Triple<Int, String, kotlin.collections.List<Nothing?>> = Triple(2, "x", listOf(null))
+        t.first shouldBe 2
+        t.second shouldBe "x"
+        t.third shouldBe listOf(null)
+    }
 })
