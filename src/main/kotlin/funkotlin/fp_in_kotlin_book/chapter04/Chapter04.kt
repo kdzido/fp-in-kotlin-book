@@ -1,5 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
+sealed class Option<out A>
+data class Some<A>(val value: A) : Option<A>()
+object None : Option<Nothing>()
+
+
 // Listing 4.1 - y is non-RT
 fun failingFn(i: Int): Int {
     val y: Int = throw Exception("boom")

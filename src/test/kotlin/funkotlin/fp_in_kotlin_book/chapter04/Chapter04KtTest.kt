@@ -3,6 +3,8 @@ package funkotlin.fp_in_kotlin_book.chapter04
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.matchers.types.shouldBeSameInstanceAs
 
 class Chapter04KtTest : FunSpec({
     test("should throw for mean of empty list") {
@@ -18,5 +20,10 @@ class Chapter04KtTest : FunSpec({
 
     test("should calc mean of list") {
         mean(listOf(1.0 , 2.0)) shouldBe 1.5
+    }
+
+    test("should construct Option") {
+        Some(1).value shouldBe 1
+        None.shouldBeInstanceOf<Option<Nothing>>()
     }
 })
