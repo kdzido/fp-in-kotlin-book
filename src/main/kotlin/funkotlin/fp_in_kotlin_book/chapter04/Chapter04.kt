@@ -31,6 +31,12 @@ fun mean(xs: List<Double>): Double =
         throw ArithmeticException("mean of empty list")
     else xs.sum() / xs.size
 
+// listing 4.2
+fun meanO(xs: List<Double>): Option<Double> =
+    if (xs.isEmpty())
+       None
+    else Some(xs.sum() / xs.size)
+
 fun mean(xs: List<Double>, onEmpty: Double): Double =
     if (xs.isEmpty()) onEmpty else xs.sum() / xs.size
 

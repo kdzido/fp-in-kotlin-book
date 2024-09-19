@@ -21,6 +21,11 @@ class Chapter04KtTest : FunSpec({
     test("should calc mean of list") {
         mean(listOf(1.0 , 2.0)) shouldBe 1.5
     }
+    // listing 4.2
+    test("should calc meanO of list") {
+        meanO(listOf()).shouldBeInstanceOf<None>()
+        meanO(listOf(1.0 , 2.0)) shouldBe Some(1.5)
+    }
 
     test("should construct Option") {
         Some(1).value shouldBe 1
