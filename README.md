@@ -3,3 +3,4 @@
 1. What is functional programming?
 2. Getting started
 3. Functional data structures
+4. Handling errors without exceptions
