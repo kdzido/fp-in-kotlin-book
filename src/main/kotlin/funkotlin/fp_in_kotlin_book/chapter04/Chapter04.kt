@@ -2,7 +2,38 @@ package funkotlin.fp_in_kotlin_book.chapter04
 
 sealed class Option<out A>
 data class Some<A>(val value: A) : Option<A>()
-object None : Option<Nothing>()
+data object None : Option<Nothing>()
+
+
+// Exercise 4.1
+fun <A, B> Option<A>.map(f: (A) -> B): Option<B> = when (this) {
+    is None -> None
+    is Some<A> -> Some<B>(f(value))
+}
+
+// Exercise 4.1
+fun <A, B> Option<A>.flatMap(f: (A) -> Option<B>): Option<B> = when (this) {
+    is None -> None
+    is Some<A> -> f(value)
+}
+
+// Exercise 4.1
+fun <A> Option<A>.getOrElse(default: () -> A): A = when (this) {
+    is None -> default()
+    is Some<A> -> value
+}
+
+// Exercise 4.1
+fun <A> Option<A>.orElse(ob: () -> Option<A>): Option<A> = when (this) {
+    is None -> ob()
+    is Some<A> -> this
+}
+
+// Exercise 4.1
+fun <A> Option<A>.filter(f: (A) -> Boolean): Option<A> = when(this) {
+    is None -> None
+    is Some<A> -> if (f(value)) this else None
+}
 
 
 // Listing 4.1 - y is non-RT
