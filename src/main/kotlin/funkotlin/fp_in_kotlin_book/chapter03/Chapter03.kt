@@ -12,6 +12,9 @@ sealed class List<out A> {
         fun sum(ints: List<Int>): Int =
             foldLeft(ints, 0, { x, y -> x + y })
 
+        fun sum(ints: List<Double>): Double =
+            foldLeft(ints, 0.0, { x, y -> x + y })
+
         fun product(doubles: List<Double>): Double =
             foldLeft(doubles, 1.0, { x, y -> x * y })
 
@@ -160,6 +163,13 @@ sealed class List<out A> {
         // Exercise 3.8
         fun <A> length(xs: List<A>): Int =
             foldLeft(xs, 0, { acc, _ -> acc + 1 })
+
+        fun <A> size(xs: List<A>): Int = length(xs)
+
+        fun <A> isEmpty(xs: List<A>): Boolean = when(xs) {
+            is Nil -> true
+            is Cons -> false
+        }
     }
 }
 

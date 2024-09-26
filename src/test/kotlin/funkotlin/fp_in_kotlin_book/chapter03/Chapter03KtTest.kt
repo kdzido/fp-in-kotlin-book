@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 
 class Chapter03KtTest : FunSpec({
     test("should get sum of list") {
-        List.sum(Nil) shouldBe 0
+        List.sum(Nil as List<Int>) shouldBe 0
         List.sum(List.of(6)) shouldBe 6
         List.sum(List.of(1, 2, 3)) shouldBe 6
         // and

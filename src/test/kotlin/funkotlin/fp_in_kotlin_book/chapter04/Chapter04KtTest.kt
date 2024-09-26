@@ -4,27 +4,28 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.kotest.matchers.types.shouldBeSameInstanceAs
+
+import funkotlin.fp_in_kotlin_book.chapter03.List
 
 class Chapter04KtTest : FunSpec({
     test("should throw for mean of empty list") {
         val e = shouldThrow<ArithmeticException> {
-            mean(listOf())
+            mean(List.of())
         }
         e.message shouldBe "mean of empty list"
     }
 
     test("should get default value for mean on emtpy list") {
-        mean(listOf(), 0.0) shouldBe 0.0
+        mean(List.of(), 0.0) shouldBe 0.0
     }
 
     test("should calc mean of list") {
-        mean(listOf(1.0 , 2.0)) shouldBe 1.5
+        mean(List.of(1.0 , 2.0)) shouldBe 1.5
     }
     // listing 4.2
     test("should calc meanO of list") {
-        meanO(listOf()).shouldBeInstanceOf<None>()
-        meanO(listOf(1.0 , 2.0)) shouldBe Some(1.5)
+        meanO(List.of()).shouldBeInstanceOf<None>()
+        meanO(List.of(1.0 , 2.0)) shouldBe Some(1.5)
     }
 
     test("should construct Option") {
@@ -55,7 +56,6 @@ class Chapter04KtTest : FunSpec({
     test("should orElse Option") {
         None.orElse { Some(123) } shouldBe Some(123)
         Some(1).orElse { Some(123) } shouldBe Some(1)
-
     }
 
     // Exercise 4.1
@@ -64,5 +64,13 @@ class Chapter04KtTest : FunSpec({
         None.filter { false } shouldBe None
         Some(1).filter { true } shouldBe Some(1)
         Some(1).filter { false } shouldBe None
+    }
+
+    // Exercise 4.2
+    test("should get variance of list") {
+        variance(List.of()) shouldBe None
+        variance(List.of(1.0)) shouldBe Some(0.0)
+        variance(List.of(1.0, 2.0)) shouldBe Some(0.25)
+        variance(List.of(1.0, 2.0, 3.0, 4.0)) shouldBe Some(1.25)
     }
 })

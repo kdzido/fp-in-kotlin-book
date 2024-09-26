@@ -1,5 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
+import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
+import kotlin.math.pow
+
 sealed class Option<out A>
 data class Some<A>(val value: A) : Option<A>()
 data object None : Option<Nothing>()
@@ -8,7 +13,7 @@ data object None : Option<Nothing>()
 // Exercise 4.1
 fun <A, B> Option<A>.map(f: (A) -> B): Option<B> = when (this) {
     is None -> None
-    is Some<A> -> Some<B>(f(value))
+    is Some<A> -> Some(f(value))
 }
 
 // Exercise 4.1
@@ -58,20 +63,33 @@ fun failingFn2(i: Int): Int {
 
 // partial function
 fun mean(xs: List<Double>): Double =
-    if (xs.isEmpty())
+    if (List.isEmpty(xs))
         throw ArithmeticException("mean of empty list")
-    else xs.sum() / xs.size
+    else List.sum(xs) / List.size(xs)
 
 // listing 4.2
 fun meanO(xs: List<Double>): Option<Double> =
-    if (xs.isEmpty())
+    if (List.isEmpty(xs))
        None
-    else Some(xs.sum() / xs.size)
+    else Some(List.sum(xs) / List.size(xs))
 
 fun mean(xs: List<Double>, onEmpty: Double): Double =
-    if (xs.isEmpty()) onEmpty else xs.sum() / xs.size
+    if (List.isEmpty(xs)) onEmpty else List.sum(xs) / List.size(xs)
+
+
+// Exercise 4.2
+fun variance(xs: List<Double>): Option<Double> = Some(xs).flatMap { os: List<Double> ->
+    when (os) {
+        is Nil -> None
+        is Cons -> Some(os)
+    }
+}
+    .flatMap { ls: Cons<Double> -> meanO(ls).flatMap { listMean -> Some(Pair(ls, listMean)) } }
+    .map { listAndMean: Pair<Cons<Double>, Double> ->
+        mean(List.map(listAndMean.first, { x -> (x - listAndMean.second).pow(2) }))
+    }
 
 fun main() {
     println(failingFn2(1))
-    mean(listOf())
+    mean(Nil)
 }
