@@ -7,7 +7,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
 
-class Chapter04KtTest : FunSpec({
+class Chapter04OptionKtTest : FunSpec({
     test("should throw for mean of empty list") {
         val e = shouldThrow<ArithmeticException> {
             mean(List.of())
@@ -131,5 +131,11 @@ class Chapter04KtTest : FunSpec({
         traverse2(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
         traverse2(List.of("One", "2"), toIntO) shouldBe None
         traverse2(List.of("1", "Two"), toIntO) shouldBe None
+    }
+
+    test("should calculate meanE") {
+        meanE(List.of()) shouldBe Left("Mean of empty list!")
+        meanE(List.of(1.0)) shouldBe Right(1.0)
+        meanE(List.of(1.0, 2.0)) shouldBe Right(1.5)
     }
 })
