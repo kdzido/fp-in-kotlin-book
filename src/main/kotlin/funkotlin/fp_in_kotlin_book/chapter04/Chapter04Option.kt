@@ -117,6 +117,7 @@ fun <A, B, C> map2(a: Option<A>, b: Option<B>, f: (A, B) -> C): Option<C> =
             f(oa, ob)
         }
     }
+
 fun <A, B, C, D> map3(a: Option<A>, b: Option<B>, c: Option<C>, f: (A, B, C) -> D): Option<D> =
     a.flatMap { oa ->
         b.flatMap { ob ->

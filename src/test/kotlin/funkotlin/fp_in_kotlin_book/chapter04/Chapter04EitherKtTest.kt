@@ -62,4 +62,26 @@ class Chapter04EitherKtTest : FunSpec({
         map2E(left1, Right(1), addF).shouldBeInstanceOf<Left<ArithmeticException>>()
         map2E(Right(1), Right(2), addF) shouldBe Right(3)
     }
+
+    // Exercise 4.7
+    test("should sequence list") {
+        val left1: Either<Exception, Int> = Left(ArithmeticException("error"))
+        val left2: Either<Exception, Int> = Left(IllegalStateException("state"))
+
+        sequenceE(List.of(left1, Right(1))).shouldBeInstanceOf<Left<IllegalArgumentException>>()
+        sequenceE(List.of(Right(1), left2)).shouldBeInstanceOf<Left<IllegalStateException>>()
+        sequenceE(List.of(left1, left2)).shouldBeInstanceOf<Left<IllegalArgumentException>>()
+
+        sequenceE<RuntimeException, Int>(List.of()) shouldBe Right(List.of())
+        sequenceE(List.of(Right(1), Right(2))) shouldBe Right(List.of(1, 2))
+    }
+
+    // Exercise 4.7
+    test("should traverse list") {
+        val toIntO: (String) -> Either<Exception, Int> = { a -> catchesE { a.toInt() } }
+        traverseE(List.of(), toIntO) shouldBe Right(List.of())
+        traverseE(List.of("1", "2"), toIntO) shouldBe Right(List.of(1, 2))
+        traverseE(List.of("One", "2"), toIntO).shouldBeInstanceOf<Left<*>>()
+        traverseE(List.of("1", "Two"), toIntO).shouldBeInstanceOf<Left<*>>()
+    }
 })

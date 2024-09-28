@@ -1,7 +1,9 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
 import arrow.core.raise.either
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
 
 // listing 4.5
 sealed class Either<out E, out A>
@@ -34,6 +36,32 @@ fun <E, A, B, C> map2E(
             f(a, b)
         }
     }
+
+// Exercise 4.7
+fun <E, A> sequenceE(xs: List<Either<E, A>>): Either<E, List<A>> =
+    traverseE(xs, { e -> e })
+
+// Exercise 4.7
+fun <E, A, B> traverseE(xs: List<A>, f: (A) -> Either<E, B>): Either<E, List<B>> {
+    tailrec fun go(ls: List<Either<E, B>>, acc: Either<E, List<B>>): Either<E, List<B>> = when (ls) {
+        is Nil -> acc
+        is Cons -> {
+            when (ls.head) {
+                is Left -> Left(ls.head.value)
+                is Right -> go(ls.tail, acc.map { l -> Cons<B>(ls.head.value, l) })
+            }
+        }
+    }
+
+    tailrec fun reverseLoop(ls: List<B>, acc: List<B>): List<B> = when (ls) {
+        is Nil -> acc
+        is Cons -> reverseLoop(ls.tail, Cons(ls.head, acc))
+    }
+
+    val les: List<Either<E, B>> = List.map(xs, f)
+    val transformed: Either<E, List<B>> = go(les, Right(List.of()))
+    return transformed.map { l -> reverseLoop(l, List.of()) }
+}
 
 fun <A> catchesE(a: () -> A): Either<Exception, A> =
     try {
