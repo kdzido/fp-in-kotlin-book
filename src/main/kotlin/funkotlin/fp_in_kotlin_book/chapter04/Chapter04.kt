@@ -89,6 +89,12 @@ fun variance(xs: List<Double>): Option<Double> = Some(xs).flatMap { os: List<Dou
         mean(List.map(listAndMean.first, { x -> (x - listAndMean.second).pow(2) }))
     }
 
+// Listing 4.4
+fun <A, B> lift(f: (A) -> B): (Option<A>) -> Option<B> =
+    { op -> op.map(f) }
+
+val absO = lift<Double, Double> {kotlin.math.abs(it)}
+
 fun main() {
     println(failingFn2(1))
     mean(Nil)

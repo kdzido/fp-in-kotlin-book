@@ -73,4 +73,9 @@ class Chapter04KtTest : FunSpec({
         variance(List.of(1.0, 2.0)) shouldBe Some(0.25)
         variance(List.of(1.0, 2.0, 3.0, 4.0)) shouldBe Some(1.25)
     }
+
+    test("should lift a fun to Option") {
+        absO(None) shouldBe None
+        absO(Some(-1.0)) shouldBe Some(1.0)
+    }
 })
