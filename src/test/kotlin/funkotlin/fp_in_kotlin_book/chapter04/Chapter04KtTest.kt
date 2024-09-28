@@ -105,4 +105,13 @@ class Chapter04KtTest : FunSpec({
         parseInts(List.of("1", "Two")) shouldBe None
         parseInts(List.of("One", "2")) shouldBe None
     }
+
+    // Exercise 4.5
+    test("should traverse list of ints") {
+        val toIntO: (String) -> Option<Int> = { a -> catches { a.toInt() } }
+        traverse<String, Int>(List.of(), toIntO) shouldBe None
+        traverse(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
+        traverse(List.of("One", "2"), toIntO) shouldBe None
+        traverse(List.of("1", "Two"), toIntO) shouldBe None
+    }
 })

@@ -131,6 +131,10 @@ fun <A> sequence(xs: List<Option<A>>): Option<List<A>> = when(xs) {
 // Listing
 fun parseInts(xs: List<String>): Option<List<Int>> = sequence(List.map(xs, { catches { it.toInt() } }))
 
+// Exercise 4.5
+fun <A, B> traverse(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> =
+    sequence(List.map(xs, { f(it) }))
+
 fun main() {
     println(failingFn2(1))
     mean(Nil)
