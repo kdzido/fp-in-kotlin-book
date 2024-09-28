@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
+import arrow.core.raise.either
 import funkotlin.fp_in_kotlin_book.chapter03.List
 
 // listing 4.5
@@ -52,6 +53,23 @@ fun safeDiv(x: Int, y: Int): Either<Exception, Int> =
     }
 
 fun safeDivC(x: Int, y: Int): Either<Exception, Int> = catchesE { x / y }
+
+// Listing
+suspend fun parseInsuranceRateQuoteE(
+    age: String,
+    numberOfSpeedingTickets: String
+): arrow.core.Either<Throwable, Double> {
+    val ae = age.parseToInt()
+    val te = numberOfSpeedingTickets.parseToInt()
+    return either {
+        val a = ae.bind()
+        val t = te.bind()
+        insuranceRateQuote(a, t)
+    }
+}
+
+suspend fun String.parseToInt(): arrow.core.Either<Throwable, Int> =
+    arrow.core.Either.catch { this.toInt() }
 
 
 fun main() {
