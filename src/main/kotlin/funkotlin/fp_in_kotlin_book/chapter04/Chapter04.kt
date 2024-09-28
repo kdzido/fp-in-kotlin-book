@@ -117,6 +117,14 @@ fun <A, B, C> map2(a: Option<A>, b: Option<B>, f: (A, B) -> C): Option<C> =
             f(oa, ob)
         }
     }
+fun <A, B, C, D> map3(a: Option<A>, b: Option<B>, c: Option<C>, f: (A, B, C) -> D): Option<D> =
+    a.flatMap { oa ->
+        b.flatMap { ob ->
+            c.map { oc ->
+                f(oa, ob, oc)
+            }
+        }
+    }
 
 // Exercise 4.4
 fun <A> sequence(xs: List<Option<A>>): Option<List<A>> = when(xs) {

@@ -89,6 +89,15 @@ class Chapter04KtTest : FunSpec({
         map2(Some(1), Some(2), addF) shouldBe Some(3)
     }
 
+    test("should map3") {
+        val addF: (Int, Int, Int) -> Int = { a, b, c-> a + b + c}
+        map3<Int, Int, Int, Int>(None, None, None, addF) shouldBe None
+        map3<Int, Int, Int, Int>(Some(1), None, None, addF) shouldBe None
+        map3<Int, Int, Int, Int>(None, Some(1), None, addF) shouldBe None
+        map3<Int, Int, Int, Int>(None, None, Some(1), addF) shouldBe None
+        map3(Some(1), Some(2), Some(3), addF) shouldBe Some(6)
+    }
+
     test("should sequence") {
         sequence<Int>(List.of()) shouldBe None
         sequence<Int>(List.of(None)) shouldBe None
