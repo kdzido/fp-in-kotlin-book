@@ -93,7 +93,43 @@ fun variance(xs: List<Double>): Option<Double> = Some(xs).flatMap { os: List<Dou
 fun <A, B> lift(f: (A) -> B): (Option<A>) -> Option<B> =
     { op -> op.map(f) }
 
-val absO = lift<Double, Double> {kotlin.math.abs(it)}
+// Listing
+fun insuranceRateQuote(age: Int, numberOfSpeedingTickets: Int): Double = TODO()
+fun parseInsuranceRateQuote(age: String, speedingTickets: String): Option<Double> {
+    val optAge = catches { age.toInt() }
+    val optTickets = catches { speedingTickets.toInt() }
+    return map2(optAge, optTickets, { a, t ->
+        insuranceRateQuote(a, t)
+    })
+}
+
+fun <A> catches(a: () -> A): Option<A> =
+    try {
+        Some(a())
+    } catch (e: Throwable) {
+        None
+    }
+
+// Exercise 4.3
+fun <A, B, C> map2(a: Option<A>, b: Option<B>, f: (A, B) -> C): Option<C> =
+    a.flatMap { oa ->
+        b.map { ob ->
+            f(oa, ob)
+        }
+    }
+
+// Exercise 4.4
+fun <A> sequence(xs: List<Option<A>>): Option<List<A>> = when(xs) {
+    is Nil -> None
+    is Cons -> {
+        List.foldRight2(xs, Some(List.of()), { e: Option<A>, ol: Option<List<A>> ->
+            map2(ol, e, { x: List<A>, y: A -> Cons(y, x)})
+        })
+    }
+}
+
+// Listing
+fun parseInts(xs: List<String>): Option<List<Int>> = sequence(List.map(xs, { catches { it.toInt() } }))
 
 fun main() {
     println(failingFn2(1))

@@ -75,7 +75,34 @@ class Chapter04KtTest : FunSpec({
     }
 
     test("should lift a fun to Option") {
+        val absO = lift<Double, Double> {kotlin.math.abs(it)}
         absO(None) shouldBe None
         absO(Some(-1.0)) shouldBe Some(1.0)
+    }
+
+    // Exercise 4.3
+    test("should map2") {
+        val addF: (Int, Int) -> Int = { a, b -> a + b }
+        map2<Int, Int, Int>(None, None, addF) shouldBe None
+        map2<Int, Int, Int>(Some(1), None, addF) shouldBe None
+        map2<Int, Int, Int>(None, Some(1), addF) shouldBe None
+        map2(Some(1), Some(2), addF) shouldBe Some(3)
+    }
+
+    test("should sequence") {
+        sequence<Int>(List.of()) shouldBe None
+        sequence<Int>(List.of(None)) shouldBe None
+        // and
+        sequence(List.of(None, Some(1))) shouldBe None
+        sequence(List.of(Some(1), None)) shouldBe None
+        // and
+        sequence(List.of(Some(1), Some(2))) shouldBe Some(List.of(1, 2))
+    }
+
+    test("should parse list of ints") {
+        parseInts(List.of()) shouldBe None
+        parseInts(List.of("1", "2")) shouldBe Some(List.of(1, 2))
+        parseInts(List.of("1", "Two")) shouldBe None
+        parseInts(List.of("One", "2")) shouldBe None
     }
 })
