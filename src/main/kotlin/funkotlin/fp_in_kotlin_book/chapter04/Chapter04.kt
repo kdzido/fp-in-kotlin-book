@@ -128,12 +128,26 @@ fun <A> sequence(xs: List<Option<A>>): Option<List<A>> = when(xs) {
     }
 }
 
+fun <A> sequence2(xs: List<Option<A>>): Option<List<A>> =
+    traverse2(xs, {oa -> oa})
+
 // Listing
 fun parseInts(xs: List<String>): Option<List<Int>> = sequence(List.map(xs, { catches { it.toInt() } }))
 
 // Exercise 4.5
 fun <A, B> traverse(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> =
     sequence(List.map(xs, { f(it) }))
+
+// Exercise 4.5 - more efficient
+fun <A, B> traverse2(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> = when(xs) {
+        is Nil -> None
+        is Cons -> {
+            List.foldRight2(xs, Some(List.of()), { e: A, ol: Option<List<B>> ->
+                map2(ol, f(e), { x: List<B>, y: B -> Cons(y, x)})
+            })
+        }
+    }
+
 
 fun main() {
     println(failingFn2(1))

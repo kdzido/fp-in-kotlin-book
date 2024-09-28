@@ -92,11 +92,15 @@ class Chapter04KtTest : FunSpec({
     test("should sequence") {
         sequence<Int>(List.of()) shouldBe None
         sequence<Int>(List.of(None)) shouldBe None
-        // and
         sequence(List.of(None, Some(1))) shouldBe None
         sequence(List.of(Some(1), None)) shouldBe None
-        // and
         sequence(List.of(Some(1), Some(2))) shouldBe Some(List.of(1, 2))
+        // nd
+        sequence2<Int>(List.of()) shouldBe None
+        sequence2<Int>(List.of(None)) shouldBe None
+        sequence2(List.of(None, Some(1))) shouldBe None
+        sequence2(List.of(Some(1), None)) shouldBe None
+        sequence2(List.of(Some(1), Some(2))) shouldBe Some(List.of(1, 2))
     }
 
     test("should parse list of ints") {
@@ -109,9 +113,14 @@ class Chapter04KtTest : FunSpec({
     // Exercise 4.5
     test("should traverse list of ints") {
         val toIntO: (String) -> Option<Int> = { a -> catches { a.toInt() } }
-        traverse<String, Int>(List.of(), toIntO) shouldBe None
+        traverse(List.of(), toIntO) shouldBe None
         traverse(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
         traverse(List.of("One", "2"), toIntO) shouldBe None
         traverse(List.of("1", "Two"), toIntO) shouldBe None
+        // and
+        traverse2(List.of(), toIntO) shouldBe None
+        traverse2(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
+        traverse2(List.of("One", "2"), toIntO) shouldBe None
+        traverse2(List.of("1", "Two"), toIntO) shouldBe None
     }
 })
