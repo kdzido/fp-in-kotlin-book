@@ -1,9 +1,11 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class Chapter04EitherKtTest : FunSpec({
@@ -57,10 +59,40 @@ class Chapter04EitherKtTest : FunSpec({
         val left2: Either<Exception, Int> = Left(IllegalStateException("state"))
 
         val addF: (Int, Int) -> Int = { a, b -> a + b }
-        map2E(left1, left2, addF).shouldBeInstanceOf<Left<ArithmeticException>>()
-        map2E(Right(1), left2, addF).shouldBeInstanceOf<Left<IllegalStateException>>()
-        map2E(left1, Right(1), addF).shouldBeInstanceOf<Left<ArithmeticException>>()
+        val er1 = map2E(left1, left2, addF).shouldBeInstanceOf<Left<ArithmeticException>>()
+        er1.value.message shouldBe "error"
+        // and
+        val er2 = map2E(Right(1), left2, addF).shouldBeInstanceOf<Left<IllegalStateException>>()
+        er2.value.message shouldBe "state"
+        // and
+        val er3 = map2E(left1, Right(1), addF).shouldBeInstanceOf<Left<ArithmeticException>>()
+        er3.value.message shouldBe "error"
+        // and
         map2E(Right(1), Right(2), addF) shouldBe Right(3)
+    }
+    
+    // Exercise 4.8
+    test("should map2 Either with both errors") {
+        val ex1 = ArithmeticException("error")
+        val ex2 = IllegalStateException("state")
+        val left1: Either<Exception, Int> = Left(ex1)
+        val left2: Either<Exception, Int> = Left(ex2)
+
+        val addF: (Int, Int) -> Int = { a, b -> a + b }
+        // expect
+        val er1: Left<List<Exception>> = map2E_2(left1, left2, addF).shouldBeInstanceOf<Left<List<Exception>>>()
+        val exList1 = exceptionListOf(er1)
+        exList1 shouldBe List.of(ex1, ex2)
+        // and
+        val er2 = map2E_2(Right(1), left2, addF).shouldBeInstanceOf<Left<List<Exception>>>()
+        val exList2 = exceptionListOf(er2)
+        exList2 shouldBe List.of(ex2)
+        // and
+        val er3 = map2E_2(left1, Right(1), addF).shouldBeInstanceOf<Left<List<Exception>>>()
+        val exList3 = exceptionListOf(er3)
+        exList3 shouldBe List.of(ex1)
+        // and
+        map2E_2(Right(1), Right(2), addF) shouldBe Right(3)
     }
 
     // Exercise 4.7
@@ -85,3 +117,15 @@ class Chapter04EitherKtTest : FunSpec({
         traverseE(List.of("1", "Two"), toIntO).shouldBeInstanceOf<Left<*>>()
     }
 })
+
+private fun exceptionListOf(er1: Left<List<Exception>>) =
+    when (val h1 = er1.value) {
+        is Cons -> {
+            when (val h2 = h1.tail) {
+                is Cons -> List.of(h1.head, h2.head)
+                Nil -> List.of(h1.head)
+            }
+        }
+
+        Nil -> List.of()
+    }

@@ -37,6 +37,19 @@ fun <E, A, B, C> map2E(
         }
     }
 
+// Exercise 4.8
+fun <E, A, B, C> map2E_2(
+    ae: Either<E, A>,
+    be: Either<E, B>,
+    f: (A, B) -> C,
+): Either<List<E>, C> = when {
+    ae is Left<E> && be is Left<E> -> Left(List.of(ae.value, be.value))
+    ae is Right<A> && be is Left<E> -> Left(List.of(be.value))
+    ae is Left<E> && be is Right<B> -> Left(List.of(ae.value))
+    ae is Right<A> && be is Right<B> -> Right(f(ae.value, be.value))
+    else -> Left(List.of())
+}
+
 // Exercise 4.7
 fun <E, A> sequenceE(xs: List<Either<E, A>>): Either<E, List<A>> =
     traverseE(xs, { e -> e })
