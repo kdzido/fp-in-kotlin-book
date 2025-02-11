@@ -4,3 +4,4 @@
 2. Getting started
 3. Functional data structures
 4. Handling errors without exceptions
+5. Strictness and Laziness

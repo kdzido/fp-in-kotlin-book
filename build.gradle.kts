@@ -11,7 +11,7 @@ group = "funkotlin"
 version = "0.0.1-SNAPSHOT"
 
 object Versions {
-	const val kotestVersion = "4.6.0"
+	const val kotestVersion = "5.9.1"
 	const val kotlinxCoroutinesVersion = "1.5.1"
 }
 
@@ -48,6 +48,7 @@ dependencies {
 	testImplementation("io.kotest:kotest-framework-api-jvm:${Versions.kotestVersion}")
 	testImplementation("io.kotest:kotest-property:${Versions.kotestVersion}")
 	testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotestVersion}")
+	testImplementation("io.mockk:mockk:1.13.13")
 }
 
 tasks.withType<KotlinCompile> {
