@@ -1,6 +1,8 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
+import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -34,6 +36,12 @@ class Chap05StreamTest : FunSpec({
         headCounter shouldBe 1
         s.headOption() shouldBe Some(1)
         headCounter shouldBe 1
+    }
+
+    // EXER 5.1
+    test("create stream of") {
+        val s3 = Stream.of(1,2,3)
+        s3.toList() shouldBe List.of(1,2,3)
     }
 })
 
