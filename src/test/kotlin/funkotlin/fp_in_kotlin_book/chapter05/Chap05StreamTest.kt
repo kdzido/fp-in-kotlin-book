@@ -9,6 +9,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.forAll
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.foldRight
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -68,6 +69,11 @@ class Chap05StreamTest : FunSpec({
         s3.takeWhile({ it <= 1 }).toList() shouldBe List.of(1)
         s3.takeWhile({ it <= 2 }).toList() shouldBe List.of(1, 2)
         s3.takeWhile({ it <= 3 }).toList() shouldBe List.of(1, 2, 3)
+        // and
+        s3.takeWhile2({ it <= 0 }).toList() shouldBe List.of()
+        s3.takeWhile2({ it <= 1 }).toList() shouldBe List.of(1)
+        s3.takeWhile2({ it <= 2 }).toList() shouldBe List.of(1, 2)
+        s3.takeWhile2({ it <= 3 }).toList() shouldBe List.of(1, 2, 3)
     }
 
     // EXER 5.2

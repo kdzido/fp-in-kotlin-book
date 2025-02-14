@@ -9,7 +9,7 @@ import funkotlin.fp_in_kotlin_book.chapter04.Option
 
 sealed class Stream<out A> {
     companion object {
-        fun <A> empty() = Empty
+        fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {
             val head: A by lazy(hd)
             val tail: Stream<A> by lazy(tl)
@@ -44,7 +44,7 @@ sealed class Stream<out A> {
                 if (j <= 0) Empty else
                     when (rem) {
                         is Empty -> Empty
-                        is Cons -> Stream.cons(rem.head, { go(rem.tail(), j - 1) })
+                        is Cons -> cons(rem.head, { go(rem.tail(), j - 1) })
                     }
             return go(this, n)
         }
@@ -56,11 +56,16 @@ sealed class Stream<out A> {
                     is Empty -> Empty
                     is Cons -> {
                         if (p(rem.head()))
-                            Stream.cons(rem.head, { go(rem.tail()) })
+                            cons(rem.head, { go(rem.tail()) })
                         else Empty
                     }
                 }
             return go(this)
+        }
+
+        // EXER 5.5
+        fun <A> Stream<A>.takeWhile2(p: (A) -> Boolean): Stream<A> {
+            return foldRight({ empty() }, { a, b -> if (p(a)) cons({a},  b) else Empty })
         }
 
         // Exer 5.2
