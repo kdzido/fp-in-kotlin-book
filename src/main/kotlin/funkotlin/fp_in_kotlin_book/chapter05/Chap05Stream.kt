@@ -68,6 +68,10 @@ sealed class Stream<out A> {
             return foldRight({ empty() }, { a, b -> if (p(a)) cons({a},  b) else Empty })
         }
 
+        // EXER 5.6
+        fun <A> Stream<A>.headOption2(): Option<A> =
+            this.foldRight({None as Option<A>}, {a, b -> Some(a)})
+
         // Exer 5.2
         fun <A> Stream<A>.drop(n: Int): Stream<A> {
             tailrec fun go(rem: Stream<A>, j: Int): Stream<A> =

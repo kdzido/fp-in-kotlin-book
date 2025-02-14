@@ -1,12 +1,14 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.drop
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.forAll
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.foldRight
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.headOption2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile2
@@ -44,6 +46,14 @@ class Chap05StreamTest : FunSpec({
         headCounter shouldBe 1
         s.headOption() shouldBe Some(1)
         headCounter shouldBe 1
+    }
+
+    // EXER 5.6
+    test("headOption2 in terms of foldRight") {
+        Stream.of(1,2,3).headOption2() shouldBe Some(1)
+        Stream.of(2,3).headOption2() shouldBe Some(2)
+        Stream.of(3).headOption2() shouldBe Some(3)
+        Stream.of<Int>().headOption2() shouldBe None
     }
 
     // EXER 5.1
