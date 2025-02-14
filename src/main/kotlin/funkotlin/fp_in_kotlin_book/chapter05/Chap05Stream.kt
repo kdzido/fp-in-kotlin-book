@@ -63,8 +63,7 @@ sealed class Stream<out A> {
             return go(this)
         }
 
-
-            // Exer 5.2
+        // Exer 5.2
         fun <A> Stream<A>.drop(n: Int): Stream<A> {
             tailrec fun go(rem: Stream<A>, j: Int): Stream<A> =
                 if (j <= 0) rem
@@ -73,6 +72,25 @@ sealed class Stream<out A> {
                     is Cons -> go(rem.tail(), j - 1)
                 }
             return go(this, n)
+        }
+
+        fun <A> Stream<A>.exists(p: (A) -> Boolean): Boolean =
+            when (this) {
+                is Cons -> p(this.head()) || this.tail().exists(p)
+                else -> false
+            }
+
+        fun <A> Stream<A>.exists2(p: (A) -> Boolean): Boolean =
+            foldRight({ false }, { a, b -> p(a) || b() })
+
+        fun <A, B> Stream<A>.foldRight(
+            z: () -> B,
+            f: (A, () -> B) -> B
+        ): B = when (this) {
+            is Cons -> f(this.head()) {
+                this.tail().foldRight(z, f)
+            }
+            is Empty -> z()
         }
     }
 }

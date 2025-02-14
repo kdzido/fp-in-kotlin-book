@@ -1,9 +1,11 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
-import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.drop
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists2
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.foldRight
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
@@ -75,6 +77,27 @@ class Chap05StreamTest : FunSpec({
         s3.drop(2).toList() shouldBe List.of(3)
         s3.drop(3).toList() shouldBe List.of()
         s3.drop(4).toList() shouldBe List.of()
+    }
+
+    test("exists in stream") {
+        val s3 = Stream.of(1, 2, 3)
+        s3.exists({ it == 0 }) shouldBe false
+        s3.exists({ it == 1 }) shouldBe true
+        s3.exists({ it == 2 }) shouldBe true
+        s3.exists({ it == 3 }) shouldBe true
+        s3.exists({ it == 4 }) shouldBe false
+        // and
+        s3.exists2({ it == 0 }) shouldBe false
+        s3.exists2({ it == 1 }) shouldBe true
+        s3.exists2({ it == 2 }) shouldBe true
+        s3.exists2({ it == 3 }) shouldBe true
+        s3.exists2({ it == 4 }) shouldBe false
+    }
+
+    test("foldRight of stream to sum elements") {
+        Stream.of<Int>().foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 0
+        Stream.of(1).foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 1
+        Stream.of(1, 2, 3).foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 6
     }
 })
 
