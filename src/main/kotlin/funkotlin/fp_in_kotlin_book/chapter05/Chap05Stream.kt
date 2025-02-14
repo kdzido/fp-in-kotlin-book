@@ -49,7 +49,22 @@ sealed class Stream<out A> {
             return go(this, n)
         }
 
-        // Exer 5.2
+        // Exer 5.3
+        fun <A> Stream<A>.takeWhile(p: (A) -> Boolean): Stream<A> {
+            fun go(rem: Stream<A>): Stream<A> =
+                when (rem) {
+                    is Empty -> Empty
+                    is Cons -> {
+                        if (p(rem.head()))
+                            Stream.cons(rem.head, { go(rem.tail()) })
+                        else Empty
+                    }
+                }
+            return go(this)
+        }
+
+
+            // Exer 5.2
         fun <A> Stream<A>.drop(n: Int): Stream<A> {
             tailrec fun go(rem: Stream<A>, j: Int): Stream<A> =
                 if (j <= 0) rem
