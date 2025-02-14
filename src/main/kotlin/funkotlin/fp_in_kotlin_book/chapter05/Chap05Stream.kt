@@ -37,6 +37,28 @@ sealed class Stream<out A> {
             val rev = go(this, Nil3)
             return reverse(rev, Nil3)
         }
+
+        // Exer 5.2
+        fun <A> Stream<A>.take(n: Int): Stream<A> {
+            fun go(rem: Stream<A>, j: Int): Stream<A> =
+                if (j <= 0) Empty else
+                    when (rem) {
+                        is Empty -> Empty
+                        is Cons -> Stream.cons(rem.head, { go(rem.tail(), j - 1) })
+                    }
+            return go(this, n)
+        }
+
+        // Exer 5.2
+        fun <A> Stream<A>.drop(n: Int): Stream<A> {
+            tailrec fun go(rem: Stream<A>, j: Int): Stream<A> =
+                if (j <= 0) rem
+                else when (rem) {
+                    is Empty -> Empty
+                    is Cons -> go(rem.tail(), j - 1)
+                }
+            return go(this, n)
+        }
     }
 }
 
