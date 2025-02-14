@@ -1,8 +1,8 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
-import funkotlin.fp_in_kotlin_book.chapter03.Nil as Nil3
-import funkotlin.fp_in_kotlin_book.chapter03.Cons as Cons3
-import funkotlin.fp_in_kotlin_book.chapter03.List as List3
+import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
+import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.Option
@@ -21,21 +21,21 @@ sealed class Stream<out A> {
             else cons({ xs[0] }, { of(*xs.sliceArray(1 until xs.size)) })
 
         // EXER 5.1
-        fun <A> Stream<A>.toList(): List3<A> {
-            tailrec fun go(left: Stream<A>, acc: List3<A>): List3<A> {
+        fun <A> Stream<A>.toList(): ListL<A> {
+            tailrec fun go(left: Stream<A>, acc: ListL<A>): ListL<A> {
                 return when (left) {
                     is Empty -> acc
-                    is Cons -> go(left.tail(), Cons3(left.head(), acc))
+                    is Cons -> go(left.tail(), ConsL(left.head(), acc))
                 }
             }
-            tailrec fun reverse(left: List3<A>, acc: List3<A>): List3<A> {
+            tailrec fun reverse(left: ListL<A>, acc: ListL<A>): ListL<A> {
                 return when (left) {
-                    is Nil3 -> acc
-                    is Cons3 -> reverse(left.tail, Cons3(left.head, acc))
+                    is NilL -> acc
+                    is ConsL -> reverse(left.tail, ConsL(left.head, acc))
                 }
             }
-            val rev = go(this, Nil3)
-            return reverse(rev, Nil3)
+            val rev = go(this, NilL)
+            return reverse(rev, NilL)
         }
 
         // Exer 5.2
@@ -71,6 +71,25 @@ sealed class Stream<out A> {
         // EXER 5.6
         fun <A> Stream<A>.headOption2(): Option<A> =
             this.foldRight({None as Option<A>}, {a, b -> Some(a)})
+
+        // EXER 5.7
+        fun <A, B> Stream<A>.map(f: (A) -> B): Stream<B> =
+            this.foldRight({empty<B>()}, {a, b -> cons<B>({f(a)}, b)})
+
+        // EXER 5.7
+        fun <A, B> Stream<A>.flatMap(f: (A) -> Stream<B>): Stream<B> =
+            this.foldRight({empty()}, { a, b -> append(f(a), b())})
+
+        // EXER 5.7
+        fun <A> Stream<A>.filter(p: (A) -> Boolean): Stream<A> =
+            this.foldRight({empty()}, {a, b -> if (p(a)) cons({a}, b) else b()})
+
+        // EXER 5.7
+        fun <A> append(s1: Stream<A>, s2: Stream<A>): Stream<A> =
+            when (s1) {
+                is Empty -> s2
+                is Cons -> s1.foldRight({ s2 }, { a, b -> cons({ a }, b) })
+            }
 
         // Exer 5.2
         fun <A> Stream<A>.drop(n: Int): Stream<A> {

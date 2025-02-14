@@ -9,6 +9,9 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.forAll
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.foldRight
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.headOption2
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile2
@@ -54,6 +57,32 @@ class Chap05StreamTest : FunSpec({
         Stream.of(2,3).headOption2() shouldBe Some(2)
         Stream.of(3).headOption2() shouldBe Some(3)
         Stream.of<Int>().headOption2() shouldBe None
+    }
+
+    // EXER 5.7
+    test("map in terms of foldRight") {
+        Stream.of(1, 2, 3).map({ a -> a * 2 }).toList() shouldBe List.of(2, 4, 6)
+        Stream.of<Int>().map({ a -> a * 2 }).toList() shouldBe List.of()
+    }
+
+    // EXER 5.7
+    test("flatMap in terms of foldRight") {
+        Stream.of(1, 2, 3).flatMap({ a -> Stream.of(a * 2, a + 1) }).toList() shouldBe List.of(2, 2, 4, 3, 6, 4)
+        Stream.of<Int>().flatMap({ a -> Stream.of(a * 2, a * 3) }).toList() shouldBe List.of()
+    }
+
+    // EXER 5.7
+    test("filter in terms of foldRight") {
+        Stream.of(1, 2, 3, 4).filter({ it % 2 == 0 }).toList() shouldBe List.of(2, 4)
+        Stream.of<Int>().filter({ it % 2 == 0 }).toList() shouldBe List.of()
+    }
+
+    // EXER 5.7
+    test("append in terms of foldRight") {
+        Stream.append<Int>(Stream.of(), Stream.of()).toList() shouldBe List.of()
+        Stream.append(Stream.of(), Stream.of(4, 5, 6)).toList() shouldBe List.of(4, 5, 6)
+        Stream.append(Stream.of(1, 2, 3), Stream.of()).toList() shouldBe List.of(1, 2, 3)
+        Stream.append(Stream.of(1, 2, 3), Stream.of(4, 5, 6)).toList() shouldBe List.of(1, 2, 3, 4, 5, 6)
     }
 
     // EXER 5.1
