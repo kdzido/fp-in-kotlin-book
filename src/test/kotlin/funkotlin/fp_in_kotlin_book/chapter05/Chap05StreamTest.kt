@@ -5,6 +5,7 @@ import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.drop
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.exists2
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.forAll
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.foldRight
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
@@ -98,6 +99,16 @@ class Chap05StreamTest : FunSpec({
         Stream.of<Int>().foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 0
         Stream.of(1).foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 1
         Stream.of(1, 2, 3).foldRight({ 0 }, { a, bThunk -> a + bThunk() }) shouldBe 6
+    }
+
+    // EXER 5.4
+    test("forAll in stream") {
+        val s3 = Stream.of(1, 2, 3)
+        s3.forAll({ it <= 0 }) shouldBe false
+        s3.forAll({ it <= 1 }) shouldBe false
+        s3.forAll({ it <= 2 }) shouldBe false
+        s3.forAll({ it <= 3 }) shouldBe true
+        s3.forAll({ it <= 4 }) shouldBe true
     }
 })
 

@@ -83,6 +83,13 @@ sealed class Stream<out A> {
         fun <A> Stream<A>.exists2(p: (A) -> Boolean): Boolean =
             foldRight({ false }, { a, b -> p(a) || b() })
 
+        // EXER 5.4
+        fun <A> Stream<A>.forAll(p: (A) -> Boolean): Boolean =
+            when (this) {
+                is Cons -> p(this.head()) && this.tail().forAll(p)
+                else -> true
+            }
+
         fun <A, B> Stream<A>.foldRight(
             z: () -> B,
             f: (A, () -> B) -> B
