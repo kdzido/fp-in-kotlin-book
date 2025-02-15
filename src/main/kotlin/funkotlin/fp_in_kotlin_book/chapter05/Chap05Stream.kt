@@ -9,6 +9,8 @@ import funkotlin.fp_in_kotlin_book.chapter04.Option
 
 sealed class Stream<out A> {
     companion object {
+        fun ones(): Stream<Int> = Stream.cons({ 1 }, { ones() })
+
         fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {
             val head: A by lazy(hd)
@@ -112,11 +114,19 @@ sealed class Stream<out A> {
             foldRight({ false }, { a, b -> p(a) || b() })
 
         // EXER 5.4
-        fun <A> Stream<A>.forAll(p: (A) -> Boolean): Boolean =
-            when (this) {
-                is Cons -> p(this.head()) && this.tail().forAll(p)
-                else -> true
+        fun <A> Stream<A>.forAll(p: (A) -> Boolean): Boolean {
+            tailrec fun go(left: Stream<A>, acc: () -> Boolean): Boolean {  // infinite loop
+                return when (left) {
+                    is Cons -> go(if (p(left.head())) left.tail() else Empty, { acc() && p(left.head()) })
+                    is Empty -> acc()
+                }
             }
+            return go(this, { true })
+//            return when (this) {  // stack overflow
+//                is Cons -> p(this.head()) && this.tail().forAll(p)
+//                else -> true
+//            }
+        }
 
         fun <A, B> Stream<A>.foldRight(
             z: () -> B,

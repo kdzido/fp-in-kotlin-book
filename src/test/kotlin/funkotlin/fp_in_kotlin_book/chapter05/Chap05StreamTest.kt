@@ -155,5 +155,14 @@ class Chap05StreamTest : FunSpec({
         s3.forAll({ it <= 3 }) shouldBe true
         s3.forAll({ it <= 4 }) shouldBe true
     }
+
+    test("infinite ones") {
+        Stream.ones().take(3).toList() shouldBe List.of(1, 1, 1)
+        Stream.ones().map { it + 1}.exists { it % 2 == 0 } shouldBe true
+        // to bottom
+//        Stream.ones().takeWhile { it == 1}.toList() shouldBe List.of(1)
+//        Stream.ones().forAll { it == 1} // does not terminate
+    }
+
 })
 
