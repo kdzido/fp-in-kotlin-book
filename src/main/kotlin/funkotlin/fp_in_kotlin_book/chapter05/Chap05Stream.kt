@@ -14,6 +14,9 @@ sealed class Stream<out A> {
         // EXER 5.8
         fun <A> constant(a: A): Stream<A> = Stream.cons({ a }, { constant(a) })
 
+        // EXER 5.9
+        fun from(n: Int): Stream<Int> = Stream.cons({ n }, { from(n + 1) })
+
         fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {
             val head: A by lazy(hd)

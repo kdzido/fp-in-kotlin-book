@@ -170,5 +170,10 @@ class Chap05StreamTest : FunSpec({
         Stream.constant(2).map { it + 1 }.exists { it % 2 == 1 } shouldBe true
     }
 
+    // EXER 5.9
+    test("infinite from") {
+        Stream.from(2).take(3).toList() shouldBe List.of(2, 3, 4)
+    }
+
 })
 
