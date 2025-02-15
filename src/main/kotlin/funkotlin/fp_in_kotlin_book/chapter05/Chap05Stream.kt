@@ -17,6 +17,14 @@ sealed class Stream<out A> {
         // EXER 5.9
         fun from(n: Int): Stream<Int> = Stream.cons({ n }, { from(n + 1) })
 
+        // EXER 5.10
+        fun fibs(): Stream<Int> {
+            fun go(n1: Int, n2: Int): Stream<Int> {
+               return cons({ n1 }, { go(n2, n1 + n2) })
+            }
+            return go(0, 1)
+        }
+
         fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {
             val head: A by lazy(hd)

@@ -175,5 +175,9 @@ class Chap05StreamTest : FunSpec({
         Stream.from(2).take(3).toList() shouldBe List.of(2, 3, 4)
     }
 
+    // EXER 5.10
+    test("infinite fibs") {
+        Stream.fibs().take(6).toList() shouldBe List.of(0, 1, 1, 2, 3, 5)
+    }
 })
 
