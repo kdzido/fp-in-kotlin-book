@@ -9,7 +9,10 @@ import funkotlin.fp_in_kotlin_book.chapter04.Option
 
 sealed class Stream<out A> {
     companion object {
-        fun ones(): Stream<Int> = Stream.cons({ 1 }, { ones() })
+        fun ones(): Stream<Int> = constant(1)
+
+        // EXER 5.8
+        fun <A> constant(a: A): Stream<A> = Stream.cons({ a }, { constant(a) })
 
         fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {

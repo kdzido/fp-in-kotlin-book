@@ -164,5 +164,11 @@ class Chap05StreamTest : FunSpec({
 //        Stream.ones().forAll { it == 1} // does not terminate
     }
 
+    // EXER 5.8
+    test("infinite constant") {
+        Stream.constant(2).take(3).toList() shouldBe List.of(2, 2, 2)
+        Stream.constant(2).map { it + 1 }.exists { it % 2 == 1 } shouldBe true
+    }
+
 })
 
