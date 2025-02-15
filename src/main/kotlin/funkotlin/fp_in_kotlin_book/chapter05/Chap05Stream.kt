@@ -25,6 +25,18 @@ sealed class Stream<out A> {
             return go(0, 1)
         }
 
+        // EXER 5.11
+        fun <A, S> unfold(z: S, f: (S) -> Option<Pair<A, S>>): Stream<A> {
+            fun go(s1: S): Stream<A> {
+                val vO = f(s1);
+                return when (vO) {
+                    is Some -> cons({vO.value.first}, {go(vO.value.second)})
+                    is None -> Empty
+                }
+            }
+            return go(z)
+        }
+
         fun <A> empty() = Empty as Stream<A>
         fun <A> cons(hd: () -> A, tl: () -> Stream<A>): Stream<A> {
             val head: A by lazy(hd)

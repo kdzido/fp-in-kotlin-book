@@ -179,5 +179,19 @@ class Chap05StreamTest : FunSpec({
     test("infinite fibs") {
         Stream.fibs().take(6).toList() shouldBe List.of(0, 1, 1, 2, 3, 5)
     }
+
+    // EXER 5.11, 5.12
+    test("infinite unfold") {
+        // Nil
+        Stream.unfold<Int, Int>(0, { s -> None }).take(6).toList() shouldBe List.of()
+        // constant(1)
+        Stream.unfold(1, { s -> Some(Pair(s, s)) }).take(6).toList() shouldBe List.of(1, 1, 1, 1, 1, 1)
+        // from(0)
+        Stream.unfold(0, { s -> Some(Pair(s, s + 1)) }).take(6).toList() shouldBe List.of(0, 1, 2, 3, 4, 5)
+        // fibs()
+        Stream.unfold(Pair(0, 1), { s -> Some(Pair(s.first, Pair(s.second, s.first + s.second))) }).take(6)
+            .toList() shouldBe List.of(0, 1, 1, 2, 3, 5)
+    }
+
 })
 
