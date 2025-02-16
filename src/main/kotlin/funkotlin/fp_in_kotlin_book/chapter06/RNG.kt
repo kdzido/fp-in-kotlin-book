@@ -87,6 +87,23 @@ sealed interface RNG {
             return Pair(inOrder, reversed.second)
         }
 
+        // EXER 6.7
+        fun <A> sequence(fs: ListL<Rand<A>>): Rand<ListL<A>> = { rng ->
+            fun go(l: ListL<Rand<A>>, acc: ListL<A>, r: RNG): Pair<ListL<A>, RNG> {
+                return when (l) {
+                    is NilL -> Pair(acc, r)
+                    is ConsL -> {
+                        val (h2: A, r2: RNG) = l.head(r)
+                        go(l.tail, ConsL(h2, acc), r2)
+                    }
+                }
+            }
+
+            val (l2: ListL<A>, rng2: RNG) = go(fs, NilL, rng)
+            val inOrder = ListL.foldLeft(l2, NilL as ListL<A>, { a, b -> ConsL(b, a)})
+
+            Pair(inOrder, rng2)
+        }
     }
 }
 

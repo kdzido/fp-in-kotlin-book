@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter06
 
+import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.sequence
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 
 import io.kotest.core.spec.style.FunSpec
@@ -59,4 +60,15 @@ class Chap06Test : FunSpec({
         res(rng).first shouldBe 1.6159453007524831E7
     }
 
+    // EXER 6.7
+    test("sequence Rands") {
+        val rng1 = SimpleRNG(42)
+
+        RNG.sequence<Int>(ListL.of())(rng1).first shouldBe ListL.of()
+        RNG.sequence(ListL.of(RNG::nonNegativeInt))(rng1).first shouldBe ListL.of(16159453)
+
+        val seq3 = sequence(ListL.of(RNG::nonNegativeInt, RNG::nonNegativeInt, RNG::nonNegativeInt))(rng1)
+        seq3.first shouldBe ListL.of(16159453, 1281479697, 340305902)
+        RNG.nonNegativeInt(seq3.second).first shouldBe 2015756020 // valid next random int
+    }
 })
