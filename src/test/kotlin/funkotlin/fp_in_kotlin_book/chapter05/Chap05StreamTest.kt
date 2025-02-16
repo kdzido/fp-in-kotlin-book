@@ -13,6 +13,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.headOption2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.hasSubsequence
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.startsWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.tails
@@ -182,6 +183,25 @@ class Chap05StreamTest : FunSpec({
         Stream.of<Int>().tails().map { it.toList() }.toList() shouldBe List.of(List.of())
         Stream.of(1).tails().map { it.toList() }.toList() shouldBe List.of(List.of(1), List.of())
         Stream.of(1, 2, 3).tails().map { it.toList() }.toList() shouldBe List.of(List.of(1, 2, 3), List.of(2, 3), List.of(3), List.of())
+    }
+
+    // LST
+    test("stream hasSubsequence") {
+        Empty.hasSubsequence(Empty) shouldBe true
+        Empty.hasSubsequence(Stream.of(1)) shouldBe false
+
+        Stream.of(1, 2, 3).hasSubsequence(Empty) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(1)) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(2)) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(3)) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(1, 2)) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(2, 3)) shouldBe true
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(1, 2, 3)) shouldBe true
+
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(0)) shouldBe false
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(0, 1)) shouldBe false
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(4)) shouldBe false
+        Stream.of(1, 2, 3).hasSubsequence(Stream.of(3, 4)) shouldBe false
     }
 
         // EXER 5.2

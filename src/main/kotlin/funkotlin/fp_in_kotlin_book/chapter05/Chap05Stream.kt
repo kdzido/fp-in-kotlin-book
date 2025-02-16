@@ -178,6 +178,9 @@ sealed class Stream<out A> {
             }
         })
 
+        fun <A> Stream<A>.hasSubsequence(s: Stream<A>): Boolean =
+            this.tails().exists2 { it.startsWith(s) }
+
         // EXER 5.7
         fun <A, B> Stream<A>.flatMap(f: (A) -> Stream<B>): Stream<B> =
             this.foldRight({empty()}, { a, b -> append(f(a), b())})
