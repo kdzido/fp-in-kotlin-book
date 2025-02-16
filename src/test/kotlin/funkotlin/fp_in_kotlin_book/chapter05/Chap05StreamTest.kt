@@ -15,6 +15,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.startsWith
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.tails
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
@@ -174,6 +175,13 @@ class Chap05StreamTest : FunSpec({
         Stream.of(1, 2, 3).startsWith(Stream.of(1, 2)) shouldBe true
         Stream.of(1, 2, 3).startsWith(Stream.of(1, 2, 3)) shouldBe true
         Stream.of(1, 2, 3).startsWith(Stream.of(1, 2, 3, 4)) shouldBe false
+    }
+
+    // EXER 5.15
+    test("tails should return stream of tails") {
+        Stream.of<Int>().tails().map { it.toList() }.toList() shouldBe List.of(List.of())
+        Stream.of(1).tails().map { it.toList() }.toList() shouldBe List.of(List.of(1), List.of())
+        Stream.of(1, 2, 3).tails().map { it.toList() }.toList() shouldBe List.of(List.of(1, 2, 3), List.of(2, 3), List.of(3), List.of())
     }
 
         // EXER 5.2

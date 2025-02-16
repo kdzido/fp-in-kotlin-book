@@ -167,6 +167,17 @@ sealed class Stream<out A> {
                 else -> TODO()
             }
 
+        // EXER 5.15
+        fun <A> Stream<A>.tails(): Stream<Stream<A>> = unfold(Pair(this, true), {s ->
+            val (stream, hasMore) = s
+            when {
+                stream is Empty && hasMore == false -> None
+                stream is Empty && hasMore == true -> Some(Pair(empty(), Pair(empty(), false)))
+                stream is Cons && hasMore == true -> Some(Pair(cons(stream.head, stream.tail), Pair(stream.tail(), true)))
+                else -> TODO()
+            }
+        })
+
         // EXER 5.7
         fun <A, B> Stream<A>.flatMap(f: (A) -> Stream<B>): Stream<B> =
             this.foldRight({empty()}, { a, b -> append(f(a), b())})
