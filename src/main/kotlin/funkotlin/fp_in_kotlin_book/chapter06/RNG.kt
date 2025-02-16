@@ -5,6 +5,7 @@ import funkotlin.fp_in_kotlin_book.chapter02.Example.abs
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
     fun nonNegativeInt(rng: RNG): Pair<Int, RNG>
+    fun double(rng: RNG): Pair<Double, RNG>
 }
 
 // LST 6.4
@@ -20,6 +21,12 @@ data class SimpleRNG(val seed: Long) : RNG {
     override fun nonNegativeInt(rng: RNG): Pair<Int, RNG> {
         val (n1, rng2) = rng.nextInt()
         return if (n1 == Int.MIN_VALUE) nonNegativeInt(rng2) else Pair(abs(n1), rng2)
+    }
+
+    // EXER 6.2
+    override fun double(rng: RNG): Pair<Double, RNG> {
+        val (n1, rng2) = nonNegativeInt(rng)
+        return Pair(n1.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble(), rng2)
     }
 }
 
