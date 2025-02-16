@@ -14,6 +14,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map2
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.startsWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
@@ -164,7 +165,18 @@ class Chap05StreamTest : FunSpec({
         Stream.of(1, 3).zipAll(Stream.of(2, 4)).toList() shouldBe List.of(Pair(Some(1), Some(2)), Pair(Some(3), Some(4)))
     }
 
-    // EXER 5.2
+    // EXER 5.14
+    test("should startsWith") {
+        Empty.startsWith(Empty) shouldBe true
+        Empty.startsWith(Stream.of(1)) shouldBe false
+        Stream.of(1).startsWith(Empty) shouldBe true
+        Stream.of(1).startsWith(Stream.of(1)) shouldBe true
+        Stream.of(1, 2, 3).startsWith(Stream.of(1, 2)) shouldBe true
+        Stream.of(1, 2, 3).startsWith(Stream.of(1, 2, 3)) shouldBe true
+        Stream.of(1, 2, 3).startsWith(Stream.of(1, 2, 3, 4)) shouldBe false
+    }
+
+        // EXER 5.2
     test("drop n from stream") {
         val s3 = Stream.of(1, 2, 3)
         s3.drop(0).toList() shouldBe List.of(1, 2, 3)

@@ -157,6 +157,16 @@ sealed class Stream<out A> {
             }
         })
 
+        // EXER 5.14
+        fun <A> Stream<A>.startsWith(that: Stream<A>): Boolean =
+            when {
+                this is Empty && that is Empty -> true
+                this is Empty && that is Cons -> false
+                this is Cons && that is Empty -> true
+                this is Cons && that is Cons -> if (this.head() != that.head()) false else this.tail().startsWith(that.tail())
+                else -> TODO()
+            }
+
         // EXER 5.7
         fun <A, B> Stream<A>.flatMap(f: (A) -> Stream<B>): Stream<B> =
             this.foldRight({empty()}, { a, b -> append(f(a), b())})
