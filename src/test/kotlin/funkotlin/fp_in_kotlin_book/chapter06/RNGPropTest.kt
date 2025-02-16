@@ -25,6 +25,17 @@ class RNGPropTest : StringSpec({
             (n1 < 1.0) shouldBe true
         }
     }
+    
+    // EXER 6.5
+    "<0, 1) random double2" {
+        checkAll<Long>(100_000) { seed ->
+            val rng = SimpleRNG(seed)
+            val (n1, rng2) = RNG.double2()(rng)
+
+            (n1 >= 0.0) shouldBe true
+            (n1 < 1.0) shouldBe true
+        }
+    }
 
     // EXER 6.3
     "random intDouble" {

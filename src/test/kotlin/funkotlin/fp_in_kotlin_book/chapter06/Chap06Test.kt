@@ -40,4 +40,14 @@ class Chap06Test : FunSpec({
         val (ints2, rng3) = RNG.ints(3, rng2)
         ints2 shouldBe ListL.of(-2015756020, 1770001318, -1934589059)
     }
+
+    // EXER 6.5
+    test("Rand map") {
+        val rng = SimpleRNG(42)
+        val f: Rand<ListL<Int>> = { r -> RNG.ints(3, r) }
+
+        val res: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }
+        res(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
+    }
+
 })

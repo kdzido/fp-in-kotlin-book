@@ -36,6 +36,10 @@ sealed interface RNG {
             return Pair(n1.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble(), rng2)
         }
 
+        // EXER 6.5
+        fun double2(): Rand<Double> =
+            RNG.map(::nonNegativeInt) { it -> it.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble()}
+
         // EXER 6.3
         fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG> {
             val (n1, rng2) = nonNegativeInt(rng)
