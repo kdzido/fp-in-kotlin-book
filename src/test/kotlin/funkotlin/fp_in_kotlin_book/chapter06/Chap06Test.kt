@@ -4,7 +4,6 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 
 class Chap06Test : FunSpec({
     test("should pass RNG") {
@@ -48,6 +47,16 @@ class Chap06Test : FunSpec({
 
         val res: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }
         res(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
+    }
+
+    // EXER 6.6
+    test("Rand map2") {
+        val rng = SimpleRNG(42)
+        val f1: Rand<Int> = { r -> RNG.nonNegativeInt(r) }
+        val f2: Rand<Double> = { r -> RNG.double(r) }
+
+        val res: (RNG) -> Pair<Double, RNG> = RNG.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }
+        res(rng).first shouldBe 1.6159453007524831E7
     }
 
 })

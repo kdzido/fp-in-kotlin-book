@@ -23,6 +23,12 @@ sealed interface RNG {
             f(a) to rng2
         }
 
+        // EXER 6.6
+        fun <A, B, C> map2(ra : Rand<A>, rb: Rand<B>, f: (A, B) -> C): Rand<C> = { rng ->
+            val (a, rng2) = ra(rng)
+            val (b, rng3) = rb(rng)
+            f(a, b) to rng3
+        }
 
         // EXER 6.1
         fun nonNegativeInt(rng: RNG): Pair<Int, RNG> {
