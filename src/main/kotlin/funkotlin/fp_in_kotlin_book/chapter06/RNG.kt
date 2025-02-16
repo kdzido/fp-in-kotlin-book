@@ -11,6 +11,11 @@ typealias Rand<A> = (RNG) -> Pair<A, RNG>
 
 val intR: Rand<Int> = { rng -> rng.nextInt() }
 fun nonNegativeEven(): Rand<Int> = RNG.map(::nonNegativeInt) { it - (it % 2)}
+val doubleR: Rand<Double> = RNG.map(::nonNegativeInt) { i ->
+    i / (Int.MAX_VALUE.toDouble() + 1)
+}
+val intDoubleR: Rand<Pair<Int, Double>> = RNG.both(intR, doubleR)
+val doubleIntR: Rand<Pair<Double, Int>> = RNG.both(doubleR, intR)
 
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
@@ -29,6 +34,9 @@ sealed interface RNG {
             val (b, rng3) = rb(rng)
             f(a, b) to rng3
         }
+
+        fun <A, B> both(ra: Rand<A>, rb: Rand<B>): Rand<Pair<A, B>> =
+            map2(ra, rb) { a, b -> a to b}
 
         // EXER 6.1
         fun nonNegativeInt(rng: RNG): Pair<Int, RNG> {
