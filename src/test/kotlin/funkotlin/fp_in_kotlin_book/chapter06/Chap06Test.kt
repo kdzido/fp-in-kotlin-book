@@ -18,4 +18,13 @@ class Chap06Test : FunSpec({
         n3 shouldBe -340305902
     }
 
+    test("random pair") {
+        val rng = SimpleRNG(42)
+
+        val (nums, rng2) = randomPair2(rng)
+        nums shouldBe Pair(16159453, -1281479697)
+
+        val (nums2, rng3) = randomPair2(rng2)
+        nums2 shouldBe Pair(-340305902, -2015756020)
+    }
 })

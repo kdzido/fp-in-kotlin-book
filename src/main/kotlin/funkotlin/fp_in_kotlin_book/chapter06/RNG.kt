@@ -14,6 +14,12 @@ data class SimpleRNG(val seed: Long) : RNG {
     }
 }
 
+fun randomPair2(rng: RNG): Pair<Pair<Int, Int>, RNG> {
+    val (n1, rng2) = rng.nextInt()
+    val (n2, rng3) = rng2.nextInt()
+    return Pair(Pair(n1, n2), rng3)
+}
+
 fun main() {
     val rng = SimpleRNG(1)
     println("RNG.nextInt:" + rng.nextInt())
