@@ -25,4 +25,48 @@ class RNGPropTest : StringSpec({
             (n1 < 1.0) shouldBe true
         }
     }
+
+    // EXER 6.3
+    "random intDouble" {
+        checkAll<Long>(100_000) { seed ->
+            val rng = SimpleRNG(seed)
+            val (p, rng2) = rng.intDouble(rng)
+            val (n1, d2) = p
+            // and
+            (n1 >= 0) shouldBe true
+            (n1 <= Int.MAX_VALUE) shouldBe true
+            // and
+            (d2 >= 0.0) shouldBe true
+            (d2 < 1.0) shouldBe true
+        }
+    }
+    "random doubleInt" {
+        checkAll<Long>(100_000) { seed ->
+            val rng = SimpleRNG(seed)
+            val (p, rng2) = rng.doubleInt(rng)
+            val (d1, n2) = p
+            // and
+            (d1 >= 0.0) shouldBe true
+            (d1 < 1.0) shouldBe true
+            // and
+            (n2 >= 0) shouldBe true
+            (n2 <= Int.MAX_VALUE) shouldBe true
+        }
+    }
+    "random double3" {
+        checkAll<Long>(100_000) { seed ->
+            val rng = SimpleRNG(seed)
+            val (t, rng2) = rng.double3(rng)
+            val (d1, d2, d3) = t
+            // and
+            (d1 >= 0.0) shouldBe true
+            (d1 < 1.0) shouldBe true
+            // and
+            (d2 >= 0.0) shouldBe true
+            (d2 < 1.0) shouldBe true
+            // and
+            (d3 >= 0.0) shouldBe true
+            (d3 < 1.0) shouldBe true
+        }
+    }
 })

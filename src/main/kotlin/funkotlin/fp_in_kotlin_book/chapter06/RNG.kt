@@ -6,6 +6,9 @@ sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
     fun nonNegativeInt(rng: RNG): Pair<Int, RNG>
     fun double(rng: RNG): Pair<Double, RNG>
+    fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG>
+    fun doubleInt(rng: RNG): Pair<Pair<Double, Int>, RNG>
+    fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG>
 }
 
 // LST 6.4
@@ -27,6 +30,24 @@ data class SimpleRNG(val seed: Long) : RNG {
     override fun double(rng: RNG): Pair<Double, RNG> {
         val (n1, rng2) = nonNegativeInt(rng)
         return Pair(n1.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble(), rng2)
+    }
+
+    // EXER 6.3
+    override fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG> {
+        val (n1, rng2) = nonNegativeInt(rng)
+        val (d2, rng3) = double(rng2)
+        return Pair(Pair(n1, d2), rng3)
+    }
+    override fun doubleInt(rng: RNG): Pair<Pair<Double, Int>, RNG> {
+        val (d1, rng2) = double(rng)
+        val (n2, rng3) = nonNegativeInt(rng2)
+        return Pair(Pair(d1, n2), rng3)
+    }
+    override fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG> {
+        val (d1, rng2) = double(rng)
+        val (d2, rng3) = double(rng)
+        val (d3, rng4) = double(rng)
+        return Pair(Triple(d1, d2, d3), rng3)
     }
 }
 
