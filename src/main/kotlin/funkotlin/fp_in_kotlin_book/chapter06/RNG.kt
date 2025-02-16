@@ -1,20 +1,29 @@
 package funkotlin.fp_in_kotlin_book.chapter06
 
 import funkotlin.fp_in_kotlin_book.chapter02.Example.abs
+import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.nonNegativeInt
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
 import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
+
+// fns of this type are called state actions of state transitions
+typealias Rand<A> = (RNG) -> Pair<A, RNG>
+
+val intR: Rand<Int> = { rng -> rng.nextInt() }
+fun nonNegativeEven(): Rand<Int> = RNG.map(::nonNegativeInt) { it - (it % 2)}
 
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
 
     companion object {
-//        fun nonNegativeInt(rng: RNG): Pair<Int, RNG>
-//        fun double(rng: RNG): Pair<Double, RNG>
-//        fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG>
-//        fun doubleInt(rng: RNG): Pair<Pair<Double, Int>, RNG>
-//        fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG>
-//        fun ints(n: Int, rng: RNG): Pair<ListL<Int>, RNG>
+        fun <A> unit(a: A): Rand<A> = { rng -> a to rng }
+
+        fun <A, B> map(s : Rand<A>, f: (A) -> B): Rand<B> = { rng ->
+            val (a, rng2) = s(rng)
+            f(a) to rng2
+        }
+
+
         // EXER 6.1
         fun nonNegativeInt(rng: RNG): Pair<Int, RNG> {
             val (n1, rng2) = rng.nextInt()
