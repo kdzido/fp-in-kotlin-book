@@ -178,6 +178,12 @@ sealed class Stream<out A> {
             }
         })
 
+        // EXER 5.15
+        fun <A, B> Stream<A>.scanRight(z: () -> B, f: (A, () -> B) -> B): Stream<B> =
+            this.tails().map2 { a ->
+                a.foldRight(z, { a, b -> f(a, b) })
+            }
+
         fun <A> Stream<A>.hasSubsequence(s: Stream<A>): Boolean =
             this.tails().exists2 { it.startsWith(s) }
 

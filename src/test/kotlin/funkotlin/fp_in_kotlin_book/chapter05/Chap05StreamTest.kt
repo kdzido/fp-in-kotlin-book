@@ -14,6 +14,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.hasSubsequence
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.scanRight
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.startsWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.tails
@@ -204,7 +205,14 @@ class Chap05StreamTest : FunSpec({
         Stream.of(1, 2, 3).hasSubsequence(Stream.of(3, 4)) shouldBe false
     }
 
-        // EXER 5.2
+    // EXER 5.16
+    test("stream scanRigth should return intermediate results") {
+        Empty.scanRight<Int, Int>({0}, {a, b -> a + b()}).toList() shouldBe List.of(0)
+        Stream.of(1).scanRight({0}, {a, b -> a + b()}).toList() shouldBe List.of(1, 0)
+        Stream.of(1, 2, 3).scanRight({0}, {a, b -> a + b()}).toList() shouldBe List.of(6, 5, 3, 0)
+    }
+
+    // EXER 5.2
     test("drop n from stream") {
         val s3 = Stream.of(1, 2, 3)
         s3.drop(0).toList() shouldBe List.of(1, 2, 3)
