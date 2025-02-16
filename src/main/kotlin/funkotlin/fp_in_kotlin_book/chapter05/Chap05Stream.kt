@@ -6,6 +6,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.Option
+import funkotlin.fp_in_kotlin_book.chapter04.map
 
 sealed class Stream<out A> {
     companion object {
@@ -77,7 +78,7 @@ sealed class Stream<out A> {
             return go(this, n)
         }
 
-        // Exer 5.3
+            // Exer 5.3
         fun <A> Stream<A>.takeWhile(p: (A) -> Boolean): Stream<A> {
             fun go(rem: Stream<A>): Stream<A> =
                 when (rem) {
@@ -103,6 +104,58 @@ sealed class Stream<out A> {
         // EXER 5.7
         fun <A, B> Stream<A>.map(f: (A) -> B): Stream<B> =
             this.foldRight({empty<B>()}, {a, b -> cons<B>({f(a)}, b)})
+
+        // EXER 5.13
+        fun <A, B> Stream<A>.map2(f: (A) -> B): Stream<B> = unfold(this, { s ->
+            when (s) {
+                is Cons -> Some(Pair(f(s.head()), s.tail()))
+                is Empty -> None
+            }
+        })
+
+        // EXER 5.13
+        fun <A> Stream<A>.take2(n: Int): Stream<A> = unfold(Pair(n, this), { s ->
+            val (leftN, stream) = s
+            if (leftN <= 0) None
+            else {
+                when (stream) {
+                    is Cons -> Some(Pair(stream.head(), Pair(leftN - 1, stream.tail())))
+                    is Empty -> None
+                }
+            }
+        })
+
+        // EXER 5.13
+        fun <A> Stream<A>.takeWhile_3(p: (A) -> Boolean): Stream<A> = unfold(this, { s ->
+            when (s) {
+                is Cons -> if (p(s.head())) Some(Pair(s.head(), s.tail())) else None
+                is Empty -> None
+            }
+        })
+
+        // EXER 5.13
+        fun <A, B, C> Stream<A>.zipWith(that: Stream<B>, f: (A, B) -> C): Stream<C> = unfold(Pair(this, that), {
+            s ->
+            when {
+                s.first is Empty && s.second is Empty -> None
+                s.first is Empty && s.second is Cons -> None
+                s.first is Cons && s.second is Empty -> None
+                s.first is Cons && s.second is Cons -> Some(Pair(f((s.first as Cons).head(), (s.second as Cons).head()), Pair((s.first as Cons).tail(), (s.second as Cons).tail())))
+                else -> TODO()
+            }
+        })
+
+        // EXER 5.13
+        fun <A, B> Stream<A>.zipAll(that: Stream<B>): Stream<Pair<Option<A>, Option<B>>> = unfold(Pair(this, that), {
+            s ->
+            when {
+                s.first is Empty && s.second is Empty -> None
+                s.first is Empty && s.second is Cons -> Some(Pair(Pair((s.first as Empty).headOption2(), (s.second as Cons).headOption2()), Pair(Empty, (s.second as Cons).tail())))
+                s.first is Cons && s.second is Empty -> Some(Pair(Pair((s.first as Cons).headOption2(), (s.second as Empty).headOption2()), Pair((s.first as Cons).tail(), Empty)))
+                s.first is Cons && s.second is Cons -> Some(Pair(Pair((s.first as Cons).headOption2(), (s.second as Cons).headOption2()), Pair((s.first as Cons).tail(), (s.second as Cons).tail())))
+                else -> TODO()
+            }
+        })
 
         // EXER 5.7
         fun <A, B> Stream<A>.flatMap(f: (A) -> Stream<B>): Stream<B> =

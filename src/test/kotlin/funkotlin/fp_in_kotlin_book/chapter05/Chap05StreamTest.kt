@@ -1,6 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.drop
@@ -12,10 +13,15 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.headOption2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.filter
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.flatMap
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.map2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take2
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile2
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.takeWhile_3
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipAll
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -65,6 +71,12 @@ class Chap05StreamTest : FunSpec({
         Stream.of<Int>().map({ a -> a * 2 }).toList() shouldBe List.of()
     }
 
+    // EXER 5.13
+    test("map2 in terms of unfold") {
+        Stream.of(1, 2, 3).map2({ a -> a * 2 }).toList() shouldBe List.of(2, 4, 6)
+        Stream.of<Int>().map2({ a -> a * 2 }).toList() shouldBe List.of()
+    }
+
     // EXER 5.7
     test("flatMap in terms of foldRight") {
         Stream.of(1, 2, 3).flatMap({ a -> Stream.of(a * 2, a + 1) }).toList() shouldBe List.of(2, 2, 4, 3, 6, 4)
@@ -101,6 +113,16 @@ class Chap05StreamTest : FunSpec({
         s3.take(4).toList() shouldBe List.of(1, 2, 3)
     }
 
+    // EXER 5.13
+    test("take2 in terms from unfold") {
+        val s3 = Stream.of(1, 2, 3)
+        s3.take2(0).toList() shouldBe List.of()
+        s3.take2(1).toList() shouldBe List.of(1)
+        s3.take2(2).toList() shouldBe List.of(1, 2)
+        s3.take2(3).toList() shouldBe List.of(1, 2, 3)
+        s3.take2(4).toList() shouldBe List.of(1, 2, 3)
+    }
+
     // EXER 5.3
     test("takeWhile from stream") {
         val s3 = Stream.of(1, 2, 3)
@@ -113,6 +135,33 @@ class Chap05StreamTest : FunSpec({
         s3.takeWhile2({ it <= 1 }).toList() shouldBe List.of(1)
         s3.takeWhile2({ it <= 2 }).toList() shouldBe List.of(1, 2)
         s3.takeWhile2({ it <= 3 }).toList() shouldBe List.of(1, 2, 3)
+        // and
+        s3.takeWhile_3({ it <= 0 }).toList() shouldBe List.of()
+        s3.takeWhile_3({ it <= 1 }).toList() shouldBe List.of(1)
+        s3.takeWhile_3({ it <= 2 }).toList() shouldBe List.of(1, 2)
+        s3.takeWhile_3({ it <= 3 }).toList() shouldBe List.of(1, 2, 3)
+    }
+
+    // EXER 5.13
+    test("should zipWith two streams") {
+        Empty.zipWith<Int, Int, Int>(Empty, { x, y -> x + y}).toList() shouldBe Nil
+        Stream.of(1).zipWith<Int, Int, Int>(Empty, { x, y -> x + y}).toList() shouldBe Nil
+        Empty.zipWith<Int, Int, Int>(Stream.of(2), { x, y -> x + y}).toList() shouldBe Nil
+        Stream.of(1).zipWith(Stream.of(2), { x, y -> x + y}).toList() shouldBe List.of(3)
+        Stream.of(1, 3).zipWith(Stream.of(2), { x, y -> x + y}).toList() shouldBe List.of(3)
+        Stream.of(1).zipWith(Stream.of(2, 3), { x, y -> x + y}).toList() shouldBe List.of(3)
+        Stream.of(1, 2, 3).zipWith(Stream.of(4, 5, 6), { x, y -> x + y}).toList() shouldBe List.of(5, 7, 9)
+    }
+
+    // EXER 5.13
+    test("should zipAll two streams") {
+        Empty.zipAll<Int, Int>(Empty).toList() shouldBe Nil
+        Stream.of(1).zipAll<Int, Int>(Empty).toList() shouldBe List.of(Pair(Some(1), None))
+        Empty.zipAll<Int, Int>(Stream.of(2)).toList() shouldBe List.of(Pair(None, Some(2)))
+        Stream.of(1).zipAll(Stream.of(2)).toList() shouldBe List.of(Pair(Some(1), Some(2)))
+        Stream.of(1, 3).zipAll(Stream.of(2)).toList() shouldBe List.of(Pair(Some(1), Some(2)), Pair(Some(3), None))
+        Stream.of(1).zipAll(Stream.of(2, 3)).toList() shouldBe List.of(Pair(Some(1), Some(2)), Pair(None, Some(3)))
+        Stream.of(1, 3).zipAll(Stream.of(2, 4)).toList() shouldBe List.of(Pair(Some(1), Some(2)), Pair(Some(3), Some(4)))
     }
 
     // EXER 5.2
