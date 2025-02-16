@@ -10,7 +10,7 @@ class RNGPropTest : StringSpec({
     "non-negative random int" {
         checkAll<Long>(100_000) { seed ->
             val rng = SimpleRNG(seed)
-            val (n1, rng2) = rng.nonNegativeInt(rng)
+            val (n1, rng2) = RNG.nonNegativeInt(rng)
             (n1 >= 0) shouldBe true
             (n1 <= Int.MAX_VALUE) shouldBe true
         }
@@ -20,7 +20,7 @@ class RNGPropTest : StringSpec({
     "<0, 1) random double" {
         checkAll<Long>(100_000) { seed ->
             val rng = SimpleRNG(seed)
-            val (n1, rng2) = rng.double(rng)
+            val (n1, rng2) = RNG.double(rng)
             (n1 >= 0.0) shouldBe true
             (n1 < 1.0) shouldBe true
         }
@@ -30,7 +30,7 @@ class RNGPropTest : StringSpec({
     "random intDouble" {
         checkAll<Long>(100_000) { seed ->
             val rng = SimpleRNG(seed)
-            val (p, rng2) = rng.intDouble(rng)
+            val (p, rng2) = RNG.intDouble(rng)
             val (n1, d2) = p
             // and
             (n1 >= 0) shouldBe true
@@ -43,7 +43,7 @@ class RNGPropTest : StringSpec({
     "random doubleInt" {
         checkAll<Long>(100_000) { seed ->
             val rng = SimpleRNG(seed)
-            val (p, rng2) = rng.doubleInt(rng)
+            val (p, rng2) = RNG.doubleInt(rng)
             val (d1, n2) = p
             // and
             (d1 >= 0.0) shouldBe true
@@ -56,7 +56,7 @@ class RNGPropTest : StringSpec({
     "random double3" {
         checkAll<Long>(100_000) { seed ->
             val rng = SimpleRNG(seed)
-            val (t, rng2) = rng.double3(rng)
+            val (t, rng2) = RNG.double3(rng)
             val (d1, d2, d3) = t
             // and
             (d1 >= 0.0) shouldBe true
