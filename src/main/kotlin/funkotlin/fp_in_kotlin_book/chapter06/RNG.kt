@@ -17,11 +17,20 @@ val doubleR: Rand<Double> = RNG.map(::nonNegativeInt) { i ->
 val intDoubleR: Rand<Pair<Int, Double>> = RNG.both(intR, doubleR)
 val doubleIntR: Rand<Pair<Double, Int>> = RNG.both(doubleR, intR)
 
+
+//fun rollDie(): Rand<Int> = nonNegativeInt()
+
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
 
     companion object {
         fun <A> unit(a: A): Rand<A> = { rng -> a to rng }
+
+        // EXER 6.8
+        fun <A, B> flatMap(s: Rand<A>, f: (A) -> Rand<B>): Rand<B> = { rng ->
+            val (s1, r2) = s(rng)
+            f(s1)(r2)
+        }
 
         fun <A, B> map(s : Rand<A>, f: (A) -> B): Rand<B> = { rng ->
             val (a, rng2) = s(rng)

@@ -41,6 +41,18 @@ class Chap06Test : FunSpec({
         ints2 shouldBe ListL.of(-2015756020, 1770001318, -1934589059)
     }
 
+    // EXER 6.8
+    test("Rand flatMap") {
+        val rng = SimpleRNG(42)
+        val f: Rand<Int> = { r -> RNG.nonNegativeInt(r) }
+
+        val incr1 = RNG.flatMap(f) { i -> RNG.unit(i + 1) }
+        val (n2, rng2) = incr1(rng)
+        val (n3, rng3) = incr1(rng2)
+        n2 shouldBe 16159454
+        n3 shouldBe 1281479698
+    }
+
     // EXER 6.5
     test("Rand map") {
         val rng = SimpleRNG(42)
