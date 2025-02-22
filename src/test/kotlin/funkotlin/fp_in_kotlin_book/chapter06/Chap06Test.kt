@@ -53,23 +53,23 @@ class Chap06Test : FunSpec({
         n3 shouldBe 1281479698
     }
 
-    // EXER 6.5
+    // EXER 6.5, 6.9
     test("Rand map") {
         val rng = SimpleRNG(42)
         val f: Rand<ListL<Int>> = { r -> RNG.ints(3, r) }
 
-        val res: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }
-        res(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
+        val incr2: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }
+        incr2(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
     }
 
-    // EXER 6.6
+    // EXER 6.6, 6.9
     test("Rand map2") {
         val rng = SimpleRNG(42)
         val f1: Rand<Int> = { r -> RNG.nonNegativeInt(r) }
         val f2: Rand<Double> = { r -> RNG.double(r) }
 
         val res: (RNG) -> Pair<Double, RNG> = RNG.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }
-        res(rng).first shouldBe 1.6159453007524831E7
+        res(rng).first shouldBe 1.6159453596735485E7
     }
 
     // EXER 6.7

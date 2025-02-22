@@ -32,17 +32,17 @@ sealed interface RNG {
             f(s1)(r2)
         }
 
-        fun <A, B> map(s : Rand<A>, f: (A) -> B): Rand<B> = { rng ->
-            val (a, rng2) = s(rng)
-            f(a) to rng2
-        }
+        // EXER 6.5, 6.9
+        fun <A, B> map(s : Rand<A>, f: (A) -> B): Rand<B> =
+            flatMap(s) { a -> RNG.unit(f(a)) }
 
-        // EXER 6.6
-        fun <A, B, C> map2(ra : Rand<A>, rb: Rand<B>, f: (A, B) -> C): Rand<C> = { rng ->
-            val (a, rng2) = ra(rng)
-            val (b, rng3) = rb(rng)
-            f(a, b) to rng3
-        }
+        // EXER 6.6, 6.9
+        fun <A, B, C> map2(ra : Rand<A>, rb: Rand<B>, f: (A, B) -> C): Rand<C> =
+            flatMap(ra) { a ->
+                flatMap(rb) { b ->
+                    RNG.unit(f(a, b))
+                }
+            }
 
         fun <A, B> both(ra: Rand<A>, rb: Rand<B>): Rand<Pair<A, B>> =
             map2(ra, rb) { a, b -> a to b}
