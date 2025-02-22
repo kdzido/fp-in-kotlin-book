@@ -8,6 +8,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
 
 // fns of this type are called state actions of state transitions
 typealias Rand<A> = (RNG) -> Pair<A, RNG>
+typealias State<S, A> = (S) -> Pair<A, S>
 
 val intR: Rand<Int> = { rng -> rng.nextInt() }
 fun nonNegativeEven(): Rand<Int> = RNG.map(::nonNegativeInt) { it - (it % 2)}
@@ -17,34 +18,33 @@ val doubleR: Rand<Double> = RNG.map(::nonNegativeInt) { i ->
 val intDoubleR: Rand<Pair<Int, Double>> = RNG.both(intR, doubleR)
 val doubleIntR: Rand<Pair<Double, Int>> = RNG.both(doubleR, intR)
 
-
 //fun rollDie(): Rand<Int> = nonNegativeInt()
 
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
 
     companion object {
-        fun <A> unit(a: A): Rand<A> = { rng -> a to rng }
+        fun <S, A> unit(a: A): State<S, A> = { rng -> a to rng }
 
         // EXER 6.8
-        fun <A, B> flatMap(s: Rand<A>, f: (A) -> Rand<B>): Rand<B> = { rng ->
+        fun <S, A, B> flatMap(s: State<S, A>, f: (A) -> State<S, B>): State<S, B> = { rng ->
             val (s1, r2) = s(rng)
             f(s1)(r2)
         }
 
         // EXER 6.5, 6.9
-        fun <A, B> map(s : Rand<A>, f: (A) -> B): Rand<B> =
-            flatMap(s) { a -> RNG.unit(f(a)) }
+        fun <S, A, B> map(sa : State<S, A>, f: (A) -> B): State<S, B> =
+            flatMap(sa) { a -> RNG.unit(f(a)) }
 
         // EXER 6.6, 6.9
-        fun <A, B, C> map2(ra : Rand<A>, rb: Rand<B>, f: (A, B) -> C): Rand<C> =
+        fun <S, A, B, C> map2(ra : State<S, A>, rb: State<S, B>, f: (A, B) -> C): State<S, C> =
             flatMap(ra) { a ->
                 flatMap(rb) { b ->
                     RNG.unit(f(a, b))
                 }
             }
 
-        fun <A, B> both(ra: Rand<A>, rb: Rand<B>): Rand<Pair<A, B>> =
+        fun <S, A, B> both(ra: State<S, A>, rb: State<S, B>): State<S, Pair<A, B>> =
             map2(ra, rb) { a, b -> a to b}
 
         // EXER 6.1
@@ -76,9 +76,9 @@ sealed interface RNG {
         }
         fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG> {
             val (d1, rng2) = double(rng)
-            val (d2, rng3) = double(rng)
-            val (d3, rng4) = double(rng)
-            return Pair(Triple(d1, d2, d3), rng3)
+            val (d2, rng3) = double(rng2)
+            val (d3, rng4) = double(rng3)
+            return Pair(Triple(d1, d2, d3), rng4)
         }
 
         // EXER 6.4
