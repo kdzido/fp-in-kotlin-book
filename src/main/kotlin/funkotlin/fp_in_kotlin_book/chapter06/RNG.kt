@@ -7,12 +7,12 @@ import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
 import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
 
 // fns of this type are called state actions of state transitions
-typealias Rand<A> = (RNG) -> Pair<A, RNG>
 typealias State<S, A> = (S) -> Pair<A, S>
+typealias Rand<A> = State<RNG, A>
 
 val intR: Rand<Int> = { rng -> rng.nextInt() }
-fun nonNegativeEven(): Rand<Int> = RNG.map(::nonNegativeInt) { it - (it % 2)}
-val doubleR: Rand<Double> = RNG.map(::nonNegativeInt) { i ->
+val nonNegativeEven: Rand<Int> = RNG.map({ sa -> nonNegativeInt()(sa) }) { it - (it % 2)}
+val doubleR: Rand<Double> = RNG.map({ sa -> nonNegativeInt()(sa) }) { i ->
     i / (Int.MAX_VALUE.toDouble() + 1)
 }
 val intDoubleR: Rand<Pair<Int, Double>> = RNG.both(intR, doubleR)
@@ -48,30 +48,30 @@ sealed interface RNG {
             map2(ra, rb) { a, b -> a to b}
 
         // EXER 6.1
-        fun nonNegativeInt(rng: RNG): Pair<Int, RNG> {
+        fun nonNegativeInt(): Rand<Int> = { rng ->
             val (n1, rng2) = rng.nextInt()
-            return if (n1 == Int.MIN_VALUE) nonNegativeInt(rng2) else Pair(abs(n1), rng2)
+            if (n1 == Int.MIN_VALUE) nonNegativeInt()(rng2) else Pair(abs(n1), rng2)
         }
 
         // EXER 6.2
         fun double(rng: RNG): Pair<Double, RNG> {
-            val (n1, rng2) = nonNegativeInt(rng)
+            val (n1, rng2) = nonNegativeInt()(rng)
             return Pair(n1.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble(), rng2)
         }
 
         // EXER 6.5
         fun double2(): Rand<Double> =
-            RNG.map(::nonNegativeInt) { it -> it.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble()}
+            RNG.map({ sa ->  nonNegativeInt()(sa) }) { it -> it.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble()}
 
         // EXER 6.3
         fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG> {
-            val (n1, rng2) = nonNegativeInt(rng)
+            val (n1, rng2) = nonNegativeInt()(rng)
             val (d2, rng3) = double(rng2)
             return Pair(Pair(n1, d2), rng3)
         }
         fun doubleInt(rng: RNG): Pair<Pair<Double, Int>, RNG> {
             val (d1, rng2) = double(rng)
-            val (n2, rng3) = nonNegativeInt(rng2)
+            val (n2, rng3) = nonNegativeInt()(rng2)
             return Pair(Pair(d1, n2), rng3)
         }
         fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG> {
