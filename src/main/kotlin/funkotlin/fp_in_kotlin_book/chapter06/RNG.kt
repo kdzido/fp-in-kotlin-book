@@ -7,12 +7,17 @@ import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
 import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
 
 // fns of this type are called state actions of state transitions
-typealias State<S, A> = (S) -> Pair<A, S>
+//typealias State<S, A> = (S) -> Pair<A, S>
+data class State<S, out A>(val run: (S) -> Pair<A, S>) {
+    companion object {
+    }
+}
+
 typealias Rand<A> = State<RNG, A>
 
-val intR: Rand<Int> = { rng -> rng.nextInt() }
-val nonNegativeEven: Rand<Int> = RNG.map({ sa -> nonNegativeInt()(sa) }) { it - (it % 2)}
-val doubleR: Rand<Double> = RNG.map({ sa -> nonNegativeInt()(sa) }) { i ->
+val intR: Rand<Int> = State { rng -> rng.nextInt() }
+val nonNegativeEven: Rand<Int> = RNG.map(State { sa -> nonNegativeInt().run(sa) }) { it - (it % 2)}
+val doubleR: Rand<Double> = RNG.map(State { sa -> nonNegativeInt().run(sa) }) { i ->
     i / (Int.MAX_VALUE.toDouble() + 1)
 }
 val intDoubleR: Rand<Pair<Int, Double>> = RNG.both(intR, doubleR)
@@ -24,12 +29,12 @@ sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
 
     companion object {
-        fun <S, A> unit(a: A): State<S, A> = { rng -> a to rng }
+        fun <S, A> unit(a: A): State<S, A> = State { rng -> a to rng }
 
         // EXER 6.8
-        fun <S, A, B> flatMap(s: State<S, A>, f: (A) -> State<S, B>): State<S, B> = { rng ->
-            val (s1, r2) = s(rng)
-            f(s1)(r2)
+        fun <S, A, B> flatMap(s: State<S, A>, f: (A) -> State<S, B>): State<S, B> = State { rng ->
+            val (s1, r2) = s.run(rng)
+            f(s1).run(r2)
         }
 
         // EXER 6.5, 6.9
@@ -48,30 +53,30 @@ sealed interface RNG {
             map2(ra, rb) { a, b -> a to b}
 
         // EXER 6.1
-        fun nonNegativeInt(): Rand<Int> = { rng ->
+        fun nonNegativeInt(): Rand<Int> = State { rng ->
             val (n1, rng2) = rng.nextInt()
-            if (n1 == Int.MIN_VALUE) nonNegativeInt()(rng2) else Pair(abs(n1), rng2)
+            if (n1 == Int.MIN_VALUE) nonNegativeInt().run(rng2) else Pair(abs(n1), rng2)
         }
 
         // EXER 6.2
         fun double(rng: RNG): Pair<Double, RNG> {
-            val (n1, rng2) = nonNegativeInt()(rng)
+            val (n1, rng2) = nonNegativeInt().run(rng)
             return Pair(n1.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble(), rng2)
         }
 
         // EXER 6.5
         fun double2(): Rand<Double> =
-            RNG.map({ sa ->  nonNegativeInt()(sa) }) { it -> it.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble()}
+            RNG.map(State { sa -> nonNegativeInt().run(sa) }) { it -> it.toDouble() / (Int.MAX_VALUE.toLong() + 1).toDouble()}
 
         // EXER 6.3
         fun intDouble(rng: RNG): Pair<Pair<Int, Double>, RNG> {
-            val (n1, rng2) = nonNegativeInt()(rng)
+            val (n1, rng2) = nonNegativeInt().run(rng)
             val (d2, rng3) = double(rng2)
             return Pair(Pair(n1, d2), rng3)
         }
         fun doubleInt(rng: RNG): Pair<Pair<Double, Int>, RNG> {
             val (d1, rng2) = double(rng)
-            val (n2, rng3) = nonNegativeInt()(rng2)
+            val (n2, rng3) = nonNegativeInt().run(rng2)
             return Pair(Pair(d1, n2), rng3)
         }
         fun double3(rng: RNG): Pair<Triple<Double, Double, Double>, RNG> {
@@ -97,12 +102,12 @@ sealed interface RNG {
         }
 
         // EXER 6.7
-        fun <A> sequence(fs: ListL<Rand<A>>): Rand<ListL<A>> = { rng ->
+        fun <A> sequence(fs: ListL<Rand<A>>): Rand<ListL<A>> = State { rng ->
             fun go(l: ListL<Rand<A>>, acc: ListL<A>, r: RNG): Pair<ListL<A>, RNG> {
                 return when (l) {
                     is NilL -> Pair(acc, r)
                     is ConsL -> {
-                        val (h2: A, r2: RNG) = l.head(r)
+                        val (h2: A, r2: RNG) = l.head.run(r)
                         go(l.tail, ConsL(h2, acc), r2)
                     }
                 }

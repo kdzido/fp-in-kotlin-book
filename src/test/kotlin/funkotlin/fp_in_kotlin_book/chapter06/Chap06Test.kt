@@ -44,11 +44,11 @@ class Chap06Test : FunSpec({
     // EXER 6.8
     test("Rand flatMap") {
         val rng = SimpleRNG(42)
-        val f: Rand<Int> = { r -> RNG.nonNegativeInt()(r) }
+        val f: Rand<Int> = State { r -> RNG.nonNegativeInt().run(r) }
 
         val incr1 = RNG.flatMap(f) { i -> RNG.unit(i + 1) }
-        val (n2, rng2) = incr1(rng)
-        val (n3, rng3) = incr1(rng2)
+        val (n2, rng2) = incr1.run(rng)
+        val (n3, rng3) = incr1.run(rng2)
         n2 shouldBe 16159454
         n3 shouldBe 1281479698
     }
@@ -56,19 +56,19 @@ class Chap06Test : FunSpec({
     // EXER 6.5, 6.9
     test("Rand map") {
         val rng = SimpleRNG(42)
-        val f: Rand<ListL<Int>> = { r -> RNG.ints(3, r) }
+        val f: Rand<ListL<Int>> = State { r -> RNG.ints(3, r) }
 
-        val incr2: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }
+        val incr2: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }.run
         incr2(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
     }
 
     // EXER 6.6, 6.9
     test("Rand map2") {
         val rng = SimpleRNG(42)
-        val f1: Rand<Int> = { r -> RNG.nonNegativeInt()(r) }
-        val f2: Rand<Double> = { r -> RNG.double(r) }
+        val f1: Rand<Int> = State { r -> RNG.nonNegativeInt().run(r) }
+        val f2: Rand<Double> = State { r -> RNG.double(r) }
 
-        val res: (RNG) -> Pair<Double, RNG> = RNG.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }
+        val res: (RNG) -> Pair<Double, RNG> = RNG.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }.run
         res(rng).first shouldBe 1.6159453596735485E7
     }
 
@@ -76,11 +76,11 @@ class Chap06Test : FunSpec({
     test("sequence Rands") {
         val rng1 = SimpleRNG(42)
 
-        RNG.sequence<Int>(ListL.of())(rng1).first shouldBe ListL.of()
-        RNG.sequence(ListL.of(RNG.nonNegativeInt()))(rng1).first shouldBe ListL.of(16159453)
+        RNG.sequence<Int>(ListL.of()).run(rng1).first shouldBe ListL.of()
+        RNG.sequence(ListL.of(RNG.nonNegativeInt())).run(rng1).first shouldBe ListL.of(16159453)
 
-        val seq3 = sequence(ListL.of(RNG.nonNegativeInt(), RNG.nonNegativeInt(), RNG.nonNegativeInt()))(rng1)
+        val seq3 = sequence(ListL.of(RNG.nonNegativeInt(), RNG.nonNegativeInt(), RNG.nonNegativeInt())).run(rng1)
         seq3.first shouldBe ListL.of(16159453, 1281479697, 340305902)
-        RNG.nonNegativeInt()(seq3.second).first shouldBe 2015756020 // valid next random int
+        RNG.nonNegativeInt().run(seq3.second).first shouldBe 2015756020 // valid next random int
     }
 })
