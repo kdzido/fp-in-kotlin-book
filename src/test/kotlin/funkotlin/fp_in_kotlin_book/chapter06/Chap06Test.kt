@@ -1,6 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter06
 
-import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.sequence
+import funkotlin.fp_in_kotlin_book.chapter06.State.Companion.sequence
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 
 import io.kotest.core.spec.style.FunSpec
@@ -46,7 +46,7 @@ class Chap06Test : FunSpec({
         val rng = SimpleRNG(42)
         val f: Rand<Int> = State { r -> RNG.nonNegativeInt().run(r) }
 
-        val incr1 = RNG.flatMap(f) { i -> RNG.unit(i + 1) }
+        val incr1 = f.flatMap { i -> State.unit(i + 1) }
         val (n2, rng2) = incr1.run(rng)
         val (n3, rng3) = incr1.run(rng2)
         n2 shouldBe 16159454
@@ -58,7 +58,7 @@ class Chap06Test : FunSpec({
         val rng = SimpleRNG(42)
         val f: Rand<ListL<Int>> = State { r -> RNG.ints(3, r) }
 
-        val incr2: (RNG) -> Pair<ListL<Int>, RNG> = RNG.map(f) { ls -> ListL.map(ls) { it + 1 } }.run
+        val incr2: (RNG) -> Pair<ListL<Int>, RNG> = f.map { ls -> ListL.map(ls) { it + 1 } }.run
         incr2(rng).first shouldBe ListL.of(16159454, -1281479696, -340305901)
     }
 
@@ -68,7 +68,7 @@ class Chap06Test : FunSpec({
         val f1: Rand<Int> = State { r -> RNG.nonNegativeInt().run(r) }
         val f2: Rand<Double> = State { r -> RNG.double(r) }
 
-        val res: (RNG) -> Pair<Double, RNG> = RNG.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }.run
+        val res: (RNG) -> Pair<Double, RNG> = State.map2(f1, f2) { ass, bss -> ass.toDouble() + bss }.run
         res(rng).first shouldBe 1.6159453596735485E7
     }
 
@@ -76,8 +76,8 @@ class Chap06Test : FunSpec({
     test("sequence Rands") {
         val rng1 = SimpleRNG(42)
 
-        RNG.sequence<Int>(ListL.of()).run(rng1).first shouldBe ListL.of()
-        RNG.sequence(ListL.of(RNG.nonNegativeInt())).run(rng1).first shouldBe ListL.of(16159453)
+        sequence<Int>(ListL.of()).run(rng1).first shouldBe ListL.of()
+        sequence(ListL.of(RNG.nonNegativeInt())).run(rng1).first shouldBe ListL.of(16159453)
 
         val seq3 = sequence(ListL.of(RNG.nonNegativeInt(), RNG.nonNegativeInt(), RNG.nonNegativeInt())).run(rng1)
         seq3.first shouldBe ListL.of(16159453, 1281479697, 340305902)
