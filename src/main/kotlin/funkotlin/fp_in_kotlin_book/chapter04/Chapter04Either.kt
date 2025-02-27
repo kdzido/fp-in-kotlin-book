@@ -1,6 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
-import arrow.core.raise.either
+//import arrow.core.raise.either
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
@@ -102,11 +102,12 @@ suspend fun parseInsuranceRateQuoteE(
 ): arrow.core.Either<Throwable, Double> {
     val ae = age.parseToInt()
     val te = numberOfSpeedingTickets.parseToInt()
-    return either {
-        val a = ae.bind()
-        val t = te.bind()
-        insuranceRateQuote(a, t)
-    }
+//    return  { // newer Arrow
+//        val a = ae.bind()
+//        val t = te.bind()
+//        insuranceRateQuote(a, t)
+//    }
+    TODO()
 }
 
 suspend fun String.parseToInt(): arrow.core.Either<Throwable, Int> =

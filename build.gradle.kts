@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "3.3.0"
 	id("io.spring.dependency-management") version "1.1.5"
-	kotlin("jvm") version "1.9.24"
-	kotlin("plugin.spring") version "1.9.24"
+	kotlin("jvm") version "2.1.10"
+	kotlin("plugin.spring") version "2.1.10"
 }
 
 group = "funkotlin"
@@ -30,14 +30,26 @@ repositories {
 }
 
 dependencies {
+//	val arrowVersion = "2.0.1"
+	val arrowVersion = "1.2.4"
+	val arrowMtlVersion = "0.11.0"
+
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	// FP lib
-	implementation("io.arrow-kt:arrow-core:1.2.4")
-	implementation("io.arrow-kt:arrow-fx-coroutines:1.2.4")
+	implementation("io.arrow-kt:arrow-mtl-data:$arrowMtlVersion")
+	implementation("io.arrow-kt:arrow-mtl:$arrowMtlVersion")
+
+//	implementation("io.arrow-kt:arrow-core:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-optics:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-resilience:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-fx-stm:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-atomic:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-eval:$arrowVersion")
+//	implementation("io.arrow-kt:arrow-fx-coroutines:$arrowVersion")
 
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -49,6 +61,8 @@ dependencies {
 	testImplementation("io.kotest:kotest-property:${Versions.kotestVersion}")
 	testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotestVersion}")
 	testImplementation("io.mockk:mockk:1.13.13")
+
+	testImplementation("io.arrow-kt:arrow-incubator-test:$arrowMtlVersion")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter06
 
+import arrow.core.Tuple2
 import funkotlin.fp_in_kotlin_book.chapter02.Example.abs
 import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.nonNegativeInt
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
@@ -68,6 +69,7 @@ val doubleIntR: Rand<Pair<Double, Int>> = State.both(doubleR, intR)
 
 sealed interface RNG {
     fun nextInt(): Pair<Int, RNG>
+    fun nextIntTup(): Tuple2<RNG, Int>
 
     companion object {
         // EXER 6.1
@@ -128,6 +130,11 @@ data class SimpleRNG(val seed: Long) : RNG {
         val nextRNG = SimpleRNG(newSeed)
         val n = (newSeed ushr 16).toInt()
         return n to nextRNG
+    }
+
+    override fun nextIntTup(): Tuple2<RNG, Int> {
+        val (i, rng) = nextInt()
+        return Tuple2(rng, i)
     }
 }
 
