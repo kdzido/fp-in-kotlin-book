@@ -45,10 +45,25 @@ val ns2: State<RNG, List<Int>> =
         xs.map { it % y }
     }
 
+// LST 6.19
+fun <S> modify(f: (S) -> S): State<S, Unit> =
+    State.fx(Id.monad()) {
+        val s: S = get<S>().bind()
+        set(f(s)).bind()
+    }
+
+// LST 6.20
+fun <S> get(): State<S, S> =
+    State { s -> Tuple2(s, s) }
+
+// LST 6.21
+fun <S> set(s: S): State<S, Unit> =
+    State { Tuple2(s, Unit) }
+
 fun main() {
     println("=== Arrow's State ===")
-
     val rng = SimpleRNG(4)
-    println("ns: " + ns.run(rng))
-    println("ns2: " + ns2.run(rng))
+
+    println("0.get(): " + get<Int>().run(0))
+    println("0.set(1): " + set(1).run(0))
 }
