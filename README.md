@@ -6,3 +6,5 @@
 4. Handling errors without exceptions
 5. Strictness and Laziness
 6. Purely functional state
+* PART 2: FUNCTIONAL DESIGN AND COMBINATOR LIBRARIES
+7. Purely functional parallelism
