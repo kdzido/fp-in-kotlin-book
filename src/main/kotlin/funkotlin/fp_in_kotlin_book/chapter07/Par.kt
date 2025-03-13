@@ -3,6 +3,12 @@ package funkotlin.fp_in_kotlin_book.chapter07
 import arrow.core.extensions.list.foldable.firstOption
 import arrow.core.getOrElse
 
+
+// listing 7.2
+class Par<A>(val get: A)
+fun <A> unit(a: () -> A): Par<A> = Par(a())
+fun <A> get(a: Par<A>): A = a.get
+
 // listing 7.1
 fun sum(ints: List<Int>): Int =
     if (ints.size <= 1)
@@ -11,7 +17,6 @@ fun sum(ints: List<Int>): Int =
         val (l, r) = ints.splitAt(ints.size / 2)
         sum(l) + sum(r)
     }
-
 
 fun <T> Iterable<T>.splitAt(n: Int): Pair<List<T>, List<T>> =
     when {

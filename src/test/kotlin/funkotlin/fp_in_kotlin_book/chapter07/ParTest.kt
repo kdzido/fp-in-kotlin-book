@@ -9,4 +9,16 @@ class ParTest : FunSpec({
   sum(listOf(1)) shouldBe 1
   sum(listOf(1, 2, 3)) shouldBe 6
  }
+
+ test("should get Par<Int>") {
+  Par(1).get shouldBe 1
+ }
+
+ test("should create unit of Par") {
+  unit({ 2 }).get shouldBe 2
+ }
+
+ test("should get Par<Int>") {
+  get(Par(3)) shouldBe 3
+ }
 })
