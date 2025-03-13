@@ -33,12 +33,18 @@ dependencies {
 //	val arrowVersion = "2.0.1"
 	val arrowVersion = "1.2.4"
 	val arrowMtlVersion = "0.11.0"
+	val retrofitVersion = "2.11.0"
 
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+//	implementation("org.jetbrains.kotlin:kotlinx-coroutines")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+
+	implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+
 	// FP lib
 	implementation("io.arrow-kt:arrow-mtl-data:$arrowMtlVersion")
 	implementation("io.arrow-kt:arrow-mtl:$arrowMtlVersion")
