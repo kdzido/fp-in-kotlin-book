@@ -10,6 +10,12 @@ class ParTest : FunSpec({
   sum(listOf(1, 2, 3)) shouldBe 6
  }
 
+ test("should sum2 ints") {
+  sum2(listOf<Int>()).get shouldBe 0
+  sum2(listOf(1)).get shouldBe 1
+  sum2(listOf(1, 2, 3)).get shouldBe 6
+ }
+
  test("should get Par<Int>") {
   Par(1).get shouldBe 1
  }

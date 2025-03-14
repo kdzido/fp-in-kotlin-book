@@ -9,6 +9,19 @@ class Par<A>(val get: A)
 fun <A> unit(a: () -> A): Par<A> = Par(a())
 fun <A> get(a: Par<A>): A = a.get
 
+// exercise 7.1
+fun <A, B, C> map2(lp: Par<A>, rp: Par<B>, f: (A, B) -> C): Par<C> {
+    return unit { f(get(lp), get(rp)) }
+}
+
+fun sum2(ints: List<Int>): Par<Int> =
+    if (ints.size <= 1)
+        unit { ints.firstOption().getOrElse { 0 } }
+    else {
+        val (l, r) = ints.splitAt(ints.size / 2)
+        map2(sum2(l), sum2(r)) { lx: Int, rx: Int -> lx + rx}
+    }
+
 // listing 7.1, 7.3
 fun sum(ints: List<Int>): Int =
     if (ints.size <= 1)
