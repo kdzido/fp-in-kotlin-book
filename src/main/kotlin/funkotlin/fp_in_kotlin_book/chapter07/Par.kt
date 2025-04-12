@@ -2,47 +2,58 @@ package funkotlin.fp_in_kotlin_book.chapter07
 
 import arrow.core.extensions.list.foldable.firstOption
 import arrow.core.getOrElse
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+
+typealias Par<A> = (ExecutorService) -> Future<A>
 
 
-// listing 7.2
-class Par<A>(val get: A)
-fun <A> unit(a: () -> A): Par<A> = Par(a())
-fun <A> get(a: Par<A>): A = a.get
-fun <A> fork(a: () -> Par<A>): Par<A> = TODO()
+object Pars {
+    fun <A> unit(a: A): Par<A> = { es: ExecutorService -> UnitFuture(a) }
+    fun <A> lazyUnit(a: () -> A): Par<A> = Pars.fork { Pars.unit(a()) }
 
-// exercise 7.1
-fun <A, B, C> map2(lp: Par<A>, rp: Par<B>, f: (A, B) -> C): Par<C> {
-    return unit { f(get(lp), get(rp)) }
+    data class UnitFuture<A>(val a: A): Future<A> {
+        override fun get(): A = a
+        override fun get(timeout: Long, unit: TimeUnit): A = a
+        override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+        override fun isDone(): Boolean = true
+        override fun isCancelled(): Boolean = false
+    }
+
+    fun <A, B, C> map2(
+        a: Par<A>,
+        b: Par<B>,
+        f: (A, B) -> C
+    ): Par<C> = { es: ExecutorService ->
+        val af: Future<A> = a(es)
+        val bf: Future<B> = b(es)
+        UnitFuture(f(af.get(), bf.get()))
+    }
+
+    fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
+        es.submit(Callable<A> { a()(es).get() })
+    }
 }
 
 fun sum2(ints: List<Int>): Par<Int> =
     if (ints.size <= 1)
-        unit { ints.firstOption().getOrElse { 0 } }
+        Pars.lazyUnit { ints.firstOption().getOrElse { 0 } }
     else {
         val (l, r) = ints.splitAt(ints.size / 2)
-        map2(sum2(l), sum2(r)) { lx: Int, rx: Int -> lx + rx}
+        Pars.map2(sum2(l), sum2(r)) { lx: Int, rx: Int -> lx + rx}
     }
 
 fun sum3(ints: List<Int>): Par<Int> =
     if (ints.size <= 1)
-        unit { ints.firstOption().getOrElse { 0 } }
+        Pars.lazyUnit { ints.firstOption().getOrElse { 0 } }
     else {
         val (l, r) = ints.splitAt(ints.size / 2)
-        map2(
-            fork { sum3(l) },
-            fork { sum3(r) }
+        Pars.map2(
+            Pars.fork { sum3(l) },
+            Pars.fork { sum3(r) }
         ) { lx: Int, rx: Int -> lx + rx}
-    }
-
-// listing 7.1, 7.3
-fun sum(ints: List<Int>): Int =
-    if (ints.size <= 1)
-        ints.firstOption().getOrElse { 0 }
-    else {
-        val (l, r) = ints.splitAt(ints.size / 2)
-        val sumL: Par<Int> = unit { sum(l) }
-        val sumR: Par<Int> = unit { sum(r) }
-        sumL.get + sumR.get
     }
 
 fun <T> Iterable<T>.splitAt(n: Int): Pair<List<T>, List<T>> =
@@ -65,7 +76,3 @@ fun <T> Iterable<T>.splitAt(n: Int): Pair<List<T>, List<T>> =
     }.let {
         it.first to it.second
     }
-
-fun main() {
-
-}

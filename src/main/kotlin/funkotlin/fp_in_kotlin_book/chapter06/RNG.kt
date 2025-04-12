@@ -144,9 +144,3 @@ fun randomPair2(rng: RNG): Pair<Pair<Int, Int>, RNG> {
     return Pair(Pair(n1, n2), rng3)
 }
 
-fun main() {
-    val rng = SimpleRNG(1)
-    println("RNG.nextInt:" + rng.nextInt())
-    println("RNG.nextInt:" + rng.nextInt().second.nextInt())
-
-}

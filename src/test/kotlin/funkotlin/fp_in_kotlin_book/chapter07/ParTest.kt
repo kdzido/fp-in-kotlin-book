@@ -2,29 +2,24 @@ package funkotlin.fp_in_kotlin_book.chapter07
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import java.util.concurrent.Executors
 
 class ParTest : FunSpec({
- test("should sum ints") {
-  sum(listOf<Int>()) shouldBe 0
-  sum(listOf(1)) shouldBe 1
-  sum(listOf(1, 2, 3)) shouldBe 6
+ val pool = Executors.newFixedThreadPool(5)
+
+ test("should create unit of Par") {
+  Pars.unit(2)(pool).get() shouldBe 2
  }
 
  test("should sum2 ints") {
-  sum2(listOf<Int>()).get shouldBe 0
-  sum2(listOf(1)).get shouldBe 1
-  sum2(listOf(1, 2, 3)).get shouldBe 6
+  sum2(listOf())(pool).get() shouldBe 0
+  sum2(listOf(1))(pool).get() shouldBe 1
+  sum2(listOf(1, 2, 3))(pool).get() shouldBe 6
  }
 
- test("should get Par<Int>") {
-  Par(1).get shouldBe 1
- }
-
- test("should create unit of Par") {
-  unit({ 2 }).get shouldBe 2
- }
-
- test("should get Par<Int>") {
-  get(Par(3)) shouldBe 3
+ test("should sum3 ints") { // hangs if not enough threads in pool
+  sum3(listOf())(pool).get() shouldBe 0
+  sum3(listOf(1))(pool).get() shouldBe 1
+  sum3(listOf(1, 2, 3))(pool).get() shouldBe 6
  }
 })
