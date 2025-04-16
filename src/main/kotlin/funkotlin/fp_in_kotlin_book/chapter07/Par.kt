@@ -6,6 +6,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import kotlin.system.measureTimeMillis
 
 typealias Par<A> = (ExecutorService) -> Future<A>
 
@@ -22,6 +23,29 @@ object Pars {
         override fun isCancelled(): Boolean = false
     }
 
+    data class TimeoutableUnitFuture<A, B, C>(
+        private val af: Future<A>,
+        private val bf: Future<B>,
+        private val f: (A, B) -> C
+    ): Future<C> {
+        override fun get(): C = f(af.get(), bf.get())
+        override fun get(timeout: Long, unit: TimeUnit): C {
+            val aResult: A
+            val aTookMillis = measureTimeMillis {
+                aResult = af.get(timeout, unit)
+            }
+            val bResult: B = bf.get(timeout - aTookMillis, unit)
+            return f(aResult, bResult)
+        }
+        override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
+            val cancelA = af.cancel(mayInterruptIfRunning)
+            val cancelB = bf.cancel(mayInterruptIfRunning)
+            return cancelA || cancelB
+        }
+        override fun isDone(): Boolean = af.isDone && bf.isDone
+        override fun isCancelled(): Boolean = af.isCancelled || bf.isCancelled
+    }
+
     fun <A, B, C> map2(
         a: Par<A>,
         b: Par<B>,
@@ -29,7 +53,7 @@ object Pars {
     ): Par<C> = { es: ExecutorService ->
         val af: Future<A> = a(es)
         val bf: Future<B> = b(es)
-        UnitFuture(f(af.get(), bf.get()))
+        TimeoutableUnitFuture(af, bf, f)
     }
 
     fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
