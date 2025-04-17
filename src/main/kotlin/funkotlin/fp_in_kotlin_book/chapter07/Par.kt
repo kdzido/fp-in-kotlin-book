@@ -17,6 +17,10 @@ object Pars {
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
     fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
 
+    fun <A, B> parMap(ps: List<A>, f: (A) -> B): Par<List<B>> {
+        val fbs: List<Par<B>> = ps.map(asyncF(f))
+        TODO()
+    }
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
         a: Par<A>,

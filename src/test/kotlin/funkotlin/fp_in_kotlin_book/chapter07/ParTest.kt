@@ -67,4 +67,9 @@ class ParTest : FunSpec({
   val ap = Pars.map(Pars.unit(listOf(3, 1, 4, 2))) { a -> a.sorted() }
   ap(pool).get() shouldBe listOf(1, 2, 3, 4)
  }
+
+ test("should parMap") {
+  val ap = Pars.parMap(listOf(3, 1, 4, 2)) { a -> a + 1 }
+  ap(pool).get() shouldBe listOf(4, 2, 5, 3)
+ }
 })
