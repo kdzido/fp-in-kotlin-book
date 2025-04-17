@@ -14,6 +14,7 @@ typealias Par<A> = (ExecutorService) -> Future<A>
 object Pars {
     fun <A> unit(a: A): Par<A> = { es: ExecutorService -> UnitFuture(a) }
     fun <A> lazyUnit(a: () -> A): Par<A> = Pars.fork { Pars.unit(a()) }
+    fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
 
     data class UnitFuture<A>(val a: A): Future<A> {
         override fun get(): A = a

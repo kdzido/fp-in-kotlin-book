@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -30,25 +31,30 @@ class ParTest : FunSpec({
   val p1 = Pars.lazyUnit { Thread.sleep(300); 1 }
   val p2 = Pars.lazyUnit { Thread.sleep(200); 2 }
 
-  val mp = Pars.map2(p1, p2) { a, b -> a + b }
-  mp(pool).get() shouldBe 3
+  val mp = Pars.map2(p1, p2) { a, b -> a + b }(pool)
+  mp.get() shouldBe 3
  }
 
  test("should pass with timeout of map2") {
   val p1 = Pars.lazyUnit { Thread.sleep(300); 1 }
   val p2 = Pars.lazyUnit { Thread.sleep(200); 2 }
 
-  val mp = Pars.map2(p1, p2) { a, b -> a + b }
-  mp(pool).get(400, TimeUnit.MILLISECONDS) shouldBe 3
+  val mp = Pars.map2(p1, p2) { a, b -> a + b }(pool)
+  mp.get(400, TimeUnit.MILLISECONDS) shouldBe 3
  }
 
  test("should throw on timeout of map2") {
   val p1 = Pars.lazyUnit { Thread.sleep(300); 1 }
   val p2 = Pars.lazyUnit { Thread.sleep(200); 2 }
 
-  val mp = Pars.map2(p1, p2) { a, b -> a + b }
+  val mp = Pars.map2(p1, p2) { a, b -> a + b }(pool)
   shouldThrow<TimeoutException> {
-   mp(pool).get(250, TimeUnit.MILLISECONDS)
+   mp.get(250, TimeUnit.MILLISECONDS)
   }
+ }
+
+ test("should asyncF") {
+  val ap: Future<Int> = Pars.asyncF { a: Int -> Thread.sleep(50); a + 1 }(5)(pool)
+  ap.get() shouldBe 6
  }
 })
