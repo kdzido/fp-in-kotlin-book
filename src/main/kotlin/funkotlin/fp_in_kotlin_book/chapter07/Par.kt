@@ -15,6 +15,22 @@ object Pars {
     fun <A> unit(a: A): Par<A> = { es: ExecutorService -> UnitFuture(a) }
     fun <A> lazyUnit(a: () -> A): Par<A> = Pars.fork { Pars.unit(a()) }
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
+    fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
+
+    fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
+    fun <A, B, C> map2(
+        a: Par<A>,
+        b: Par<B>,
+        f: (A, B) -> C
+    ): Par<C> = { es: ExecutorService ->
+        val af: Future<A> = a(es)
+        val bf: Future<B> = b(es)
+        TimeoutableUnitFuture(af, bf, f)
+    }
+
+    fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
+        es.submit(Callable<A> { a()(es).get() })
+    }
 
     data class UnitFuture<A>(val a: A): Future<A> {
         override fun get(): A = a
@@ -45,20 +61,6 @@ object Pars {
         }
         override fun isDone(): Boolean = af.isDone && bf.isDone
         override fun isCancelled(): Boolean = af.isCancelled || bf.isCancelled
-    }
-
-    fun <A, B, C> map2(
-        a: Par<A>,
-        b: Par<B>,
-        f: (A, B) -> C
-    ): Par<C> = { es: ExecutorService ->
-        val af: Future<A> = a(es)
-        val bf: Future<B> = b(es)
-        TimeoutableUnitFuture(af, bf, f)
-    }
-
-    fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
-        es.submit(Callable<A> { a()(es).get() })
     }
 }
 

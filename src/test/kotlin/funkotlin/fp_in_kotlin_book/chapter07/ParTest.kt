@@ -57,4 +57,14 @@ class ParTest : FunSpec({
   val ap: Future<Int> = Pars.asyncF { a: Int -> Thread.sleep(50); a + 1 }(5)(pool)
   ap.get() shouldBe 6
  }
+
+ test("should sortPar") {
+  val ap = Pars.sortPar(Pars.unit(listOf(3, 1, 4, 2)))
+  ap(pool).get() shouldBe listOf(1, 2, 3, 4)
+ }
+
+ test("should map") {
+  val ap = Pars.map(Pars.unit(listOf(3, 1, 4, 2))) { a -> a.sorted() }
+  ap(pool).get() shouldBe listOf(1, 2, 3, 4)
+ }
 })
