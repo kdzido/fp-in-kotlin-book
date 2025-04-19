@@ -17,9 +17,9 @@ object Pars {
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
     fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
 
-    fun <A, B> parMap(ps: List<A>, f: (A) -> B): Par<List<B>> {
+    fun <A, B> parMap(ps: List<A>, f: (A) -> B): Par<List<B>> = fork {
         val fbs: List<Par<B>> = ps.map(asyncF(f))
-        TODO()
+        sequence(fbs)
     }
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
@@ -30,6 +30,20 @@ object Pars {
         val af: Future<A> = a(es)
         val bf: Future<B> = b(es)
         TimeoutableUnitFuture(af, bf, f)
+    }
+
+    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = { es ->
+        tailrec fun go(left: List<Par<A>>, acc: List<A>): List<A> {
+            return when {
+                left.isEmpty() -> acc
+                else -> {
+                    val h: Par<A> = left.first()
+                    val ts: List<Par<A>> = left.drop(1)
+                    go(ts, listOf(h(es).get()) + acc)
+                }
+            }
+        }
+        es.submit(Callable { go(ps, listOf()).reversed() })
     }
 
     fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
