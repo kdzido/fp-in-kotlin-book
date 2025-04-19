@@ -72,4 +72,9 @@ class ParTest : FunSpec({
   val ap = Pars.parMap(listOf(3, 1, 4, 2)) { a -> a + 1 }
   ap(pool).get() shouldBe listOf(4, 2, 5, 3)
  }
+
+ test("should sequence pars") {
+  val ap = Pars.sequence(listOf(Pars.unit(3), Pars.unit(4), Pars.lazyUnit { 5 }))
+  ap(pool).get() shouldBe listOf(3, 4, 5)
+ }
 })
