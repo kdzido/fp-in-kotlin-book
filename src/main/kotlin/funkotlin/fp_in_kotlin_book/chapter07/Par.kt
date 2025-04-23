@@ -24,7 +24,7 @@ object Pars {
 
     fun <A> parFilter(ps: List<A>, f: (A) -> Boolean): Par<List<A>> =
         if (ps.size <= 1)
-            Pars.lazyUnit {
+            lazyUnit {
                 ps.firstOption()
                     .filter(f)
                     .map { listOf(it) }
@@ -32,10 +32,21 @@ object Pars {
             }
         else {
             val (l, r) = ps.splitAt(ps.size / 2)
-            Pars.map2(
+            map2(
                 Pars.fork { parFilter(l, f) },
                 Pars.fork { parFilter(r, f) }
             ) { lx: List<A>, rx: List<A> -> lx + rx}
+        }
+
+    fun <A, B> parFoldLeft(xs: List<A>, z: B, f: (B, A) -> B): Par<B> =
+        if (xs.isEmpty())
+            lazyUnit { z }
+        else if (xs.size == 1)
+            lazyUnit { f(z, xs.get(0)) }
+        else {
+            val h = xs.first()
+            val ts = xs.drop(1)
+            parFoldLeft(ts, f(z, h), f)
         }
 
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
@@ -47,6 +58,64 @@ object Pars {
         val af: Future<A> = a(es)
         val bf: Future<B> = b(es)
         TimeoutableUnitFuture(af, bf, f)
+    }
+
+    fun <A, B, C, D> map3(
+        ap: Par<A>,
+        bp: Par<B>,
+        cp: Par<C>,
+        f: (A, B, C) -> D
+    ): Par<D> = map2(
+        map2(ap, bp) { a, b ->
+            Pair(a, b)
+        },
+        cp
+    ) { ab: Pair<A, B>, c ->
+        val (a, b) = ab
+        f(a, b, c)
+    }
+
+    fun <A, B, C, D, E> map4(
+        ap: Par<A>,
+        bp: Par<B>,
+        cp: Par<C>,
+        dp: Par<D>,
+        f: (A, B, C, D) -> E
+    ): Par<E> = map2(
+        map2(ap, bp) { a, b ->
+            Pair(a, b)
+        },
+        map2(cp, dp) { c, d ->
+            Pair(c, d)
+        }
+    ) { ab: Pair<A, B>, cd: Pair<C, D> ->
+        val (a, b) = ab
+        val (c, d) = cd
+        f(a, b, c, d)
+    }
+
+    fun <A, B, C, D, E, F> map5(
+        ap: Par<A>,
+        bp: Par<B>,
+        cp: Par<C>,
+        dp: Par<D>,
+        ep: Par<E>,
+        g: (A, B, C, D, E) -> F,
+    ): Par<F> = map2(
+        map2(
+            map2(ap, bp) { a, b ->
+                Pair(a, b)
+            },
+            cp) { ab, c ->
+            Triple(ab.first, ab.second, c)
+        },
+        map2(dp, ep) { d, e ->
+            Pair(d, e)
+        }
+    ) { abc: Triple<A, B, C>, de: Pair<D, E> ->
+        val (a, b, c) = abc
+        val (d, e) = de
+        g(a, b, c, d, e)
     }
 
     fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = { es ->

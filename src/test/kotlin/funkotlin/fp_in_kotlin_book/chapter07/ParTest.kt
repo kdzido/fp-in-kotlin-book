@@ -35,6 +35,36 @@ class ParTest : FunSpec({
   mp.get() shouldBe 3
  }
 
+ test("should sum with map3") {
+  val p1 = Pars.lazyUnit { Thread.sleep(50); 1 }
+  val p2 = Pars.lazyUnit { Thread.sleep(60); 2 }
+  val p3 = Pars.lazyUnit { Thread.sleep(70); 3 }
+
+  val mp = Pars.map3(p1, p2, p3) { a, b, c -> a + b + c }(pool)
+  mp.get() shouldBe 6
+ }
+
+ test("should sum with map4") {
+  val p1 = Pars.lazyUnit { Thread.sleep(50); 1 }
+  val p2 = Pars.lazyUnit { Thread.sleep(60); 2 }
+  val p3 = Pars.lazyUnit { Thread.sleep(70); 3 }
+  val p4 = Pars.lazyUnit { Thread.sleep(70); 4 }
+
+  val mp = Pars.map4(p1, p2, p3, p4) { a, b, c, d -> a + b + c + d}(pool)
+  mp.get() shouldBe 10
+ }
+
+ test("should sum with map5") {
+  val p1 = Pars.lazyUnit { Thread.sleep(50); 1 }
+  val p2 = Pars.lazyUnit { Thread.sleep(60); 2 }
+  val p3 = Pars.lazyUnit { Thread.sleep(70); 3 }
+  val p4 = Pars.lazyUnit { Thread.sleep(70); 4 }
+  val p5 = Pars.lazyUnit { Thread.sleep(30); 5 }
+
+  val mp = Pars.map5(p1, p2, p3, p4, p5) { a, b, c, d, e -> a + b + c + d + e }(pool)
+  mp.get() shouldBe 15
+ }
+
  test("should pass with timeout of map2") {
   val p1 = Pars.lazyUnit { Thread.sleep(300); 1 }
   val p2 = Pars.lazyUnit { Thread.sleep(200); 2 }
@@ -81,5 +111,10 @@ class ParTest : FunSpec({
  test("should parFilter") {
   val ap = Pars.parFilter(listOf(1, 2, 3, 4, 5)) { a: Int -> a % 2 == 0 }
   ap(pool).get() shouldBe listOf(2, 4)
+ }
+
+ test("should parFoldLeft, find max") {
+  val ap = Pars.parFoldLeft(listOf(3, 5, 1, 4, 3), 0) { b, a -> Math.max(a, b) }
+  ap(pool).get() shouldBe 5
  }
 })
