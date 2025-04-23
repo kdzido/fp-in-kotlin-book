@@ -21,6 +21,23 @@ object Pars {
         val fbs: List<Par<B>> = ps.map(asyncF(f))
         sequence(fbs)
     }
+
+    fun <A> parFilter(ps: List<A>, f: (A) -> Boolean): Par<List<A>> =
+        if (ps.size <= 1)
+            Pars.lazyUnit {
+                ps.firstOption()
+                    .filter(f)
+                    .map { listOf(it) }
+                    .getOrElse { emptyList() }
+            }
+        else {
+            val (l, r) = ps.splitAt(ps.size / 2)
+            Pars.map2(
+                Pars.fork { parFilter(l, f) },
+                Pars.fork { parFilter(r, f) }
+            ) { lx: List<A>, rx: List<A> -> lx + rx}
+        }
+
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
         a: Par<A>,

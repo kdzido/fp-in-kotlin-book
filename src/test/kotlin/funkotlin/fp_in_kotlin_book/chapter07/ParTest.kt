@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 class ParTest : FunSpec({
- val pool = Executors.newFixedThreadPool(5)
+ val pool = Executors.newFixedThreadPool(10)
 
  test("should create unit of Par") {
   Pars.unit(2)(pool).get() shouldBe 2
@@ -76,5 +76,10 @@ class ParTest : FunSpec({
  test("should sequence pars") {
   val ap = Pars.sequence(listOf(Pars.unit(3), Pars.unit(4), Pars.lazyUnit { 5 }))
   ap(pool).get() shouldBe listOf(3, 4, 5)
+ }
+
+ test("should parFilter") {
+  val ap = Pars.parFilter(listOf(1, 2, 3, 4, 5)) { a: Int -> a % 2 == 0 }
+  ap(pool).get() shouldBe listOf(2, 4)
  }
 })
