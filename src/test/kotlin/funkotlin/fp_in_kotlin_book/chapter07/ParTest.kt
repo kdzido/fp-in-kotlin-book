@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter07
 
+import funkotlin.fp_in_kotlin_book.chapter07.Pars.shouldBePar
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -116,5 +117,19 @@ class ParTest : FunSpec({
  test("should parFoldLeft, find max") {
   val ap = Pars.parFoldLeft(listOf(3, 5, 1, 4, 3), 0) { b, a -> Math.max(a, b) }
   ap(pool).get() shouldBe 5
+ }
+
+ test("fork should deadlock on fixed-size pool") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 + 1 }
+  val b: Par<Int> = Pars.fork { a }
+//  (a shouldBePar b)(es) // deadlocks
+ }
+
+ test("delay should not deadlock ") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 + 1 }
+  val b: Par<Int> = Pars.delay { a }
+  (a shouldBePar b)(es) // deadlocks
  }
 })

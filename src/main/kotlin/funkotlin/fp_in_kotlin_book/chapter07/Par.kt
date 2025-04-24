@@ -136,6 +136,15 @@ object Pars {
         es.submit(Callable<A> { a()(es).get() })
     }
 
+    fun <A> delay(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
+        a()(es)
+    }
+
+    infix fun <A> Par<A>.shouldBePar(other: Par<A>) = { es: ExecutorService ->
+        if (this(es).get() != other(es).get())
+            throw AssertionError("Par instance not equal")
+    }
+
     data class UnitFuture<A>(val a: A): Future<A> {
         override fun get(): A = a
         override fun get(timeout: Long, unit: TimeUnit): A = a
