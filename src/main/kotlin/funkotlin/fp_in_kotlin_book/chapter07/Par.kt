@@ -49,23 +49,18 @@ object Pars {
             parFoldLeft(ts, f(z, h), f)
         }
 
-    fun <K, V> choiceMap(key: Par<K>, choices: Map<K, Par<V>>): Par<V> = { es ->
-        val keyVal = key(es).get()
-        choices.getValue(keyVal)(es)
+    fun <K, V> choiceMap(key: Par<K>, choices: Map<K, Par<V>>): Par<V> = flatMap(key) {
+        choices.getValue(it)
     }
 
-    fun <A> choiceN(n: Par<Int>, choices: List<Par<A>>): Par<A> = { es ->
-        val nIdx = n(es).get()
-
-        val itemPar: Par<A>? = choices.getOrNull(nIdx)
-        itemPar?.let { it(es) }
-            ?: throw IllegalArgumentException("Invalid index: $nIdx")
+    fun <A> choiceN(n: Par<Int>, choices: List<Par<A>>): Par<A> = flatMap(n) {
+        choices.get(it)
     }
 
-    fun <A> choice(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> = { es ->
-        when (cond(es).get()) {
-            true -> t(es)
-            false -> f(es)
+    fun <A> choice(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> = flatMap(cond) {
+        when (it) {
+            true -> t
+            false -> f
         }
     }
 
@@ -74,6 +69,14 @@ object Pars {
             Pars.map(cond) { it -> if (it) 0 else 1},
             listOf(t, f)
         )
+
+    fun <A, B> chooser(pa: Par<A>, choices: (A) -> Par<B>): Par<B> =
+        flatMap(pa, choices)
+
+    fun <A, B> flatMap(pa: Par<A>, f: (A) -> Par<B>): Par<B> = { es ->
+        val k = pa(es).get()
+        f(k)(es)
+    }
 
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
