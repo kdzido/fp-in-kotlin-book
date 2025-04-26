@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter07
 
+import funkotlin.fp_in_kotlin_book.chapter07.Pars
 import funkotlin.fp_in_kotlin_book.chapter07.Pars.shouldBePar
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -132,4 +133,28 @@ class ParTest : FunSpec({
   val b: Par<Int> = Pars.delay { a }
   (a shouldBePar b)(es) // deadlocks
  }
+
+ test("should choice based on Bool") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 }
+  val b: Par<Int> = Pars.lazyUnit { 8 }
+
+  (Pars.choice(Pars.lazyUnit { true }, a, b) shouldBePar Pars.unit(42))(es)
+  (Pars.choice(Pars.lazyUnit { false }, a, b) shouldBePar Pars.unit(8))(es)
+  // and
+  (Pars.choice2(Pars.lazyUnit { true }, a, b) shouldBePar Pars.unit(42))(es)
+  (Pars.choice2(Pars.lazyUnit { false }, a, b) shouldBePar Pars.unit(8))(es)
+ }
+
+ test("should choiceN") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 }
+  val b: Par<Int> = Pars.lazyUnit { 8 }
+  val c: Par<Int> = Pars.lazyUnit { 3 }
+
+  (Pars.choiceN(Pars.lazyUnit { 0 }, listOf(a, b, c)) shouldBePar Pars.unit(42))(es)
+  (Pars.choiceN(Pars.lazyUnit { 1 }, listOf(a, b, c)) shouldBePar Pars.unit(8))(es)
+  (Pars.choiceN(Pars.lazyUnit { 2 }, listOf(a, b, c)) shouldBePar Pars.unit(3))(es)
+ }
+
 })

@@ -49,6 +49,27 @@ object Pars {
             parFoldLeft(ts, f(z, h), f)
         }
 
+    fun <A> choiceN(n: Par<Int>, choices: List<Par<A>>): Par<A> = { es ->
+        val nIdx = n(es).get()
+
+        val itemPar: Par<A>? = choices.getOrNull(nIdx)
+        itemPar?.let { it(es) }
+            ?: throw IllegalArgumentException("Invalid index: $nIdx")
+    }
+
+    fun <A> choice(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> = { es ->
+        when (cond(es).get()) {
+            true -> t(es)
+            false -> f(es)
+        }
+    }
+    
+    fun <A> choice2(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> =
+        choiceN(
+            Pars.map(cond) { it -> if (it) 0 else 1},
+            listOf(t, f)
+        )
+
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
         a: Par<A>,
@@ -182,7 +203,10 @@ fun sum2(ints: List<Int>): Par<Int> =
         Pars.lazyUnit { ints.firstOption().getOrElse { 0 } }
     else {
         val (l, r) = ints.splitAt(ints.size / 2)
-        Pars.map2(sum2(l), sum2(r)) { lx: Int, rx: Int -> lx + rx}
+        Pars.map2(
+            sum2(l),
+            sum2(r)
+        ) { lx: Int, rx: Int -> lx + rx}
     }
 
 fun sum3(ints: List<Int>): Par<Int> =
