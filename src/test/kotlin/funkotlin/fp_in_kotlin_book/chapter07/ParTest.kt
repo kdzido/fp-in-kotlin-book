@@ -157,4 +157,18 @@ class ParTest : FunSpec({
   (Pars.choiceN(Pars.lazyUnit { 2 }, listOf(a, b, c)) shouldBePar Pars.unit(3))(es)
  }
 
+ test("should choiceMap") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 }
+  val b: Par<Int> = Pars.lazyUnit { 8 }
+  val c: Par<Int> = Pars.lazyUnit { 3 }
+
+  val choices = mapOf(EnumKey.ONE to a, EnumKey.TWO to b, EnumKey.THREE to c)
+  (Pars.choiceMap(Pars.lazyUnit { EnumKey.ONE }, choices) shouldBePar Pars.unit(42))(es)
+  (Pars.choiceMap(Pars.lazyUnit { EnumKey.TWO }, choices) shouldBePar Pars.unit(8))(es)
+  (Pars.choiceMap(Pars.lazyUnit { EnumKey.THREE }, choices) shouldBePar Pars.unit(3))(es)
+ }
+
 })
+
+enum class EnumKey { ONE, TWO, THREE }

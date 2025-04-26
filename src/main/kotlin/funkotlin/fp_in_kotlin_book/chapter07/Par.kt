@@ -49,6 +49,11 @@ object Pars {
             parFoldLeft(ts, f(z, h), f)
         }
 
+    fun <K, V> choiceMap(key: Par<K>, choices: Map<K, Par<V>>): Par<V> = { es ->
+        val keyVal = key(es).get()
+        choices.getValue(keyVal)(es)
+    }
+
     fun <A> choiceN(n: Par<Int>, choices: List<Par<A>>): Par<A> = { es ->
         val nIdx = n(es).get()
 
@@ -63,7 +68,7 @@ object Pars {
             false -> f(es)
         }
     }
-    
+
     fun <A> choice2(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> =
         choiceN(
             Pars.map(cond) { it -> if (it) 0 else 1},
