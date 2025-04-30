@@ -182,6 +182,31 @@ class ParTest : FunSpec({
   (Pars.chooser(Pars.lazyUnit { EnumKey.TWO }, choices) shouldBePar Pars.unit(8))(es)
   (Pars.chooser(Pars.lazyUnit { EnumKey.THREE }, choices) shouldBePar Pars.unit(3))(es)
  }
+
+ test("should flatMap") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Int> = Pars.lazyUnit { 42 }
+  val b: Par<Int> = Pars.lazyUnit { 8 }
+  val c: Par<Int> = Pars.lazyUnit { 3 }
+
+  val dict = mapOf(EnumKey.ONE to a, EnumKey.TWO to b, EnumKey.THREE to c)
+  val choices: (EnumKey) -> Par<Int> = { k -> dict.getValue(k) }
+
+  (Pars.flatMap(Pars.lazyUnit { EnumKey.ONE }, choices) shouldBePar Pars.unit(42))(es)
+  (Pars.flatMap(Pars.lazyUnit { EnumKey.TWO }, choices) shouldBePar Pars.unit(8))(es)
+  (Pars.flatMap(Pars.lazyUnit { EnumKey.THREE }, choices) shouldBePar Pars.unit(3))(es)
+ }
+
+ test("should join") {
+  val es = Executors.newFixedThreadPool(1)
+  val a: Par<Par<Int>> = Pars.lazyUnit { Pars.lazyUnit { 42 } }
+  val b: Par<Par<Int>> = Pars.lazyUnit { Pars.lazyUnit { 8 } }
+  val c: Par<Par<Int>> = Pars.lazyUnit { Pars.lazyUnit { 3 } }
+
+  (Pars.join(a) shouldBePar Pars.unit(42))(es)
+  (Pars.join(b) shouldBePar Pars.unit(8))(es)
+  (Pars.join(c) shouldBePar Pars.unit(3))(es)
+ }
 })
 
 enum class EnumKey { ONE, TWO, THREE }

@@ -78,6 +78,10 @@ object Pars {
         f(k)(es)
     }
 
+    fun <A> join(pa: Par<Par<A>>): Par<A> = { es ->
+        pa(es).get()(es)
+    }
+
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
         a: Par<A>,
