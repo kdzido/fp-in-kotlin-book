@@ -8,3 +8,4 @@
 6. Purely functional state
 * PART 2: FUNCTIONAL DESIGN AND COMBINATOR LIBRARIES
 7. Purely functional parallelism
+8. Property-based testing
