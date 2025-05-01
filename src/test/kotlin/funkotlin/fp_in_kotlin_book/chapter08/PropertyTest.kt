@@ -34,5 +34,21 @@ class PropertyTest : StringSpec({
             (ls.reversed().sum() == ls.sum())
         }
     }
+
+    "Max of list of 50s" {
+        val sameValueList = Arb.list(Arb.int(50, 50), 1..100)
+
+        forAll(sameValueList) { ls ->
+            ls.max() == 50
+        }
+    }
+
+    "Max of list" {
+        val intList = Arb.list(Arb.int(0, 100), 1..100)
+
+        forAll(intList) { ls ->
+            ls.reversed().max() == ls.max()
+        }
+    }
 })
 
