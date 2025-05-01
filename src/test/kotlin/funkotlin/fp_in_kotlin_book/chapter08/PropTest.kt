@@ -8,7 +8,7 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
 
-class PropertyTest : StringSpec({
+class PropTest : StringSpec({
     "List reverse" {
         val intList = Arb.list(Arb.int(0, 100), 1..100)
 
