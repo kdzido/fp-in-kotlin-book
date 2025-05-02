@@ -1,30 +1,40 @@
 package funkotlin.fp_in_kotlin_book.chapter08
 
 import arrow.core.Either
+import funkotlin.fp_in_kotlin_book.chapter06.RNG
+import funkotlin.fp_in_kotlin_book.chapter06.State
 import kotlin.math.absoluteValue
-
-interface RNG {
-    fun nextInt(): Pair<Int, RNG>
-}
-data class SimpleRNG(val seed: Long) : RNG {
-    override fun nextInt(): Pair<Int, RNG> {
-        val newSeed = (seed * 0x5DEECE66DL + 0xBL) and 0xFFFFFFFFFFFFL
-        val nextRNG = SimpleRNG(newSeed)
-        val n = (newSeed ushr 16).toInt()
-        return n to nextRNG
-    }
-}
-
-data class State<S, out A>(val run: (S) -> Pair<A, S>) {
-    companion object {
-        fun <S, A> unit(a: A): State<S, A> =
-            State { rng -> a to rng }
-    }
-}
 
 data class Gen<A>(val sample: State<RNG, A>) {
 
     companion object {
+        fun <A> unit(a: A): Gen<A> = Gen(
+            State({ rng ->
+                Pair(a, rng)
+            })
+        )
+
+        fun boolean(): Gen<Boolean> = Gen(
+            State({ rng ->
+                val (n2, rng2) = rng.nextInt()
+                val b = n2 % 2 == 0
+                Pair(b, rng2)
+            })
+        )
+
+        fun <A> listOfN(n: Int, ga: Gen<A>): Gen<List<A>> = Gen(
+            State({ rng ->
+                val resultList = mutableListOf<A>()
+                var curRng = rng
+                for (i in 0 until n) {
+                    val (g2, rng2) = ga.sample.run(curRng)
+                    resultList.add(g2)
+                    curRng = rng2
+                }
+                Pair(resultList, curRng)
+            })
+        )
+
         fun choose(start: Int, stopExclusive: Int): Gen<Int> =
             Gen(
                 State({ rng ->
