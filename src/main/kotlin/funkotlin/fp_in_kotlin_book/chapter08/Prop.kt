@@ -7,6 +7,11 @@ import kotlin.math.absoluteValue
 
 data class Gen<A>(val sample: State<RNG, A>) {
 
+    fun <B> flatMap(f: (A) -> Gen<B>): Gen<B> = Gen(State({ rng ->
+        val (a2, rng2) = sample.run(rng)
+        f(a2).sample.run(rng2)
+    }))
+
     companion object {
         fun <A> unit(a: A): Gen<A> = Gen(
             State({ rng ->
@@ -22,7 +27,11 @@ data class Gen<A>(val sample: State<RNG, A>) {
             })
         )
 
-        fun <A> listOfN(n: Int, ga: Gen<A>): Gen<List<A>> = Gen(
+        fun <A> listOfN(gn: Gen<Int>, ga: Gen<A>): Gen<List<A>> = gn.flatMap { n ->
+            listOfSpecifiedN(n, ga)
+        }
+
+        fun <A> listOfSpecifiedN(n: Int, ga: Gen<A>): Gen<List<A>> = Gen(
             State({ rng ->
                 val resultList = mutableListOf<A>()
                 var curRng = rng
@@ -44,6 +53,14 @@ data class Gen<A>(val sample: State<RNG, A>) {
                     Pair(start + nInRange, rng2)
                 })
             )
+
+        fun choosePair(start: Int, stopExclusive: Int): Gen<Pair<Int, Int>> = Gen(
+            State({ rng ->
+                    val (g1, rng2) = choose(start, stopExclusive).sample.run(rng)
+                    val (g2, rng3) = choose(start, stopExclusive).sample.run(rng2)
+                Pair(Pair(g1, g2), rng3)
+            })
+        )
     }
 }
 
@@ -71,9 +88,5 @@ interface Prop {
         }
     }
 }
-
-fun <A> listOf(a: Gen<A>): List<Gen<A>> = TODO()
-
-fun <A> listOfN(n: Int, a: Gen<A>): List<Gen<A>> = TODO()
 
 fun <A> forAll(a: Gen<A>, f: (A) -> Boolean): Prop = TODO()
