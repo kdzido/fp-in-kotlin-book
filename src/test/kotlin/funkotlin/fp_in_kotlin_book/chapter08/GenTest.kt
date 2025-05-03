@@ -92,5 +92,52 @@ class GenTest : StringSpec({
         l3 shouldBe listOf(9)
         l4 shouldBe listOf(3, 9, 5)
     }
+
+
+    "Gen odd, even integers" {
+        val rng = SimpleRNG(1)
+        val evenIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 0) it else it - 1) }
+        val oddIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 1) it else it + 1) }
+
+        val (e1, erng2) = evenIntGen.sample.run(rng)
+        val (e2, erng3) = evenIntGen.sample.run(erng2)
+        val (e3, erng4) = evenIntGen.sample.run(erng3)
+        val (e4, erng5) = evenIntGen.sample.run(erng4)
+        val (e5, erng6) = evenIntGen.sample.run(erng5)
+        e1 shouldBe 48
+        e2 shouldBe 38
+        e3 shouldBe 46
+        e4 shouldBe 40
+        e5 shouldBe 42
+
+        val (o1, orng2) = oddIntGen.sample.run(rng)
+        val (o2, orng3) = oddIntGen.sample.run(orng2)
+        val (o3, orng4) = oddIntGen.sample.run(orng3)
+        val (o4, orng5) = oddIntGen.sample.run(orng4)
+        val (o5, orng6) = oddIntGen.sample.run(orng5)
+        o1 shouldBe 49
+        o2 shouldBe 39
+        o3 shouldBe 47
+        o4 shouldBe 41
+        o5 shouldBe 43
+    }
+
+    "Gen.union" {
+        val rng = SimpleRNG(1)
+        val evenIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 0) it else it - 1) }
+        val oddIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 1) it else it + 1) }
+
+        val (b1, rng2) = Gen.union(oddIntGen, evenIntGen).sample.run(rng)
+        val (b2, rng3) = Gen.union(oddIntGen, evenIntGen).sample.run(rng2)
+        val (b3, rng4) = Gen.union(oddIntGen, evenIntGen).sample.run(rng3)
+        val (b4, rng5) = Gen.union(oddIntGen, evenIntGen).sample.run(rng4)
+        val (b5, rng6) = Gen.union(oddIntGen, evenIntGen).sample.run(rng5)
+
+        b1 shouldBe 39
+        b2 shouldBe 40
+        b3 shouldBe 89
+        b4 shouldBe 49
+        b5 shouldBe 90
+    }
 })
 

@@ -19,6 +19,13 @@ data class Gen<A>(val sample: State<RNG, A>) {
             })
         )
 
+        fun <A> union(ga: Gen<A>, gb: Gen<A>): Gen<A> = boolean().flatMap { b ->
+            when (b) {
+                true -> ga
+                false -> gb
+            }
+        }
+
         fun boolean(): Gen<Boolean> = Gen(
             State({ rng ->
                 val (n2, rng2) = rng.nextInt()
