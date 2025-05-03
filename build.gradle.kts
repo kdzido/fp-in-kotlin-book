@@ -69,6 +69,7 @@ dependencies {
 	testImplementation("io.mockk:mockk:1.13.13")
 
 	testImplementation("io.arrow-kt:arrow-incubator-test:$arrowMtlVersion")
+	testImplementation("com.willowtreeapps.assertk:assertk:0.10")
 }
 
 tasks.withType<KotlinCompile> {

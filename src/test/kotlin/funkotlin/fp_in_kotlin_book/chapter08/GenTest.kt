@@ -127,17 +127,39 @@ class GenTest : StringSpec({
         val evenIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 0) it else it - 1) }
         val oddIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 1) it else it + 1) }
 
-        val (b1, rng2) = Gen.union(oddIntGen, evenIntGen).sample.run(rng)
-        val (b2, rng3) = Gen.union(oddIntGen, evenIntGen).sample.run(rng2)
-        val (b3, rng4) = Gen.union(oddIntGen, evenIntGen).sample.run(rng3)
-        val (b4, rng5) = Gen.union(oddIntGen, evenIntGen).sample.run(rng4)
-        val (b5, rng6) = Gen.union(oddIntGen, evenIntGen).sample.run(rng5)
+        val (u1, rng2) = Gen.union(oddIntGen, evenIntGen).sample.run(rng)
+        val (u2, rng3) = Gen.union(oddIntGen, evenIntGen).sample.run(rng2)
+        val (u3, rng4) = Gen.union(oddIntGen, evenIntGen).sample.run(rng3)
+        val (u4, rng5) = Gen.union(oddIntGen, evenIntGen).sample.run(rng4)
+        val (u5, rng6) = Gen.union(oddIntGen, evenIntGen).sample.run(rng5)
 
-        b1 shouldBe 39
-        b2 shouldBe 40
-        b3 shouldBe 89
-        b4 shouldBe 49
-        b5 shouldBe 90
+        u1 shouldBe 39
+        u2 shouldBe 40
+        u3 shouldBe 89
+        u4 shouldBe 49
+        u5 shouldBe 90
     }
+
+    "Gen.weighted" {
+        val rng = SimpleRNG(1)
+        val evenIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 0) it else it - 1) }
+        val oddIntGen = Gen.choose(0, 100).flatMap { Gen.unit(if (it % 2 == 1) it else it + 1) }
+        val weightedGen = Gen.weighted(Pair(oddIntGen, 0.5), Pair(evenIntGen, 0.5))
+
+        val (w1, rng2) = weightedGen.sample.run(rng)
+        val (w2, rng3) = weightedGen.sample.run(rng2)
+        val (w3, rng4) = weightedGen.sample.run(rng3)
+        val (w4, rng5) = weightedGen.sample.run(rng4)
+        val (w5, rng6) = weightedGen.sample.run(rng5)
+        val (w6, rng7) = weightedGen.sample.run(rng6)
+
+        w1 shouldBe 39
+        w2 shouldBe 41
+        w3 shouldBe 89
+        w4 shouldBe 48
+        w5 shouldBe 91
+        w6 shouldBe 45
+    }
+
 })
 

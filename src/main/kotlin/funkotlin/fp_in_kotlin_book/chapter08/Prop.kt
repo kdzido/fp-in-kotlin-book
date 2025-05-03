@@ -26,6 +26,16 @@ data class Gen<A>(val sample: State<RNG, A>) {
             }
         }
 
+        fun <A> weighted(gap: Pair<Gen<A>, Double>, gbp: Pair<Gen<A>, Double>): Gen<A> = choose(0, 100).flatMap { prob ->
+            val aProb: Int = (gap.second * 100).toInt()
+            val bProb: Int = (gbp.second * 100).toInt()
+            if (aProb + bProb != 100) throw IllegalArgumentException("Both probabilities (a=$aProb, b=$bProb) should add up to 100.")
+            when (prob) {
+                in 0..aProb -> gap.first
+                else -> gbp.first
+            }
+        }
+
         fun boolean(): Gen<Boolean> = Gen(
             State({ rng ->
                 val (n2, rng2) = rng.nextInt()
