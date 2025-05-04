@@ -5,6 +5,7 @@ import funkotlin.fp_in_kotlin_book.chapter06.State
 import kotlin.math.absoluteValue
 
 data class Gen<A>(val sample: State<RNG, A>) {
+    fun unsized(): SGen<A> = SGen({ n: Int -> Gen(sample)})
 
     fun <B> flatMap(f: (A) -> Gen<B>): Gen<B> = Gen(State({ rng ->
         val (a2, rng2) = sample.run(rng)
