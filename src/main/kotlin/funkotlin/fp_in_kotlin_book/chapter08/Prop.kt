@@ -1,7 +1,8 @@
 package funkotlin.fp_in_kotlin_book.chapter08
 
-//typealias Result = Either<Pair<FailedCase, SuccessCount>, SuccessCount>
-//typealias Result = Option<Pair<FailedCase, SuccessCount>>
+import arrow.core.getOrElse
+import arrow.core.toOption
+import funkotlin.fp_in_kotlin_book.chapter06.RNG
 
 sealed class Result {
     abstract fun isFalsified(): Boolean
@@ -20,8 +21,35 @@ data class Falsified(
 
 typealias SuccessCount = Int
 typealias FailedCase = String
-
-data class Prop(val check: (TestCases) -> Result)
 typealias TestCases = Int
 
-fun <A> forAll(a: Gen<A>, f: (A) -> Boolean): Prop = TODO()
+data class Prop(val check: (TestCases, RNG) -> Result)
+
+fun <A> forAll(ga: Gen<A>, f: (A) -> Boolean): Prop =
+    Prop { n: TestCases, rng: RNG ->
+        randomSequence(ga, rng).mapIndexed { i, a ->
+            try {
+                if (f(a)) Passed
+                else Falsified(a.toString(), i)
+            } catch (e: Exception) {
+                Falsified(buildMessage(a, e), i)
+            }
+        }.take(n)
+            .find { it.isFalsified() }
+            .toOption()
+            .getOrElse { Passed }
+    }
+
+private fun <A> randomSequence(ga: Gen<A>, rng: RNG): Sequence<A> = sequence {
+    val (a: A, rng2: RNG) = ga.sample.run(rng)
+    yield(a)
+    yieldAll(randomSequence(ga, rng2))
+}
+
+private fun <A> buildMessage(a: A, e: Exception) =
+    """
+    |test case: $a
+    |generated and exception: ${e.message}
+    |stacktrace: 
+    |${e.stackTrace.joinToString("\n")}    
+    """.trimMargin()
