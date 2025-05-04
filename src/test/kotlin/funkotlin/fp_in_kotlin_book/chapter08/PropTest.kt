@@ -53,5 +53,31 @@ class PropTest : StringSpec({
             ls.reversed().max() == ls.max()
         }.check(100, rng) shouldBe Passed
     }
+
+    "should and Props" {
+        val rng = SimpleRNG(1L)
+        val intList = Gen.listOfN(Gen.choose(1, 10), Gen.choose(0, 100))
+
+        forAll(intList) { list ->
+            (list.firstOption() == list.reversed().lastOrNone())
+        }.and(
+            forAll(intList) { list ->
+                (list.reversed().reversed() == list)
+            }
+        ).check(100, rng) shouldBe Passed
+    }
+
+    "should or props" {
+        val rng = SimpleRNG(1L)
+        val intList = Gen.listOfN(Gen.choose(1, 10), Gen.choose(0, 100))
+
+        forAll(intList) { list ->
+            (list.firstOption() == list.lastOrNone())
+        }.or(
+            forAll(intList) { list ->
+                (list.reversed().reversed() == list)
+            }
+        ).check(100, rng) shouldBe Passed
+    }
 })
 

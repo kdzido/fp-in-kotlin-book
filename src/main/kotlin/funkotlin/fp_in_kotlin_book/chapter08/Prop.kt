@@ -23,7 +23,21 @@ typealias SuccessCount = Int
 typealias FailedCase = String
 typealias TestCases = Int
 
-data class Prop(val check: (TestCases, RNG) -> Result)
+data class Prop(val check: (TestCases, RNG) -> Result) {
+    fun and(other: Prop): Prop = Prop { n: TestCases, rng: RNG ->
+        when (val p1 = check(n, rng)) {
+            is Falsified -> p1
+            Passed -> other.check(n, rng)
+        }
+    }
+
+    fun or(other: Prop): Prop = Prop { n: TestCases, rng: RNG ->
+        when (val p1 = check(n, rng)) {
+            is Passed -> p1
+            is Falsified -> other.check(n, rng)
+        }
+    }
+}
 
 fun <A> forAll(ga: Gen<A>, f: (A) -> Boolean): Prop =
     Prop { n: TestCases, rng: RNG ->
