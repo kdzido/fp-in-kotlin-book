@@ -9,10 +9,6 @@ import io.kotest.property.checkAll
 class SGenTest : StringSpec({
     "SGen.forSize with Gen.listOfSpecifiedN" {
         val rng = SimpleRNG(1)
-
-//        val sgen: (Int) -> SGen<List<Int>> = { n: Int ->
-//            Gen.listOfSpecifiedN(n, Gen.choose(1, 100)).unsized()
-//        }
         val sgen = SGen({ n->
             Gen.listOfSpecifiedN(n, Gen.choose(1, 100))
         })
@@ -45,5 +41,38 @@ class SGenTest : StringSpec({
         l4 shouldBe listOf(54, 23, 28, 46, 60)
     }
 
+    "SGen.map" {
+        val rng = SimpleRNG(1)
+        val sgen = SGen({ n ->
+            Gen.choose(1, n)
+        })
+
+        val (v1, rng2) = sgen.map { it + 5 }.forSize(5).sample.run(rng)
+        val (v2, rng3) = sgen.map { it + 5 }.forSize(5).sample.run(rng2)
+        val (v3, rng4) = sgen.map { it + 5 }(5).sample.run(rng3)
+        val (v4, rng5) = sgen.map { it + 5 }(5).sample.run(rng4)
+
+        v1 shouldBe 6
+        v2 shouldBe 9
+        v3 shouldBe 9
+        v4 shouldBe 7
+    }
+
+    "SGen.flatMap" {
+        val rng = SimpleRNG(1)
+        val sgen = SGen({ n ->
+            Gen.choose(1, n)
+        })
+
+        val (v1, rng2) = sgen.flatMap { Gen.unit(it + 5) }.forSize(5).sample.run(rng)
+        val (v2, rng3) = sgen.flatMap { Gen.unit(it + 5) }.forSize(5).sample.run(rng2)
+        val (v3, rng4) = sgen.flatMap { Gen.unit(it + 5) }(5).sample.run(rng3)
+        val (v4, rng5) = sgen.flatMap { Gen.unit(it + 5) }(5).sample.run(rng4)
+
+        v1 shouldBe 6
+        v2 shouldBe 9
+        v3 shouldBe 9
+        v4 shouldBe 7
+    }
 })
 

@@ -12,6 +12,8 @@ data class Gen<A>(val sample: State<RNG, A>) {
         f(a2).sample.run(rng2)
     }))
 
+    fun <B> map(f: (A) -> B): Gen<B> = flatMap { Gen.unit(f(it)) }
+
     companion object {
         fun <A> unit(a: A): Gen<A> = Gen(
             State({ rng ->

@@ -93,6 +93,22 @@ class GenTest : StringSpec({
         l4 shouldBe listOf(3, 9, 5)
     }
 
+    "Gen.map" {
+        val rng = SimpleRNG(1)
+        val (v1, rng2) = Gen.choose(1, 6)
+            .map { a -> a + 10 }.sample.run(rng)
+        val (v2, rng3) = Gen.choose(1, 6)
+            .map { a -> a + 10 }.sample.run(rng2)
+        val (v3, rng4) = Gen.choose(1, 6)
+            .map { a -> a + 10 }.sample.run(rng3)
+        val (v4, rng5) = Gen.choose(1, 6)
+            .map { a -> a + 10 }.sample.run(rng4)
+
+        v1 shouldBe 14
+        v2 shouldBe 15
+        v3 shouldBe 13
+        v4 shouldBe 12
+    }
 
     "Gen odd, even integers" {
         val rng = SimpleRNG(1)
