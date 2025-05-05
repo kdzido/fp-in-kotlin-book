@@ -177,5 +177,19 @@ class GenTest : StringSpec({
         w6 shouldBe 45
     }
 
+    "SGen.listOf" {
+        val rng = SimpleRNG(1)
+        val sgen = Gen.choose(1, 100).listOf()
+
+        val (l1, rng2) = sgen.forSize(5).sample.run(rng)
+        val (l2, rng3) = sgen.forSize(5).sample.run(rng2)
+        val (l3, rng4) = sgen.forSize(5).sample.run(rng3)
+        val (l4, rng5) = sgen.forSize(5).sample.run(rng4)
+
+        l1 shouldBe listOf(35, 51, 79, 34, 21)
+        l2 shouldBe listOf(12, 44, 71, 45, 47)
+        l3 shouldBe listOf(45, 15, 99, 59, 21)
+        l4 shouldBe listOf(54, 23, 28, 46, 60)
+    }
 })
 

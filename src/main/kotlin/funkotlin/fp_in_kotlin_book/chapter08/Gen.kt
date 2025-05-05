@@ -14,6 +14,10 @@ data class Gen<A>(val sample: State<RNG, A>) {
 
     fun <B> map(f: (A) -> B): Gen<B> = flatMap { Gen.unit(f(it)) }
 
+    fun listOf(): SGen<List<A>> = SGen({ n ->
+        listOfSpecifiedN(n, Gen(sample))
+    })
+
     companion object {
         fun <A> unit(a: A): Gen<A> = Gen(
             State({ rng ->
