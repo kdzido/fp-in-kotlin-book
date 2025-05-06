@@ -77,6 +77,10 @@ sealed interface RNG {
             val (n1, rng2) = rng.nextInt()
             if (n1 == Int.MIN_VALUE) nonNegativeInt().run(rng2) else Pair(abs(n1), rng2)
         }
+        fun nonNegativeInt2(rng: RNG): Pair<Int, RNG>  {
+            val (i1, rng2) = rng.nextInt()
+            return (if (i1 < 0) -(i1 + 1) else i1) to rng2
+        }
 
         // EXER 6.2
         fun double(rng: RNG): Pair<Double, RNG> {

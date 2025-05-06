@@ -18,10 +18,10 @@ class SGenTest : StringSpec({
         val (l3, rng4) = sgen.forSize(5).sample.run(rng3)
         val (l4, rng5) = sgen.forSize(5).sample.run(rng4)
 
-        l1 shouldBe listOf(35, 51, 79, 34, 21)
-        l2 shouldBe listOf(12, 44, 71, 45, 47)
-        l3 shouldBe listOf(45, 15, 99, 59, 21)
-        l4 shouldBe listOf(54, 23, 28, 46, 60)
+        l1 shouldBe listOf(35, 50, 78, 34, 20)
+        l2 shouldBe listOf(12, 44, 70, 45, 46)
+        l3 shouldBe listOf(44, 14, 99, 59, 20)
+        l4 shouldBe listOf(54, 22, 28, 46, 59)
     }
 
     "Gen.unsize" {
@@ -35,10 +35,10 @@ class SGenTest : StringSpec({
         val (l3, rng4) = sgen(5).forSize(3).sample.run(rng3)
         val (l4, rng5) = sgen(5).forSize(4).sample.run(rng4)
 
-        l1 shouldBe listOf(35, 51, 79, 34, 21)
-        l2 shouldBe listOf(12, 44, 71, 45, 47)
-        l3 shouldBe listOf(45, 15, 99, 59, 21)
-        l4 shouldBe listOf(54, 23, 28, 46, 60)
+        l1 shouldBe listOf(35, 50, 78, 34, 20)
+        l2 shouldBe listOf(12, 44, 70, 45, 46)
+        l3 shouldBe listOf(44, 14, 99, 59, 20)
+        l4 shouldBe listOf(54, 22, 28, 46, 59)
     }
 
     "SGen.map" {
@@ -53,8 +53,8 @@ class SGenTest : StringSpec({
         val (v4, rng5) = sgen.map { it + 5 }(5).sample.run(rng4)
 
         v1 shouldBe 6
-        v2 shouldBe 9
-        v3 shouldBe 9
+        v2 shouldBe 8
+        v3 shouldBe 8
         v4 shouldBe 7
     }
 
@@ -70,8 +70,8 @@ class SGenTest : StringSpec({
         val (v4, rng5) = sgen.flatMap { Gen.unit(it + 5) }(5).sample.run(rng4)
 
         v1 shouldBe 6
-        v2 shouldBe 9
-        v3 shouldBe 9
+        v2 shouldBe 8
+        v3 shouldBe 8
         v4 shouldBe 7
     }
 })

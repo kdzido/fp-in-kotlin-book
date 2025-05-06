@@ -1,6 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter08
 
 import funkotlin.fp_in_kotlin_book.chapter06.RNG
+import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.nonNegativeInt2
 import funkotlin.fp_in_kotlin_book.chapter06.State
 import kotlin.math.absoluteValue
 
@@ -69,12 +70,8 @@ data class Gen<A>(val sample: State<RNG, A>) {
 
         fun choose(start: Int, stopExclusive: Int): Gen<Int> =
             Gen(
-                State({ rng ->
-                    val (n2, rng2) = rng.nextInt()
-                    val delta = (stopExclusive - start)
-                    val nInRange = n2.absoluteValue % delta
-                    Pair(start + nInRange, rng2)
-                })
+                State { rng: RNG -> nonNegativeInt2(rng) }
+                    .map { start + (it % (stopExclusive - start)) }
             )
 
         fun choosePair(start: Int, stopExclusive: Int): Gen<Pair<Int, Int>> = Gen(

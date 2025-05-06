@@ -57,10 +57,10 @@ class GenTest : StringSpec({
         val (l3, rng4) = Gen.listOfSpecifiedN(5, Gen.choose(1, 10)).sample.run(rng3)
         val (l4, rng5) = Gen.listOfSpecifiedN(5, Gen.choose(1, 10)).sample.run(rng4)
 
-        l1 shouldBe listOf(8, 6, 7, 7, 3)
-        l2 shouldBe listOf(3, 8, 8, 9, 2)
-        l3 shouldBe listOf(9, 6, 9, 5, 3)
-        l4 shouldBe listOf(9, 5, 1, 1, 6)
+        l1 shouldBe listOf(8, 5, 6, 7, 2)
+        l2 shouldBe listOf(3, 8, 7, 9, 1)
+        l3 shouldBe listOf(8, 5, 9, 5, 2)
+        l4 shouldBe listOf(9, 4, 1, 1, 5)
     }
 
     "Gen.listOfNDyn" {
@@ -70,10 +70,10 @@ class GenTest : StringSpec({
         val (l3, rng4) = Gen.listOfN(Gen.choose(1, 5), Gen.choose(1, 10)).sample.run(rng3)
         val (l4, rng5) = Gen.listOfN(Gen.choose(1, 5), Gen.choose(1, 10)).sample.run(rng4)
 
-        l1 shouldBe listOf(6)
-        l2 shouldBe listOf(7, 3, 3, 8)
-        l3 shouldBe listOf(9)
-        l4 shouldBe listOf(9, 6, 9)
+        l1 shouldBe listOf(5)
+        l2 shouldBe listOf(7, 2, 3)
+        l3 shouldBe listOf(7)
+        l4 shouldBe listOf(1, 8)
     }
 
     "Gen.flatMap" {
@@ -87,10 +87,10 @@ class GenTest : StringSpec({
         val (l4, rng5) = Gen.choose(1, 6)
             .flatMap { a -> Gen.listOfSpecifiedN(a, Gen.choose(1, 10)) }.sample.run(rng4)
 
-        l1 shouldBe listOf(6, 7, 7, 3)
-        l2 shouldBe listOf(8, 8, 9, 2, 9)
-        l3 shouldBe listOf(9)
-        l4 shouldBe listOf(3, 9, 5)
+        l1 shouldBe listOf(5, 6, 7, 2)
+        l2 shouldBe listOf(8, 7, 9, 1, 8)
+        l3 shouldBe listOf(9, 5, 2, 9, 4)
+        l4 shouldBe listOf(1)
     }
 
     "Gen.map" {
@@ -105,8 +105,8 @@ class GenTest : StringSpec({
             .map { a -> a + 10 }.sample.run(rng4)
 
         v1 shouldBe 14
-        v2 shouldBe 15
-        v3 shouldBe 13
+        v2 shouldBe 14
+        v3 shouldBe 12
         v4 shouldBe 12
     }
 
@@ -124,7 +124,7 @@ class GenTest : StringSpec({
         e2 shouldBe 38
         e3 shouldBe 46
         e4 shouldBe 40
-        e5 shouldBe 42
+        e5 shouldBe 40
 
         val (o1, orng2) = oddIntGen.sample.run(rng)
         val (o2, orng3) = oddIntGen.sample.run(orng2)
@@ -135,7 +135,7 @@ class GenTest : StringSpec({
         o2 shouldBe 39
         o3 shouldBe 47
         o4 shouldBe 41
-        o5 shouldBe 43
+        o5 shouldBe 41
     }
 
     "Gen.union" {
@@ -152,8 +152,8 @@ class GenTest : StringSpec({
         u1 shouldBe 39
         u2 shouldBe 40
         u3 shouldBe 89
-        u4 shouldBe 49
-        u5 shouldBe 90
+        u4 shouldBe 47
+        u5 shouldBe 88
     }
 
     "Gen.weighted" {
@@ -172,8 +172,8 @@ class GenTest : StringSpec({
         w1 shouldBe 39
         w2 shouldBe 41
         w3 shouldBe 89
-        w4 shouldBe 48
-        w5 shouldBe 91
+        w4 shouldBe 46
+        w5 shouldBe 89
         w6 shouldBe 45
     }
 
@@ -186,10 +186,10 @@ class GenTest : StringSpec({
         val (l3, rng4) = sgen.forSize(5).sample.run(rng3)
         val (l4, rng5) = sgen.forSize(5).sample.run(rng4)
 
-        l1 shouldBe listOf(35, 51, 79, 34, 21)
-        l2 shouldBe listOf(12, 44, 71, 45, 47)
-        l3 shouldBe listOf(45, 15, 99, 59, 21)
-        l4 shouldBe listOf(54, 23, 28, 46, 60)
+        l1 shouldBe listOf(35, 50, 78, 34, 20)
+        l2 shouldBe listOf(12, 44, 70, 45, 46)
+        l3 shouldBe listOf(44, 14, 99, 59, 20)
+        l4 shouldBe listOf(54, 22, 28, 46, 59)
     }
 })
 
