@@ -92,5 +92,17 @@ class PropTest : StringSpec({
         }
         Prop.run(maxProp).shouldBeInstanceOf<Passed>()
     }
+
+    "should ensure max of sorted list" {
+        val smallInt = Gen.choose(-10, 10)
+
+        val maxProp = forAll(SGen.nonEmptyListOf(smallInt)) { ns: List<Int> ->
+            val mx = ns.max()
+                ?: throw IllegalStateException("max on empty list")
+
+            ns.sorted().last() == mx
+        }
+        Prop.run(maxProp).shouldBeInstanceOf<Passed>()
+    }
 })
 
