@@ -17,5 +17,10 @@ data class SGen<A>(val forSize: (Int) -> Gen<A>) {
         fun <A> listOf(ga: Gen<A>): SGen<List<A>> = SGen({ n ->
             listOfSpecifiedN(n, ga)
         })
+
+
+        fun <A> nonEmptyListOf(ga: Gen<A>): SGen<List<A>> = SGen({ n ->
+            listOfSpecifiedN(n + 1, ga)
+        })
     }
 }

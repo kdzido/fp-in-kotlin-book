@@ -83,15 +83,14 @@ class PropTest : StringSpec({
     }
 
     "should ensure max of list is correct" {
-        val rng = SimpleRNG(1L)
         val smallInt = Gen.choose(-10, 10)
 
-        val maxProp = forAll(SGen.listOf(smallInt)) { ns ->
+        val maxProp = forAll(SGen.nonEmptyListOf(smallInt)) { ns ->
             val mx = ns.max()
                 ?: throw IllegalStateException("max on empty list")
             !ns.exists { it > mx }
         }
-        Prop.run(maxProp).shouldBeInstanceOf<Falsified>() // Falsified("test case: []", 0)
+        Prop.run(maxProp).shouldBeInstanceOf<Passed>()
     }
 })
 
