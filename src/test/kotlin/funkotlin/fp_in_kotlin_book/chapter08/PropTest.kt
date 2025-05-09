@@ -7,6 +7,7 @@ import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
 import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 class PropTest : StringSpec({
     "List reverse" {
@@ -90,6 +91,7 @@ class PropTest : StringSpec({
                 ?: throw IllegalStateException("max on empty list")
             !ns.exists { it > mx }
         }
+        Prop.run(maxProp).shouldBeInstanceOf<Falsified>() // Falsified("test case: []", 0)
     }
 })
 

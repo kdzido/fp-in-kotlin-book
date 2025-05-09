@@ -3,6 +3,7 @@ package funkotlin.fp_in_kotlin_book.chapter08
 import arrow.core.getOrElse
 import arrow.core.toOption
 import funkotlin.fp_in_kotlin_book.chapter06.RNG
+import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
 import kotlin.math.min
 
 sealed class Result {
@@ -27,6 +28,21 @@ typealias MaxSize = Int
 
 data class Prop(val check: (MaxSize, TestCases, RNG) -> Result) {
     companion object {
+        fun run(
+            p: Prop,
+            maxSize: Int = 100,
+            testCases: Int = 100,
+            rng: RNG = SimpleRNG(System.currentTimeMillis())
+        ): Result =
+            when (val result = p.check(maxSize, testCases, rng)) {
+                is Passed -> {println("Ok, passed $testCases tests."); result}
+                is Falsified -> {
+                    println("Falsified after: ${result.successes} tests, passed tests: ${result.failure}")
+                    result
+                }
+            }
+
+
         fun <A> forAll(g: SGen<A>, f: (A) -> Boolean): Prop =
             forAll({ i -> g(i) }, f)
 
