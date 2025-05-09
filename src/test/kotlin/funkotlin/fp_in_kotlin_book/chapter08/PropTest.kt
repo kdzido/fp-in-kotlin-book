@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter08
 
+import arrow.core.extensions.list.foldable.exists
 import arrow.core.extensions.list.foldable.firstOption
 import arrow.core.lastOrNone
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
@@ -78,6 +79,17 @@ class PropTest : StringSpec({
                 (list.reversed().reversed() == list)
             }
         ).check(100, 100, rng) shouldBe Passed
+    }
+
+    "should ensure max of list is correct" {
+        val rng = SimpleRNG(1L)
+        val smallInt = Gen.choose(-10, 10)
+
+        val maxProp = forAll(SGen.listOf(smallInt)) { ns ->
+            val mx = ns.max()
+                ?: throw IllegalStateException("max on empty list")
+            !ns.exists { it > mx }
+        }
     }
 })
 
