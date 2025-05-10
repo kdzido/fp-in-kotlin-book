@@ -4,10 +4,14 @@ import arrow.core.extensions.list.foldable.exists
 import arrow.core.extensions.list.foldable.firstOption
 import arrow.core.lastOrNone
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
+import funkotlin.fp_in_kotlin_book.chapter07.Par
+import funkotlin.fp_in_kotlin_book.chapter07.Pars
+import funkotlin.fp_in_kotlin_book.chapter07.Pars.map
 import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import java.util.concurrent.Executors
 
 class PropTest : StringSpec({
     "List reverse" {
@@ -17,7 +21,7 @@ class PropTest : StringSpec({
         forAll(intList) { list ->
             (list.firstOption() == list.reversed().lastOrNone()) and
                     (list.reversed().reversed() == list)
-        }.check(100, 100, rng) shouldBe Passed
+        }.run(100, 100, rng) shouldBe Passed
     }
 
     "Sum of list of same value" {
@@ -26,7 +30,7 @@ class PropTest : StringSpec({
 
         forAll(sameValueList) { ls ->
             (ls.sum() == ls.size * 50)
-        }.check(100, 100, rng) shouldBe Passed
+        }.run(100, 100, rng) shouldBe Passed
     }
 
     "Sum of list" {
@@ -35,7 +39,7 @@ class PropTest : StringSpec({
 
         forAll(intList) { ls ->
             (ls.reversed().sum() == ls.sum())
-        }.check(100, 100, rng) shouldBe Passed
+        }.run(100, 100, rng) shouldBe Passed
     }
 
     "Sum of list of 50s A" {
@@ -44,7 +48,7 @@ class PropTest : StringSpec({
 
         forAll(sameValueList) { ls ->
             (ls.maxOrNull()?.let { 50 == it } ?: true)
-        }.check(100, 100, rng) shouldBe Passed
+        }.run(100, 100, rng) shouldBe Passed
     }
 
     "Max of list" {
@@ -53,7 +57,7 @@ class PropTest : StringSpec({
 
         forAll(intList) { ls ->
             ls.reversed().max() == ls.max()
-        }.check(100, 100, rng) shouldBe Passed
+        }.run(100, 100, rng) shouldBe Passed
     }
 
     "should and Props" {
@@ -66,7 +70,7 @@ class PropTest : StringSpec({
             forAll(intList) { list ->
                 (list.reversed().reversed() == list)
             }
-        ).check(100, 100, rng) shouldBe Passed
+        ).run(100, 100, rng) shouldBe Passed
     }
 
     "should or props" {
@@ -79,7 +83,7 @@ class PropTest : StringSpec({
             forAll(intList) { list ->
                 (list.reversed().reversed() == list)
             }
-        ).check(100, 100, rng) shouldBe Passed
+        ).run(100, 100, rng) shouldBe Passed
     }
 
     "should ensure max of list is correct" {
@@ -99,10 +103,23 @@ class PropTest : StringSpec({
         val maxProp = forAll(SGen.nonEmptyListOf(smallInt)) { ns: List<Int> ->
             val mx = ns.max()
                 ?: throw IllegalStateException("max on empty list")
-
             ns.sorted().last() == mx
         }
         Prop.run(maxProp).shouldBeInstanceOf<Passed>()
+    }
+
+    "test pars" {
+        val es = Executors.newCachedThreadPool()
+
+        val p1 = forAll(Gen.unit(Pars.unit(1))) { pi: Par<Int> ->
+            map(pi, { it + 1 })(es).get() == Pars.unit(2)(es).get()
+        }
+        Prop.run(p1).shouldBeInstanceOf<Passed>()
+    }
+
+    "should run check" {
+        Prop.run(Prop.check({ true })).shouldBeInstanceOf<Proved>()
+        Prop.run(Prop.check({ false })).shouldBeInstanceOf<Falsified>()
     }
 })
 

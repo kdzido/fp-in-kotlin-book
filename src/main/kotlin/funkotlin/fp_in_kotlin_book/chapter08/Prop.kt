@@ -14,6 +14,10 @@ object Passed : Result() {
     override fun isFalsified(): Boolean = false
 }
 
+object Proved : Result() {
+    override fun isFalsified(): Boolean = false
+}
+
 data class Falsified(
     val failure: FailedCase,
     val successes: SuccessCount,
@@ -26,22 +30,30 @@ typealias FailedCase = String
 typealias TestCases = Int
 typealias MaxSize = Int
 
-data class Prop(val check: (MaxSize, TestCases, RNG) -> Result) {
+data class Prop(val run: (MaxSize, TestCases, RNG) -> Result) {
     companion object {
+        fun check(p: () -> Boolean): Prop = Prop { _, _, _ ->
+            if (p()) Proved else Falsified("{}", 0)
+        }
+
         fun run(
             p: Prop,
             maxSize: Int = 100,
             testCases: Int = 100,
             rng: RNG = SimpleRNG(System.currentTimeMillis())
         ): Result =
-            when (val result = p.check(maxSize, testCases, rng)) {
-                is Passed -> {println("Ok, passed $testCases tests."); result}
+            when (val result = p.run(maxSize, testCases, rng)) {
+                is Passed -> {
+                    println("Ok, passed $testCases tests."); result
+                }
+                is Proved -> {
+                    println("Ok, preved property."); result
+                }
                 is Falsified -> {
                     println("Falsified after: ${result.successes} tests, passed tests: ${result.failure}")
                     result
                 }
             }
-
 
         fun <A> forAll(g: SGen<A>, f: (A) -> Boolean): Prop =
             forAll({ i -> g(i) }, f)
@@ -57,11 +69,11 @@ data class Prop(val check: (MaxSize, TestCases, RNG) -> Result) {
 
                 val prop: Prop = props.map { p ->
                     Prop { max, _, rng ->
-                        p.check(max, casePerSize, rng)
+                        p.run(max, casePerSize, rng)
                     }
                 }.reduce { p1, p2 -> p1.and(p2) }
 
-                prop.check(max, n, rng)
+                prop.run(max, n, rng)
             }
 
         fun <A> forAll(ga: Gen<A>, f: (A) -> Boolean): Prop =
@@ -81,16 +93,16 @@ data class Prop(val check: (MaxSize, TestCases, RNG) -> Result) {
     }
 
     fun and(other: Prop): Prop = Prop { max, n, rng ->
-        when (val p1 = check(max, n, rng)) {
+        when (val p1 = run(max, n, rng)) {
             is Falsified -> p1
-            Passed -> other.check(max, n, rng)
+            else -> other.run(max, n, rng)
         }
     }
 
     fun or(other: Prop): Prop = Prop { max, n, rng ->
-        when (val p1 = check(max, n, rng)) {
-            is Passed -> p1
-            is Falsified -> other.check(max, n, rng)
+        when (val p1 = run(max, n, rng)) {
+            is Falsified -> other.run(max, n, rng)
+            else  -> p1
         }
     }
 }
