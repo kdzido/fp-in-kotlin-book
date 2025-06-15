@@ -26,4 +26,12 @@ class ParTestingTest : StringSpec({
         }
         Prop.run(p)
     }
+
+    "should checkPar of Par map over unit law" {
+        val p2 = checkPar(equal(
+            Pars.map(Pars.unit(1)) { it + 1},
+            Pars.unit(2)
+        ))
+        Prop.run(p2)
+    }
 })
