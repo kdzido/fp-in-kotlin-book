@@ -133,5 +133,28 @@ class PropTest : StringSpec({
         }
         Prop.run(takeWhileProp)
     }
+
+
+    fun genStringIntFn(g: Gen<Int>): Gen<(String) -> Int> =
+        g.map { i: Int -> { _: String -> i } }
+
+    fun genIntBooleanInt(g: Gen<Boolean>): Gen<(Int) -> Boolean> =
+        g.map { b: Boolean -> { _: Int -> b } }
+
+    fun genIntBooleanFn(t: Int): Gen<(Int) -> Boolean> =
+        Gen.unit { i: Int -> i > t }
+
+    "should gen HOFs" {
+        val gen: Gen<Boolean> =
+            Gen.listOfN(Gen.unit(100), Gen.choose(1, 100)).flatMap { ls: List<Int> ->
+            Gen.choose(1, ls.size / 2).flatMap { threshold: Int ->
+                genIntBooleanFn(threshold).map { fn: (Int) -> Boolean ->
+                    ls.takeWhile { threshold > it }.forAll(fn)
+                }
+            }
+        }
+
+        Prop.run(Prop.forAll(gen) { success -> success})
+    }
 })
 
