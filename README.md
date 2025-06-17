@@ -9,3 +9,4 @@
 * PART 2: FUNCTIONAL DESIGN AND COMBINATOR LIBRARIES
 7. Purely functional parallelism
 8. Property-based testing
+9. Parser combinators
