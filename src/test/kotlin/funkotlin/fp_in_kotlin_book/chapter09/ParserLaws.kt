@@ -9,13 +9,13 @@ object ParserError
 
 abstract class Laws : Parsers<ParseError> {
     private fun <A> equal(
-        p1: Parsers.Parser<A>,
-        p2: Parsers.Parser<A>,
+        p1: Parser<A>,
+        p2: Parser<A>,
         i: Gen<String>,
     ): Prop =
         forAll(i) { s -> run(p1, s) == run(p2, s) }
 
-    fun <A> mapLaw(p: Parsers.Parser<A>, i: Gen<String>): Prop =
+    fun <A> mapLaw(p: Parser<A>, i: Gen<String>): Prop =
         equal(p, p.map { a -> a }, i)
 
 

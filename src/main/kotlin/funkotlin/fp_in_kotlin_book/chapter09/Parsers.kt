@@ -1,11 +1,12 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
 import funkotlin.fp_in_kotlin_book.chapter04.Either
-import funkotlin.fp_in_kotlin_book.chapter09.Parsers.Parser
+
+interface Parser<T>
+
+object ParseError
 
 interface Parsers<PE> {
-    interface Parser<T>
-
     fun char(c: Char): Parser<Char>
     fun string(s: String): Parser<String>
 
@@ -13,7 +14,6 @@ interface Parsers<PE> {
     fun <A> succeed(a: A): Parser<A> = string("").map { a }
 
     fun charZeroOrMore(c: Char): Parser<Int>
-
 
     infix fun String.or(other: String): Parser<String>
     fun <A> or(pa: Parser<A>, pb: Parser<A>): Parser<A>
@@ -23,43 +23,48 @@ interface Parsers<PE> {
 }
 
 fun <A> Parser<A>.many(): Parser<List<A>> = TODO()
-fun <A> Parser<A>.many1(): Parser<List<A>> = TODO()
-infix fun <A, B> Parser<A>.product(pb: Parser<B>): Parser<Pair<A, B>> = TODO()
+
+fun <A> Parser<A>.many1(): Parser<List<A>> = map2(this, this.many()) { a: A, la: List<A> -> la }
 
 fun <A, B> Parser<A>.map(f: (A) -> B): Parser<B> = TODO()
+
+fun <A, B, C> map2(pa: Parser<A>, pb: Parser<B>, f: (A, B) -> C): Parser<C> =
+    (pa product pb).map { (a, b) -> f(a, b) }
+
+infix fun <A, B> Parser<A>.product(pb: Parser<B>): Parser<Pair<A, B>> = TODO()
+
 fun <A> Parser<A>.slice(): Parser<String> = TODO()
 
-data class ParseError(val msg: String)
 
 object ParsersInterpreter : Parsers<ParseError> {
-    override fun char(c: Char): Parsers.Parser<Char> {
+    override fun char(c: Char): Parser<Char> {
         TODO("Not yet implemented")
     }
-    override fun string(s: String): Parsers.Parser<String> {
+    override fun string(s: String): Parser<String> {
         TODO("Not yet implemented")
     }
-    override fun charZeroOrMore(c: Char): Parsers.Parser<Int> =
+    override fun charZeroOrMore(c: Char): Parser<Int> =
         TODO("Not yet implemented")
 
-    override infix fun String.or(other: String): Parsers.Parser<String> {
+    override infix fun String.or(other: String): Parser<String> {
         TODO("Not yet implemented")
     }
     override fun <A> or(
-        pa: Parsers.Parser<A>,
-        pb: Parsers.Parser<A>,
-    ): Parsers.Parser<A> {
+        pa: Parser<A>,
+        pb: Parser<A>,
+    ): Parser<A> {
         TODO("Not yet implemented")
     }
 
     override fun <A> listOfN(
         n: Int,
-        p: Parsers.Parser<A>,
-    ): Parsers.Parser<List<A>> {
+        p: Parser<A>,
+    ): Parser<List<A>> {
         TODO("Not yet implemented")
     }
 
     override fun <A> run(
-        p: Parsers.Parser<A>,
+        p: Parser<A>,
         input: String,
     ): Either<ParseError, A> {
         TODO("Not yet implemented")

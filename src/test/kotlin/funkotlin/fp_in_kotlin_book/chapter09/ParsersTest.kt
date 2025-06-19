@@ -62,7 +62,7 @@ class ParsersTest : StringSpec({
     }
 
     "numA" {
-        val numA: Parsers.Parser<Int> = char('a').many().map { it.size }
+        val numA: Parser<Int> = char('a').many().map { it.size }
 
         run(numA, "aaa") == Right(3)
         run(numA, "") == Right(0)
@@ -76,6 +76,14 @@ class ParsersTest : StringSpec({
 
     "count chars" {
         run(char('a').many().slice().map { it.length }, "aaba") == Right(2)
+    }
+
+    "parser counting 'a' chars followed parser counting 'b' chars" {
+        val abp: Parser<Pair<Int, Int>> =
+            char('a').many().slice().map { it.length } product
+                    char('b').many().slice().map { it.length }
+
+        run(abp, "aabbb") == Right(Pair(2, 3))
     }
 })
 
