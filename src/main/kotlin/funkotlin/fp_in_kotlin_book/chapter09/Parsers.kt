@@ -1,6 +1,8 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
 import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.or
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.succeed
 
 interface Parser<T>
 
@@ -22,7 +24,10 @@ interface Parsers<PE> {
     fun <A> run(p: Parser<A>, input: String): Either<PE, A>
 }
 
-fun <A> Parser<A>.many(): Parser<List<A>> = TODO()
+fun <A> Parser<A>.many(): Parser<List<A>> =
+    or(map2(this, this.many()) { a, la ->
+        listOf(a) + la
+    }, succeed(emptyList()))
 
 fun <A> Parser<A>.many1(): Parser<List<A>> = map2(this, this.many()) { a: A, la: List<A> -> la }
 
