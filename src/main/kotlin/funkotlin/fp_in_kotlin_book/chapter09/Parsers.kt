@@ -24,9 +24,11 @@ interface Parsers<PE> {
     fun <A> run(p: Parser<A>, input: String): Either<PE, A>
 }
 
+infix fun <T> T.cons(la: List<T>) = listOf(this) + la
+
 fun <A> Parser<A>.many(): Parser<List<A>> =
     or(map2(this, this.many()) { a, la ->
-        listOf(a) + la
+        a cons la
     }, succeed(emptyList()))
 
 fun <A> Parser<A>.many1(): Parser<List<A>> = map2(this, this.many()) { a: A, la: List<A> -> la }
@@ -65,7 +67,12 @@ object ParsersInterpreter : Parsers<ParseError> {
         n: Int,
         p: Parser<A>,
     ): Parser<List<A>> {
-        TODO("Not yet implemented")
+        return when {
+            n == 0 -> map2(p, succeed("")) { a, s -> emptyList() }
+            n == 1 -> map2(p, succeed("")) { a, s -> listOf(a) }
+            n >= 2 -> map2(p, listOfN(n - 1, p)) { a, la -> listOf(a) + la }
+            else -> throw IllegalArgumentException("n must be non-negative")
+        }
     }
 
     override fun <A> run(
