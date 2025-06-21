@@ -25,8 +25,8 @@ class ParsersTest : StringSpec({
     }
 
     "or parser to recognize either parser" {
-        run(or(string("abra"), string("cadabra")), "abra") == Right("abra")
-        run(or(string("abra"), string("cadabra")), "cadabra") == Right("cadabra")
+        run(or(string("abra"), string("cadabra").defer()), "abra") == Right("abra")
+        run(or(string("abra"), string("cadabra").defer()), "cadabra") == Right("cadabra")
     }
 
     "or parser to recognize either string" {
