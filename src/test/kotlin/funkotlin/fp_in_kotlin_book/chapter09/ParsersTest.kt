@@ -81,7 +81,7 @@ class ParsersTest : StringSpec({
     "parser counting 'a' chars followed parser counting 'b' chars" {
         val abp: Parser<Pair<Int, Int>> =
             char('a').many().slice().map { it.length } product
-                    char('b').many().slice().map { it.length }
+                    { char('b').many().slice().map { it.length } }
 
         run(abp, "aabbb") == Right(Pair(2, 3))
     }

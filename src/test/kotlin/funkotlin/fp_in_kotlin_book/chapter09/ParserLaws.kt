@@ -24,8 +24,8 @@ abstract class Laws : Parsers<ParseError> {
 
     fun <A> productLaw(p1: Parser<A>, p2: Parser<A>, p3: Parser<A>, i: Gen<String>): Prop =
         forAll(i) { s: String ->
-            val left = ((p1 product p2) product p3)
-            val right = (p1 product (p2 product p3))
+            val left = ((p1 product { p2 }) product { p3 })
+            val right = (p1 product { (p2 product { p3 }) })
             run(left, s) == run(right, s)
         }
 }

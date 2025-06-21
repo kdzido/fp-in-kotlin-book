@@ -27,18 +27,19 @@ interface Parsers<PE> {
 infix fun <T> T.cons(la: List<T>) = listOf(this) + la
 
 fun <A> Parser<A>.many(): Parser<List<A>> =
-    or(map2(this, this.many()) { a, la ->
+    or(map2(this, { this.many() }) { a, la ->
         a cons la
     }, succeed(emptyList()))
 
-fun <A> Parser<A>.many1(): Parser<List<A>> = map2(this, this.many()) { a: A, la: List<A> -> la }
+fun <A> Parser<A>.many1(): Parser<List<A>> =
+    map2(this, { this.many() }) { a: A, la: List<A> -> la }
 
 fun <A, B> Parser<A>.map(f: (A) -> B): Parser<B> = TODO()
 
-fun <A, B, C> map2(pa: Parser<A>, pb: Parser<B>, f: (A, B) -> C): Parser<C> =
+fun <A, B, C> map2(pa: Parser<A>, pb: () -> Parser<B>, f: (A, B) -> C): Parser<C> =
     (pa product pb).map { (a, b) -> f(a, b) }
 
-infix fun <A, B> Parser<A>.product(pb: Parser<B>): Parser<Pair<A, B>> = TODO()
+infix fun <A, B> Parser<A>.product(pb: () -> Parser<B>): Parser<Pair<A, B>> = TODO()
 
 fun <A> Parser<A>.slice(): Parser<String> = TODO()
 
@@ -68,9 +69,9 @@ object ParsersInterpreter : Parsers<ParseError> {
         p: Parser<A>,
     ): Parser<List<A>> {
         return when {
-            n == 0 -> map2(p, succeed("")) { a, s -> emptyList() }
-            n == 1 -> map2(p, succeed("")) { a, s -> listOf(a) }
-            n >= 2 -> map2(p, listOfN(n - 1, p)) { a, la -> listOf(a) + la }
+            n == 0 -> map2(p, { succeed("") }) { a, s -> emptyList() }
+            n == 1 -> map2(p, { succeed("") }) { a, s -> listOf(a) }
+            n >= 2 -> map2(p, { listOfN(n - 1, p) }) { a, la -> listOf(a) + la }
             else -> throw IllegalArgumentException("n must be non-negative")
         }
     }
