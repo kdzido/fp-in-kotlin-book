@@ -40,7 +40,7 @@ fun <A> Parser<A>.defer(): () -> Parser<A> = TODO()
 fun <A> Parser<A>.many1(): Parser<List<A>> =
     map2(this, { this.many() }) { a: A, la: List<A> -> la }
 
-fun <A, B> Parser<A>.map(f: (A) -> B): Parser<B> = TODO()
+fun <A, B> Parser<A>.map(f: (A) -> B): Parser<B> = flatMap { a -> succeed(f(a)) }
 
 fun <A, B> Parser<A>.flatMap(f: (A) -> Parser<B>): Parser<B> = TODO()
 
