@@ -45,9 +45,10 @@ fun <A, B> Parser<A>.map(f: (A) -> B): Parser<B> = TODO()
 fun <A, B> Parser<A>.flatMap(f: (A) -> Parser<B>): Parser<B> = TODO()
 
 fun <A, B, C> map2(pa: Parser<A>, pb: () -> Parser<B>, f: (A, B) -> C): Parser<C> =
-    (pa product pb).map { (a, b) -> f(a, b) }
+    pa.flatMap { a -> pb().map { b -> f(a, b) } }
 
-infix fun <A, B> Parser<A>.product(pb: () -> Parser<B>): Parser<Pair<A, B>> = TODO()
+infix fun <A, B> Parser<A>.product(pb: () -> Parser<B>): Parser<Pair<A, B>> =
+    this.flatMap { a -> pb().map { b -> Pair(a, b) } }
 
 fun <A> Parser<A>.slice(): Parser<String> = TODO()
 
