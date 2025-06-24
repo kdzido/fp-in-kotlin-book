@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
+import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.char
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.listOfN
@@ -11,8 +12,10 @@ import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.defer
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.many
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.map
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.product
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.tag
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.checkAll
 
 class ParsersTest : StringSpec({
@@ -81,6 +84,19 @@ class ParsersTest : StringSpec({
                     map(slice(char('b').many())) { it.length }
 
         run(abp, "aabbb") == Right(Pair(2, 3))
+    }
+
+    "tagged parser should return parsing error location with the tag message" {
+        // given
+        val input = "hello world"
+        val tagMsg = "expected magic word"
+
+        // when
+        val result = run(tag(tagMsg, string("abra")), input)
+        // then
+        val left: Left<ParseError> = result.shouldBeInstanceOf<Left<ParseError>>()
+        errorMessage(left.value) shouldBe tagMsg
+        errorLocation(left.value) shouldBe Location(input = input, offset = 0)
     }
 })
 

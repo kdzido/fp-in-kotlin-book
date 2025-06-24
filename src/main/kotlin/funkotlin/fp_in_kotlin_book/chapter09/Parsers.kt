@@ -16,6 +16,21 @@ sealed class JSON {
 
 object ParseError
 
+data class Location(val input: String, val offset: Int = 0) {
+    private val slice by lazy { input.slice(0..offset + 1) }
+
+    val line by lazy { slice.count { it == '\n' } + 1 }
+    val column by lazy {
+        when (val n = slice.lastIndexOf('\n')) {
+            -1 -> offset + 1
+            else -> offset - n
+        }
+    }
+}
+
+fun errorLocation(e: ParseError): Location = TODO()
+fun errorMessage(e: ParseError): String = TODO()
+
 abstract class Parsers<PE> {
     // primitives
     internal abstract fun string(s: String): Parser<String>
@@ -24,6 +39,8 @@ abstract class Parsers<PE> {
     internal abstract fun <A> succeed(a: A): Parser<A>
     internal abstract fun <A, B> flatMap(p1: Parser<A>, f: (A) -> Parser<B>): Parser<B>
     internal abstract fun <A> or(p1: Parser<out A>, p2: () -> Parser<out A>): Parser<A>
+    
+    internal abstract fun <A> tag(msg: String, pa: Parser<A>): Parser<A>
 
     // other combinators
     internal abstract fun char(c: Char): Parser<Char>
@@ -141,6 +158,12 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> or(
         p1: Parser<out A>,
         p2: () -> Parser<out A>,
+    ): Parser<A> =
+        TODO("Not yet implemented")
+
+    override fun <A> tag(
+        msg: String,
+        pa: Parser<A>,
     ): Parser<A> =
         TODO("Not yet implemented")
 
