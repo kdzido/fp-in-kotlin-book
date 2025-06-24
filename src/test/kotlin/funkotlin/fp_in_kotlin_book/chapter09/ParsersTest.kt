@@ -2,11 +2,15 @@ package funkotlin.fp_in_kotlin_book.chapter09
 
 import funkotlin.fp_in_kotlin_book.chapter04.Right
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.char
-import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.charZeroOrMore
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.listOfN
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.or
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.run
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.slice
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.string
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.defer
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.many
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.map
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.product
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.checkAll
@@ -40,14 +44,7 @@ class ParsersTest : StringSpec({
         run(listOfN(3, "ab" or "cad"), "cadabcad") == Right("cadabcad")
     }
 
-    "parser to recognize seq of zero or more of chars" {
-        run(charZeroOrMore('a'), "aaa") == Right(3)
-        run(charZeroOrMore('a'), "abba") == Right(2)
-        run(charZeroOrMore('a'), "0") == Right(0)
-        run(charZeroOrMore('a'), "b123") == Right(0)
-    }
-
-    "parser to recognize repetitions" {
+    "parser to recognize repetitions zero or more times" {
         run(char('a').many(), "aaa") == Right(3)
         run(char('a').many(), "") == Right(0)
         run(char('a').many(), "b123") == Right(0)
@@ -55,14 +52,14 @@ class ParsersTest : StringSpec({
     }
 
     "combiner to map over parser" {
-        run(char('a').many().map { it.size }, "aaa") == Right(3)
-        run(char('a').many().map { it.size }, "") == Right(0)
-        run(char('a').many().map { it.size }, "b123") == Right(0)
-        run(char('a').many().map { it.size }, "bbbaaa") == Right(0) // from beginning only?
+        run(map(char('a').many()) { it.size }, "aaa") == Right(3)
+        run(map(char('a').many()) { it.size }, "") == Right(0)
+        run(map(char('a').many()) { it.size }, "b123") == Right(0)
+        run(map(char('a').many()) { it.size }, "bbbaaa") == Right(0) // from beginning only?
     }
 
     "numA" {
-        val numA: Parser<Int> = char('a').many().map { it.size }
+        val numA: Parser<Int> = map(char('a').many()) { it.size }
 
         run(numA, "aaa") == Right(3)
         run(numA, "") == Right(0)
@@ -71,17 +68,17 @@ class ParsersTest : StringSpec({
     }
 
     "slice" {
-        run(("a" or "b").many().slice(), "abba") == Right("abba")
+        run(slice(("a" or "b").many()), "abba") == Right("abba")
     }
 
     "count chars" {
-        run(char('a').many().slice().map { it.length }, "aaba") == Right(2)
+        run(map(slice(char('a').many())) { it.length }, "aaba") == Right(2)
     }
 
     "parser counting 'a' chars followed parser counting 'b' chars" {
         val abp: Parser<Pair<Int, Int>> =
-            char('a').many().slice().map { it.length } product
-                    { char('b').many().slice().map { it.length } }
+            map(slice(char('a').many())) { it.length } product
+                    map(slice(char('b').many())) { it.length }
 
         run(abp, "aabbb") == Right(Pair(2, 3))
     }
