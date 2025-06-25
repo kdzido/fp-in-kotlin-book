@@ -1,7 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
+import funkotlin.fp_in_kotlin_book.chapter02.head
+import funkotlin.fp_in_kotlin_book.chapter02.tail
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.attempt
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.char
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.listOfN
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.or
@@ -9,14 +12,18 @@ import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.run
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.slice
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.string
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.defer
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.fail
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.flatMap
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.many
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.map
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.product
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.scope
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.tag
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.checkAll
+import org.junit.jupiter.api.Test
 
 class ParsersTest : StringSpec({
     "parser to recognize single character" {
@@ -95,8 +102,85 @@ class ParsersTest : StringSpec({
         val result = run(tag(tagMsg, string("abra")), input)
         // then
         val left: Left<ParseError> = result.shouldBeInstanceOf<Left<ParseError>>()
-        errorMessage(left.value) shouldBe tagMsg
-        errorLocation(left.value) shouldBe Location(input = input, offset = 0)
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), tagMsg)
     }
-})
+
+    "composed tagged parsers should return stacked parse errors" {
+        // given
+        val tag1 = "first magic word"
+        val tag2 = "second magic word"
+        val input = "abraCadabra"
+
+        // when
+        val result = run(
+            tag(tag1, string("abra")) product
+            string(" ").many() product
+            tag(tag2, string("cadabra")),
+            input,
+        )
+        // then
+        val left = result.shouldBeInstanceOf<Left<ParseError>>()
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), tag2)
+    }
+
+    "scoped parser should return stacked parse errors" {
+        // given
+        val scopeMsg = "magic spell"
+        val tag1 = "first magic word"
+        val tag2 = "second magic word"
+        val input = "abraCadabra"
+
+        // when
+        val result = run(
+            scope(scopeMsg) {
+                tag(tag1, string(" abra ")) product string(" ").many() product tag(tag2, string("cadabra"))
+            },
+            input,
+        )
+        // then
+        val left = result.shouldBeInstanceOf<Left<ParseError>>()
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg)
+        errorStack(left.value).tail.head shouldBe Pair(Location(input = input, offset = 0), tag2)
+    }
+
+    "should control branching in parser" {
+        // given
+        val scopeMsg1 = "magic spell"
+        val scopeMsg2 = "gibberish"
+        val input = "abra cAdabra"
+        // and
+        val spaces = string(" ").many()
+        val p1 = scope(scopeMsg1) {
+            string("abra") product spaces product string("cadabra")
+        }
+        val p2 = scope(scopeMsg2) {
+            string("abba") product spaces product string("babba")
+        }
+
+        // when
+        val p = p1 or p2
+        val left = run(p, input).shouldBeInstanceOf<Left<ParseError>>()
+        // then
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg1)
+    }
+
+
+}) {
+    @Test
+    fun `should attempt to execute branch of and fallback to 2nd branch`() {
+        // given
+        val scopeMsg2 = "short magic spell"
+        val input = "abra cadabra"
+        // and
+        val spaces = string(" ").many()
+        val p1 = string("abra") product spaces product string("abra") product string("cadabra")
+        val p2 = scope("short magic spell") { string("abra") product spaces product string("cadabra") }
+        val p = attempt(flatMap(p1) { _ -> fail() }) or p2
+
+        // when
+        val left = run(p, input).shouldBeInstanceOf<Left<ParseError>>()
+        // then
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg2)
+    }
+}
 

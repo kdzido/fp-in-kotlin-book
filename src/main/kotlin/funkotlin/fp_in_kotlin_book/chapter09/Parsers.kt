@@ -14,7 +14,7 @@ sealed class JSON {
     data class JObject(val get: Map<String, JSON>) : JSON()
 }
 
-object ParseError
+data class ParseError(val stack: List<Pair<Location, String>>)
 
 data class Location(val input: String, val offset: Int = 0) {
     private val slice by lazy { input.slice(0..offset + 1) }
@@ -28,19 +28,21 @@ data class Location(val input: String, val offset: Int = 0) {
     }
 }
 
-fun errorLocation(e: ParseError): Location = TODO()
-fun errorMessage(e: ParseError): String = TODO()
+fun errorStack(e: ParseError): List<Pair<Location, String>> = TODO()
 
-abstract class Parsers<PE> {
+abstract class Parsers {
     // primitives
     internal abstract fun string(s: String): Parser<String>
     internal abstract fun regexp(r: String): Parser<String>
     internal abstract fun <A> slice(p: Parser<A>): Parser<String>
     internal abstract fun <A> succeed(a: A): Parser<A>
+    internal abstract fun fail(): Parser<Nothing>
     internal abstract fun <A, B> flatMap(p1: Parser<A>, f: (A) -> Parser<B>): Parser<B>
     internal abstract fun <A> or(p1: Parser<out A>, p2: () -> Parser<out A>): Parser<A>
     
     internal abstract fun <A> tag(msg: String, pa: Parser<A>): Parser<A>
+    internal abstract fun <A> scope(msg: String, pa: Parser<A>): Parser<A>
+    internal abstract fun <A> attempt(pa: Parser<A>): Parser<A>
 
     // other combinators
     internal abstract fun char(c: Char): Parser<Char>
@@ -58,10 +60,10 @@ abstract class Parsers<PE> {
     internal abstract fun <A> surround(start: Parser<String>, stop: Parser<String>, p: Parser<A>): Parser<A>
 
     // TODO move
-    abstract fun <A> run(p: Parser<A>, input: String): Either<PE, A>
+    abstract fun <A> run(p: Parser<A>, input: String): Either<ParseError, A>
 }
 
-abstract class ParsersDsl<PE> : Parsers<PE>() {
+abstract class ParsersDsl : Parsers() {
     // syntactic sugar
     fun <A> Parser<A>.defer(): () -> Parser<A> = defer(this)
 
@@ -69,12 +71,14 @@ abstract class ParsersDsl<PE> : Parsers<PE>() {
 
     fun <A> Parser<A>.many(): Parser<List<A>> = this@ParsersDsl.many(this)
 
-//    infix fun <A> Parser<out A>.or(p: Parser<out A>): Parser<A> =
     infix fun <A> Parser<out A>.or(p: Parser<out A>): Parser<A> =
         this@ParsersDsl.or(this, p.defer())
 
     infix fun String.or(other: String): Parser<String> =
         this@ParsersDsl.or(string(this), string(other).defer())
+
+    fun <A> tag(msg: String, pa: () -> Parser<A>): Parser<A> = tag(msg, pa())
+    fun <A> scope(msg: String, pa: () -> Parser<A>): Parser<A> = scope(msg, pa())
 
     infix fun <A, B> Parser<A>.product(p: Parser<B>): Parser<Pair<A, B>> =
         this@ParsersDsl.product(this, p.defer())
@@ -91,7 +95,7 @@ abstract class ParsersDsl<PE> : Parsers<PE>() {
     infix fun <T> T.cons(la: List<T>) = listOf(this) + la
 }
 
-abstract class JsonParsers : ParsersDsl<ParseError>() {
+abstract class JsonParsers : ParsersDsl() {
     val JSON.parser: Parser<JSON>
         get() = succeed(this)
 
@@ -137,7 +141,7 @@ abstract class JsonParsers : ParsersDsl<ParseError>() {
         root(whitespace skipL (obj() or array()))
 }
 
-object ParsersInterpreter : ParsersDsl<ParseError>() {
+object ParsersInterpreter : ParsersDsl() {
     override fun string(s: String): Parser<String> =
         TODO("Not yet implemented")
 
@@ -149,6 +153,10 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
 
     override fun <A> succeed(a: A): Parser<A> =
         string("").map { a }
+
+    override fun fail(): Parser<Nothing> {
+        TODO("Not yet implemented")
+    }
 
     override fun <A, B> flatMap(
         p1: Parser<A>,
@@ -166,6 +174,16 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         pa: Parser<A>,
     ): Parser<A> =
         TODO("Not yet implemented")
+
+    override fun <A> scope(
+        msg: String,
+        pa: Parser<A>,
+    ): Parser<A> =
+        TODO("Not yet implemented")
+
+    override fun <A> attempt(pa: Parser<A>): Parser<A> {
+        TODO("Not yet implemented")
+    }
 
     override fun char(c: Char): Parser<Char> =
         string(c.toString()).map { it[0] }
