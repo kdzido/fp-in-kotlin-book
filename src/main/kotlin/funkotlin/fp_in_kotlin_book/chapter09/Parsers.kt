@@ -15,8 +15,14 @@ typealias Parser<T> = (Location) -> Result<T>
 typealias State = Location
 
 sealed class Result<out T>
-data class Success<out A>(val a: A, val consumed: Int): Result<A>()
-data class Failure(val get: ParseError): Result<Nothing>()
+data class Success<out A>(
+    val a: A,
+    val consumed: Int
+): Result<A>()
+data class Failure(
+    val get: ParseError,
+    val isCommited: Boolean
+): Result<Nothing>()
 
 data class ParseError(val stack: List<Pair<Location, String>>)
 
@@ -160,13 +166,13 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         if (loc.input.startsWith(s))
             Success(s, s.length)
         else
-            Failure(loc.toError("Expected: $s"))
+            Failure(get = loc.toError("Expected: $s"), isCommited = true)
     }
 
     override fun regexp(r: String): Parser<String> = { state ->
         when (val prefix = state.input.findPrefixOf(r.toRegex())) {
             is Some -> Success(prefix.t.value, prefix.t.value.length)
-            is None -> Failure(state.toError("regex ${r.toRegex()}"))
+            is None -> Failure(get = state.toError("regex ${r.toRegex()}"), isCommited = true)
         }
     }
 
@@ -185,7 +191,7 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         { state -> Success(a, 0) }
 
     override fun fail(): Parser<Nothing> =
-        { state -> Failure(ParseError(listOf(state to "FAIL"))) }
+        { state -> Failure(get = ParseError(listOf(state to "FAIL")), isCommited = true) }
 
     override fun <A, B> flatMap(
         p1: Parser<A>,
@@ -211,9 +217,13 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     ): Parser<A> =
         TODO("Not yet implemented")
 
-    override fun <A> attempt(pa: Parser<A>): Parser<A> {
-        TODO("Not yet implemented")
-    }
+    override fun <A> attempt(pa: Parser<A>): Parser<A> = { s -> pa(s).uncommit() }
+
+    fun <A> Result<A>.uncommit(): Result<A> =
+        when(this) {
+            is Failure -> if (this.isCommited) Failure(this.get, false) else this
+            is Success -> this
+        }
 
     override fun char(c: Char): Parser<Char> =
         string(c.toString()).map { it[0] }
