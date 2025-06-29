@@ -100,7 +100,7 @@ fun <A, B, C> leftAssociativeFunSignature(f: ((A) -> (B)) -> C): (A, B) -> C =
     { a, b -> f({ b}) } // TODO does it make any sense?
 
 
-fun main() {
+fun main2() {
     println("Chapter 02 ===")
 
     println("factorial(3)= " + factorial(3))

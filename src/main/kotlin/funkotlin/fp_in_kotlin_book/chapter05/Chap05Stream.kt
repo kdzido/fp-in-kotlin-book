@@ -262,6 +262,3 @@ fun <A> Stream<A>.headOption(): Option<A> =
         is Cons -> Some(head())
     }
 
-fun main() {
-    val s = Empty
-}

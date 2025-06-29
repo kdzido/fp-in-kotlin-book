@@ -78,15 +78,15 @@ class AsyncParTest : FunSpec({
   AsyncPars.run(pool, ap) shouldBe listOf(1, 2, 3, 4)
  }
 
-// test("should sequence pars") {
-//  val ap = AsyncPars.sequence(listOf(AsyncPars.unit(3), AsyncPars.unit(4), AsyncPars.lazyUnit { 5 }))
-//  AsyncPars.run(pool, ap) shouldBe listOf(3, 4, 5)
-// }
-//
-// test("should parMap") {
-//  val ap = Pars.parMap(listOf(3, 1, 4, 2)) { a -> a + 1 }
-//  ap(pool).get() shouldBe listOf(4, 2, 5, 3)
-// }
+ test("should sequence pars") {
+  val ap = AsyncPars.sequence(listOf(AsyncPars.unit(3), AsyncPars.lazyUnit{4 }, AsyncPars.lazyUnit { 5 }))
+  AsyncPars.run(pool, ap) shouldBe listOf(3, 4, 5)
+ }
+
+ test("should parMap") {
+  val ap = AsyncPars.parMap(listOf(3, 1, 4, 2)) { a -> a + 1 }
+  AsyncPars.run(pool, ap) shouldBe listOf(4, 2, 5, 3)
+ }
 
  test("should parFilter") {
   val ap = AsyncPars.parFilter(listOf(1, 2, 3, 4, 5)) { a: Int -> a % 2 == 0 }

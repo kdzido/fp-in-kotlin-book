@@ -6,7 +6,7 @@ import funkotlin.fp_in_kotlin_book.chapter08.Prop
 import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.product
 
-abstract class Laws : Parsers() {
+abstract class Laws : Parsers<ParseError>() {
     private fun <A> equal(
         p1: Parser<A>,
         p2: Parser<A>,

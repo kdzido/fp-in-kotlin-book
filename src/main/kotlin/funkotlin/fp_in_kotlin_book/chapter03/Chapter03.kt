@@ -234,7 +234,7 @@ sealed class Tree<out A> {
 data class Leaf<A>(val value: A): Tree<A>()
 data class Branch<A>(val left: Tree<A>, val right: Tree<A>): Tree<A>()
 
-fun main() {
+fun main2() {
     println("Ch03 - Functional data structures")
 
     val ex1: List<Double> = Nil

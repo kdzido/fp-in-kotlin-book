@@ -129,7 +129,7 @@ fun mkAge(age: Int): Either<String, Age> =
 fun mkPerson(name: String, age: Int): Either<String, Person> =
     map2E(mkName(name), mkAge(age), {n, a -> Person(n, a) })
 
-fun main() {
+fun main2() {
     println("Either - main")
 
     println(mkPerson("John", 10))

@@ -5,32 +5,11 @@ import java.util.regex.Pattern
 
 interface Parser<T>
 
-sealed class JSON {
-    object JNull : JSON()
-    data class JNumber(val get: Double) : JSON()
-    data class JString(val get: String) : JSON()
-    data class JBoolean(val get: Boolean) : JSON()
-    data class JArray(val get: List<JSON>) : JSON()
-    data class JObject(val get: Map<String, JSON>) : JSON()
-}
-
 data class ParseError(val stack: List<Pair<Location, String>>)
-
-data class Location(val input: String, val offset: Int = 0) {
-    private val slice by lazy { input.slice(0..offset + 1) }
-
-    val line by lazy { slice.count { it == '\n' } + 1 }
-    val column by lazy {
-        when (val n = slice.lastIndexOf('\n')) {
-            -1 -> offset + 1
-            else -> offset - n
-        }
-    }
-}
 
 fun errorStack(e: ParseError): List<Pair<Location, String>> = TODO()
 
-abstract class Parsers {
+abstract class Parsers<PE> {
     // primitives
     internal abstract fun string(s: String): Parser<String>
     internal abstract fun regexp(r: String): Parser<String>
@@ -60,10 +39,10 @@ abstract class Parsers {
     internal abstract fun <A> surround(start: Parser<String>, stop: Parser<String>, p: Parser<A>): Parser<A>
 
     // TODO move
-    abstract fun <A> run(p: Parser<A>, input: String): Either<ParseError, A>
+    abstract fun <A> run(p: Parser<A>, input: String): Either<PE, A>
 }
 
-abstract class ParsersDsl : Parsers() {
+abstract class ParsersDsl<PE> : Parsers<PE>() {
     // syntactic sugar
     fun <A> Parser<A>.defer(): () -> Parser<A> = defer(this)
 
@@ -95,7 +74,29 @@ abstract class ParsersDsl : Parsers() {
     infix fun <T> T.cons(la: List<T>) = listOf(this) + la
 }
 
-abstract class JsonParsers : ParsersDsl() {
+
+sealed class JSON {
+    object JNull : JSON()
+    data class JNumber(val get: Double) : JSON()
+    data class JString(val get: String) : JSON()
+    data class JBoolean(val get: Boolean) : JSON()
+    data class JArray(val get: List<JSON>) : JSON()
+    data class JObject(val get: Map<String, JSON>) : JSON()
+}
+
+data class Location(val input: String, val offset: Int = 0) {
+    private val slice by lazy { input.slice(0..offset + 1) }
+
+    val line by lazy { slice.count { it == '\n' } + 1 }
+    val column by lazy {
+        when (val n = slice.lastIndexOf('\n')) {
+            -1 -> offset + 1
+            else -> offset - n
+        }
+    }
+}
+
+abstract class JsonParsers : ParsersDsl<ParseError>() {
     val JSON.parser: Parser<JSON>
         get() = succeed(this)
 
@@ -141,7 +142,7 @@ abstract class JsonParsers : ParsersDsl() {
         root(whitespace skipL (obj() or array()))
 }
 
-object ParsersInterpreter : ParsersDsl() {
+object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun string(s: String): Parser<String> =
         TODO("Not yet implemented")
 

@@ -157,8 +157,7 @@ fun <A, B> traverse2(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> = when(x
         }
     }
 
-
-fun main() {
+fun main4() {
     println(failingFn2(1))
     mean(Nil)
 }

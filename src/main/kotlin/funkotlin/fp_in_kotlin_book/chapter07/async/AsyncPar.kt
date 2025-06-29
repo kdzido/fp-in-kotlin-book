@@ -52,11 +52,6 @@ object AsyncPars {
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
     fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
 
-//    fun <A, B> parMap(ps: List<A>, f: (A) -> B): Par<List<B>> = fork {
-//        val fbs: List<Par<B>> = ps.map(asyncF(f))
-//        sequence(fbs)
-//    }
-
     fun <A> parFilter(ps: List<A>, f: (A) -> Boolean): Par<List<A>> =
         if (ps.size <= 1)
             lazyUnit {
@@ -83,34 +78,6 @@ object AsyncPars {
             val ts = xs.drop(1)
             parFoldLeft(ts, f(z, h), f)
         }
-
-    fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
-    fun <A, B, C> map2(
-        pa: Par<A>,
-        pb: Par<B>,
-        f: (A, B) -> C
-    ): Par<C> = { es: ExecutorService ->
-        object : Future<C>() {
-            override fun invoke(cb: (C) -> Unit) {
-                val ar = AtomicReference<Option<A>>(None)
-                val br = AtomicReference<Option<B>>(None)
-                val combiner = Actor<Either<A, B>>(Strategy.from(es)) { eab ->
-                    when (eab) {
-                        is Either.Left<A> -> br.get().fold(
-                            { ar.set(Some(eab.a)) },
-                            { b -> eval(es) { cb(f(eab.a, b)) } }
-                        )
-                        is Either.Right<B> -> ar.get().fold(
-                            { br.set(Some(eab.b)) },
-                            { a -> eval(es) { cb(f(a, eab.b)) } }
-                        )
-                    }
-                }
-                pa(es).invoke { a: A -> combiner.send(Left(a)) }
-                pb(es).invoke { b: B -> combiner.send(Right(b)) }
-            }
-        }
-    }
 
     fun <A, B, C, D> map3(
         ap: Par<A>,
@@ -170,24 +137,86 @@ object AsyncPars {
         g(a, b, c, d, e)
     }
 
-//    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = { es ->
-//        tailrec fun go(left: List<Par<A>>, acc: List<A>): List<A> {
-//            return when {
-//                left.isEmpty() -> acc
-//                else -> {
-//                    val h: Par<A> = left.first()
-//                    val ts: List<Par<A>> = left.drop(1)
-//                    go(ts, listOf(run(es, h)) + acc)
+    fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
+
+    fun <A, B, C> map2(
+        pa: Par<A>,
+        pb: Par<B>,
+        f: (A, B) -> C
+    ): Par<C> = { es: ExecutorService ->
+        object : Future<C>() {
+            override fun invoke(cb: (C) -> Unit) {
+                val ar = AtomicReference<Option<A>>(None)
+                val br = AtomicReference<Option<B>>(None)
+                val combiner = Actor<Either<A, B>>(Strategy.from(es)) { eab ->
+                    when (eab) {
+                        is Either.Left<A> -> br.get().fold(
+                            { ar.set(Some(eab.a)) },
+                            { b -> eval(es) { cb(f(eab.a, b)) } }
+                        )
+                        is Either.Right<B> -> ar.get().fold(
+                            { br.set(Some(eab.b)) },
+                            { a -> eval(es) { cb(f(a, eab.b)) } }
+                        )
+                    }
+                }
+                pa(es).invoke { a: A -> combiner.send(Left(a)) }
+                pb(es).invoke { b: B -> combiner.send(Right(b)) }
+            }
+        }
+    }
+
+    fun <A, B> parMap(ps: List<A>, f: (A) -> B): Par<List<B>> = fork {
+        val fbs: List<Par<B>> = ps.map(asyncF(f))
+        sequence(fbs)
+    }
+
+    // TODO fix never ending call
+    // TODO fix never ending call
+    // TODO fix never ending call
+    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = { es ->
+        tailrec fun go(left: List<Par<A>>, acc: List<A>): List<A> {
+            return when {
+                left.isEmpty() -> acc
+                else -> {
+                    val h: Par<A> = left.first()
+                    val ts: List<Par<A>> = left.drop(1)
+                    go(ts, listOf(run(es, h)) + acc)
+                }
+            }
+        }
+//        es.submit(Callable { go(ps, listOf()).reversed() })
+        object : Future<List<A>>() {
+            override fun invoke(cb: (List<A>) -> Unit) {
+                val resultList = AtomicReference<List<Pair<Int, A>>>()
+//                val ar = AtomicReference<Option<A>>(None)
+//                val br = AtomicReference<Option<B>>(None)
+//                val combiner = Actor<Either<A, B>>(Strategy.from(es)) { eab ->
+//                    when (eab) {
+//                        is Either.Left<A> -> br.get().fold(
+//                            { ar.set(Some(eab.a)) },
+//                            { b -> eval(es) { cb(f(eab.a, b)) } }
+//                        )
+//                        is Either.Right<B> -> ar.get().fold(
+//                            { br.set(Some(eab.b)) },
+//                            { a -> eval(es) { cb(f(a, eab.b)) } }
+//                        )
+//                    }
 //                }
-//            }
-//        }
-////        es.submit(Callable { go(ps, listOf()).reversed() })
-//        object : Future<List<A>>() {
-//            override fun invoke(cb: (List<A>) -> Unit) {
-//                go(ps, listOf()).reversed()
-//            }
-//        }
-//    }
+//                pa(es).invoke { a: A -> combiner.send(Left(a)) }
+//                pb(es).invoke { b: B -> combiner.send(Right(b)) }
+
+//                pb(es).invoke { b: B -> combiner.send(Right(b)) }
+
+//                ps.forEachIndexed{ idx, par: Par<A> ->
+//                    par(es).invoke { a: A -> combiner.send(Pair(idx, a)) }
+//                }
+                //                go(ps, listOf()).reversed()
+
+                resultList.get() // needed?
+            }
+        }
+    }
 
     fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
         object : Future<A>() {
