@@ -38,6 +38,12 @@ class ParsersTest : StringSpec({
         }
     }
 
+    "parser should not recognize string" {
+        checkAll<String>(256) { s ->
+            run(string(s), "__OTHER__") shouldBe Left(ParseError(listOf(Location(s) to "Expected: $s")))
+        }
+    }
+
     "or parser to recognize either parser" {
         run(or(string("abra"), string("cadabra").defer()), "abra") == Right("abra")
         run(or(string("abra"), string("cadabra").defer()), "cadabra") == Right("cadabra")
@@ -132,7 +138,7 @@ class ParsersTest : StringSpec({
 
         // when
         val result = run(
-            scope(scopeMsg) {
+            scope(scopeMsg) { ->
                 tag(tag1, string(" abra ")) product string(" ").many() product tag(tag2, string("cadabra"))
             },
             input,
@@ -150,10 +156,10 @@ class ParsersTest : StringSpec({
         val input = "abra cAdabra"
         // and
         val spaces = string(" ").many()
-        val p1 = scope(scopeMsg1) {
+        val p1 = scope(scopeMsg1) { ->
             string("abra") product spaces product string("cadabra")
         }
-        val p2 = scope(scopeMsg2) {
+        val p2 = scope(scopeMsg2) { ->
             string("abba") product spaces product string("babba")
         }
 
@@ -174,7 +180,7 @@ class ParsersTest : StringSpec({
         // and
         val spaces = string(" ").many()
         val p1 = string("abra") product spaces product string("abra") product string("cadabra")
-        val p2 = scope("short magic spell") { string("abra") product spaces product string("cadabra") }
+        val p2 = scope("short magic spell") { -> string("abra") product spaces product string("cadabra") }
         val p = attempt(flatMap(p1) { _ -> fail() }) or p2
 
         // when

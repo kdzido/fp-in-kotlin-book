@@ -1,9 +1,11 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
 import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.Right
 import java.util.regex.Pattern
 
-interface Parser<T>
+typealias Parser<T> = (String) -> Either<ParseError, T>
 
 data class ParseError(val stack: List<Pair<Location, String>>)
 
@@ -143,8 +145,12 @@ abstract class JsonParsers : ParsersDsl<ParseError>() {
 }
 
 object ParsersInterpreter : ParsersDsl<ParseError>() {
-    override fun string(s: String): Parser<String> =
-        TODO("Not yet implemented")
+    override fun string(s: String): Parser<String> = { input: String ->
+        if (input.startsWith(s))
+            Right(s)
+        else
+            Left(Location(input).toError("Expected: $s"))
+    }
 
     override fun regexp(r: String): Parser<String> =
         TODO("Not yet implemented")
@@ -261,3 +267,6 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     ): Either<ParseError, A> =
         TODO()
 }
+
+private fun Location.toError(msg: String) =
+    ParseError(listOf(this to msg))
