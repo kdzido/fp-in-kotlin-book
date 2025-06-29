@@ -11,6 +11,7 @@ import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.or
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.run
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.slice
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.string
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.regexp
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.defer
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.fail
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.flatMap
@@ -18,18 +19,31 @@ import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.many
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.map
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.product
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.scope
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.succeed
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.tag
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.char
+import io.kotest.property.arbitrary.choice
+import io.kotest.property.arbitrary.codepoints
+import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
-import kotlin.Result as KotlinResult
+import kotlin.run as kotlinRun
+import kotlin.Result as kotlinResult
 
 class ParsersTest : StringSpec({
-    "parser to recognize single character" {
-        checkAll<Char>(256) { c ->
-            run(char(c), c.toString()) shouldBe Right(c)
+    "parser should always succeed" {
+        checkAll<String>(256) { s ->
+            run(succeed(s), s) shouldBe Right(s)
+        }
+    }
+
+    "parser should always fail" {
+        checkAll<String>(256) { s ->
+            run(fail(), s) shouldBe Left(ParseError(listOf(Location(s) to "FAIL")))
         }
     }
 
@@ -38,10 +52,20 @@ class ParsersTest : StringSpec({
             run(string(s), s) shouldBe Right(s)
         }
     }
+    "parser to recognize regex" {
+        run(regexp("(a){3}"), "aaa") shouldBe Right("aaa")
+    }
 
     "parser should not recognize string" {
-        checkAll<String>(256) { s ->
-            run(string(s), "__OTHER__") shouldBe Left(ParseError(listOf(Location(s) to "Expected: $s")))
+        val input = "__OTHER__"
+        checkAll<String>(256, Arb.string(minSize = 1)) { s ->
+            run(string(s), input) shouldBe Left(ParseError(listOf(Location(input) to "Expected: $s")))
+        }
+    }
+
+    "parser to recognize single character" {
+        checkAll<Char>(256) { c ->
+            run(char(c), c.toString()) shouldBe Right(c)
         }
     }
 
@@ -85,7 +109,7 @@ class ParsersTest : StringSpec({
     }
 
     "slice" {
-        run(slice(("a" or "b").many()), "abba") == Right("abba")
+        run(slice(string("aaa")), "aaabbbaaa") == Right("aaa")
     }
 
     "count chars" {

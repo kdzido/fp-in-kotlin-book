@@ -1,10 +1,19 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
+import arrow.core.toOption
 import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.Right
 import java.util.regex.Pattern
-import kotlin.Result as KotlinResult
+import kotlin.Result as kotlinResult
+import kotlin.run as kotlinRun
 
 typealias Parser<T> = (Location) -> Result<T>
+typealias State = Location
+
 sealed class Result<out T>
 data class Success<out A>(val a: A, val consumed: Int): Result<A>()
 data class Failure(val get: ParseError): Result<Nothing>()
@@ -154,24 +163,36 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
             Failure(loc.toError("Expected: $s"))
     }
 
-    override fun regexp(r: String): Parser<String> =
-        TODO("Not yet implemented")
+    override fun regexp(r: String): Parser<String> = { state ->
+        when (val prefix = state.input.findPrefixOf(r.toRegex())) {
+            is Some -> Success(prefix.t.value, prefix.t.value.length)
+            is None -> Failure(state.toError("regex ${r.toRegex()}"))
+        }
+    }
 
-    override fun <A> slice(p: Parser<A>): Parser<String> =
-        TODO("Not yet implemented")
+    private fun String.findPrefixOf(r: Regex): Option<MatchResult> =
+        r.find(this).toOption().filter { it.range.first == 0}
+
+
+    override fun <A> slice(p: Parser<A>): Parser<String> = { state ->
+        when (val result = p(state)) {
+            is Success -> Success(state.slice(result.consumed), result.consumed)
+            is Failure -> result
+        }
+    }
 
     override fun <A> succeed(a: A): Parser<A> =
-        string("").map { a }
+        { state -> Success(a, 0) }
 
-    override fun fail(): Parser<Nothing> {
-        TODO("Not yet implemented")
-    }
+    override fun fail(): Parser<Nothing> =
+        { state -> Failure(ParseError(listOf(state to "FAIL"))) }
 
     override fun <A, B> flatMap(
         p1: Parser<A>,
         f: (A) -> Parser<B>,
     ): Parser<B> =
-        TODO("Not yet implemented")
+        TODO()
+
     override fun <A> or(
         p1: Parser<out A>,
         p2: () -> Parser<out A>,
@@ -267,8 +288,14 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         p: Parser<A>,
         input: String,
     ): Either<ParseError, A> =
-        TODO()
+        when (val res = p(Location(input))) {
+            is Success -> Right(res.a)
+            is Failure -> Left(res.get)
+        }
 }
+
+private fun State.slice(n: Int) =
+    this.input.substring(this.offset..this.offset + n)
 
 private fun Location.toError(msg: String) =
     ParseError(listOf(this to msg))
