@@ -1,11 +1,13 @@
 package funkotlin.fp_in_kotlin_book.chapter09
 
 import funkotlin.fp_in_kotlin_book.chapter04.Either
-import funkotlin.fp_in_kotlin_book.chapter04.Left
-import funkotlin.fp_in_kotlin_book.chapter04.Right
 import java.util.regex.Pattern
+import kotlin.Result as KotlinResult
 
-typealias Parser<T> = (String) -> Either<ParseError, T>
+typealias Parser<T> = (Location) -> Result<T>
+sealed class Result<out T>
+data class Success<out A>(val a: A, val consumed: Int): Result<A>()
+data class Failure(val get: ParseError): Result<Nothing>()
 
 data class ParseError(val stack: List<Pair<Location, String>>)
 
@@ -145,11 +147,11 @@ abstract class JsonParsers : ParsersDsl<ParseError>() {
 }
 
 object ParsersInterpreter : ParsersDsl<ParseError>() {
-    override fun string(s: String): Parser<String> = { input: String ->
-        if (input.startsWith(s))
-            Right(s)
+    override fun string(s: String): Parser<String> = { loc: Location ->
+        if (loc.input.startsWith(s))
+            Success(s, s.length)
         else
-            Left(Location(input).toError("Expected: $s"))
+            Failure(loc.toError("Expected: $s"))
     }
 
     override fun regexp(r: String): Parser<String> =

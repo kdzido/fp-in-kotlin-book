@@ -24,6 +24,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.checkAll
 import org.junit.jupiter.api.Test
+import kotlin.Result as KotlinResult
 
 class ParsersTest : StringSpec({
     "parser to recognize single character" {
