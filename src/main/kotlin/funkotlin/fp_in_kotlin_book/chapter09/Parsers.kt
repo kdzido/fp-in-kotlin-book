@@ -7,6 +7,7 @@ import arrow.core.toOption
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.cons
 import java.util.regex.Pattern
 import kotlin.Result as kotlinResult
 import kotlin.run as kotlinRun
@@ -25,6 +26,9 @@ data class Failure(
 ): Result<Nothing>()
 
 data class ParseError(val stack: List<Pair<Location, String>>)
+
+fun ParseError.push(loc: Location, msg: String): ParseError =
+    this.copy(stack = (loc to msg) cons this.stack)
 
 fun errorStack(e: ParseError): List<Pair<Location, String>> = TODO()
 
