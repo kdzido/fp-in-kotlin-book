@@ -202,8 +202,12 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> or(
         p1: Parser<out A>,
         p2: () -> Parser<out A>,
-    ): Parser<A> =
-        TODO("Not yet implemented")
+    ): Parser<A> = { state ->
+        when (val r: Result<A> = p1(state) ) {
+            is Failure -> if (!r.isCommited) p2()(state) else r
+            is Success -> r
+        }
+    }
 
     override fun <A> tag(
         msg: String,
