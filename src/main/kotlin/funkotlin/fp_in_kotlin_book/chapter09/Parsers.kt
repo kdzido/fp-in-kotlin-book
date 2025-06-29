@@ -3,14 +3,13 @@ package funkotlin.fp_in_kotlin_book.chapter09
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.core.lastOrNone
 import arrow.core.toOption
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.cons
 import java.util.regex.Pattern
-import kotlin.Result as kotlinResult
-import kotlin.run as kotlinRun
 
 typealias Parser<T> = (Location) -> Result<T>
 typealias State = Location
@@ -25,12 +24,42 @@ data class Failure(
     val isCommited: Boolean
 ): Result<Nothing>()
 
+fun <A> Result<A>.uncommit(): Result<A> =
+    when(this) {
+        is Failure -> if (this.isCommited) Failure(this.get, false) else this
+        is Success -> this
+    }
+
+fun <A> Result<A>.addCommit(commit: Boolean): Result<A> =
+    when(this) {
+        is Failure -> Failure(get = this.get, isCommited = this.isCommited || commit)
+        is Success -> this
+    }
+
+fun <A> Result<A>.advanceSuccess(n: Int): Result<A> =
+    when(this) {
+        is Success -> Success(this.a, this.consumed + n)
+        is Failure -> this
+    }
+
+fun <A> Result<A>.mapError(f: (ParseError) -> ParseError): Result<A> =
+    when(this) {
+        is Success -> this
+        is Failure -> Failure(f(this.get), this.isCommited)
+    }
+
 data class ParseError(val stack: List<Pair<Location, String>>)
 
 fun ParseError.push(loc: Location, msg: String): ParseError =
     this.copy(stack = (loc to msg) cons this.stack)
 
-fun errorStack(e: ParseError): List<Pair<Location, String>> = TODO()
+fun ParseError.tag(msg: String): ParseError {
+    val latest = this.stack.lastOrNone()
+    val latestLocation = latest.map { it.first }
+    return ParseError(latestLocation.map { it to msg }.toList())
+}
+
+fun errorStack(e: ParseError): List<Pair<Location, String>> = e.stack
 
 abstract class Parsers<PE> {
     // primitives
@@ -200,8 +229,15 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A, B> flatMap(
         p1: Parser<A>,
         f: (A) -> Parser<B>,
-    ): Parser<B> =
-        TODO()
+    ): Parser<B> = { state ->
+        when (val result = p1(state)) {
+            is Success ->
+                f(result.a)(state.advanceBy(result.consumed))
+                    .addCommit(result.consumed != 0)
+                    .advanceSuccess(result.consumed)
+            is Failure -> result
+        }
+    }
 
     override fun <A> or(
         p1: Parser<out A>,
@@ -216,31 +252,29 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> tag(
         msg: String,
         pa: Parser<A>,
-    ): Parser<A> =
-        TODO("Not yet implemented")
+    ): Parser<A> = { state ->
+        pa(state).mapError { pe: ParseError ->
+            pe.tag(msg)
+        }
+    }
 
     override fun <A> scope(
         msg: String,
         pa: Parser<A>,
-    ): Parser<A> =
-        TODO("Not yet implemented")
+    ): Parser<A> = { state ->
+        pa(state).mapError { pe -> pe.push(state, msg)}
+    }
 
     override fun <A> attempt(pa: Parser<A>): Parser<A> = { s -> pa(s).uncommit() }
-
-    fun <A> Result<A>.uncommit(): Result<A> =
-        when(this) {
-            is Failure -> if (this.isCommited) Failure(this.get, false) else this
-            is Success -> this
-        }
 
     override fun char(c: Char): Parser<Char> =
         string(c.toString()).map { it[0] }
 
+    //        map2(pa, defer(many(pa))) { a, la ->
     override fun <A> many(pa: Parser<A>): Parser<List<A>> =
-        or(
-            map2(pa, defer(many(pa))) { a, la -> a cons la },
-            defer(succeed(emptyList<A>()))
-        )
+        map2(pa, { -> many(pa) }) { a, la ->
+            a cons la
+        } or succeed(emptyList<A>())
 
     override fun <A> many1(pa: Parser<A>): Parser<List<A>> =
         map2(pa, many(pa).defer()) { a: A, la: List<A> -> la }
@@ -274,8 +308,7 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     ): Parser<B> =
         flatMap(pa) { a -> succeed(f(a)) }
 
-    override fun <A> defer(pa: Parser<A>): () -> Parser<A> =
-        { pa }
+    override fun <A> defer(pa: Parser<A>): () -> Parser<A> = { pa }
 
     override fun <A> skipR(
         pa: Parser<A>,
@@ -317,3 +350,6 @@ private fun State.slice(n: Int) =
 
 private fun Location.toError(msg: String) =
     ParseError(listOf(this to msg))
+
+private fun Location.advanceBy(n: Int) =
+    this.copy(offset = this.offset + n)

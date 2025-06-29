@@ -140,7 +140,7 @@ class ParsersTest : StringSpec({
         // given
         val tag1 = "first magic word"
         val tag2 = "second magic word"
-        val input = "abraCadabra"
+        val input = "abra Cadabra"
 
         // when
         val result = run(
@@ -151,7 +151,7 @@ class ParsersTest : StringSpec({
         )
         // then
         val left = result.shouldBeInstanceOf<Left<ParseError>>()
-        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), tag2)
+        errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 4), tag2)
     }
 
     "scoped parser should return stacked parse errors" {
@@ -159,19 +159,20 @@ class ParsersTest : StringSpec({
         val scopeMsg = "magic spell"
         val tag1 = "first magic word"
         val tag2 = "second magic word"
-        val input = "abraCadabra"
+        val input = "abra Cadabra"
 
         // when
         val result = run(
             scope(scopeMsg) { ->
-                tag(tag1, string(" abra ")) product string(" ").many() product tag(tag2, string("cadabra"))
+                tag(tag1, string("abra")) product string(" ").many() product tag(tag2, string("cadabra"))
             },
             input,
         )
         // then
         val left = result.shouldBeInstanceOf<Left<ParseError>>()
         errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg)
-        errorStack(left.value).tail.head shouldBe Pair(Location(input = input, offset = 0), tag2)
+        errorStack(left.value).tail.head shouldBe Pair(Location(input = input, offset = 4), tag2)
+//        errorStack(left.value).tail.tail.head shouldBe Pair(Location(input = input, offset = 4), tag2)
     }
 
     "should control branching in parser" {
