@@ -10,3 +10,5 @@
 7. Purely functional parallelism
 8. Property-based testing
 9. Parser combinators
+* PART 3: COMMON STRUCTURES IN FUNCTIONAL DESIGN
+10. Monoids
