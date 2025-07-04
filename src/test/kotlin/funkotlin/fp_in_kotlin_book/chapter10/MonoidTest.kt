@@ -1,7 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
 import funkotlin.fp_in_kotlin_book.chapter04.None
-import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -81,5 +80,35 @@ class MonoidTest : StringSpec({
         intOption.combine(Some(1), nil) shouldBe Some(1)
         intOption.combine(nil, Some(1)) shouldBe Some(1)
         intOption.combine(nil, nil) shouldBe nil
+    }
+
+    "endo-andThen monoid" {
+        val f1f2 = endoMonoidAndThen<Int>()
+        val nil = f1f2.nil
+
+        val inc1: (Int) -> Int = { it + 1 }
+        val mul2: (Int) -> Int = { it * 2 }
+
+        f1f2.combine(inc1, mul2)(2) shouldBe 6
+        f1f2.combine(mul2, inc1)(2) shouldBe 5
+        // and: id law
+        f1f2.combine(inc1, nil)(2) shouldBe 3
+        f1f2.combine(nil, mul2)(2) shouldBe 4
+        f1f2.combine(nil, nil)(2) shouldBe 2
+    }
+
+    "endo-compose monoid" {
+        val f1f2 = endoMonoidComposed<Int>()
+        val nil = f1f2.nil
+
+        val inc1: (Int) -> Int = { it + 1 }
+        val mul2: (Int) -> Int = { it * 2 }
+
+        f1f2.combine(inc1, mul2)(2) shouldBe 5
+        f1f2.combine(mul2, inc1)(2) shouldBe 6
+        // and: id law
+        f1f2.combine(inc1, nil)(2) shouldBe 3
+        f1f2.combine(nil, mul2)(2) shouldBe 4
+        f1f2.combine(nil, nil)(2) shouldBe 2
     }
 })

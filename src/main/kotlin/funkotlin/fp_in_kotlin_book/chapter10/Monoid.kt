@@ -1,8 +1,9 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
+import arrow.core.andThen
+import arrow.core.compose
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
-import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.orElse
 
 interface Monoid<A> {
@@ -51,3 +52,12 @@ fun <A> dual(m: Monoid<A>): Monoid<A> = object : Monoid<A> {
 
 fun <A> firstOptionMonoid(): Monoid<Option<A>> = optionMonoid()
 fun <A> lastOptionMonoid(): Monoid<Option<A>> = dual(optionMonoid())
+
+fun <A> endoMonoidAndThen(): Monoid<(A) -> A> = object : Monoid<(A) -> A> {
+    override fun combine(a1: (A) -> A, a2: (A) -> A): (A) -> A = a1 andThen a2
+    override val nil: (A) -> A get() = { a -> a }
+}
+fun <A> endoMonoidComposed(): Monoid<(A) -> A> = object : Monoid<(A) -> A> {
+    override fun combine(a1: (A) -> A, a2: (A) -> A): (A) -> A = a1 compose a2
+    override val nil: (A) -> A get() = { a -> a }
+}
