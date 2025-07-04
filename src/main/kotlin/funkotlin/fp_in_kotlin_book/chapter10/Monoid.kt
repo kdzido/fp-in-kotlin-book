@@ -5,6 +5,9 @@ import arrow.core.compose
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.orElse
+import funkotlin.fp_in_kotlin_book.chapter08.Gen
+import funkotlin.fp_in_kotlin_book.chapter08.Prop
+import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
 
 interface Monoid<A> {
     fun combine(a1: A, a2: A): A
@@ -61,3 +64,19 @@ fun <A> endoMonoidComposed(): Monoid<(A) -> A> = object : Monoid<(A) -> A> {
     override fun combine(a1: (A) -> A, a2: (A) -> A): (A) -> A = a1 compose a2
     override val nil: (A) -> A get() = { a -> a }
 }
+
+fun <A> monoidLaws(m: Monoid<A>, g: Gen<A>): Prop =
+    forAll(
+        g.flatMap { a ->
+            g.flatMap { b ->
+                g.map { c -> Triple(a, b, c) }
+            }
+        }
+    ) { (a: A, b: A, c: A) ->
+        // associativity
+        m.combine(a, m.combine(b, c)) == m.combine(m.combine(a, b), c) &&
+                // identity
+                m.combine(a, m.nil) == a &&
+                m.combine(m.nil, a) == a &&
+                m.combine(m.nil, m.nil) == m.nil
+    }

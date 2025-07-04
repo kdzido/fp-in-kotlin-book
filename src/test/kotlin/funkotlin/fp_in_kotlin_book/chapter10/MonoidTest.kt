@@ -2,6 +2,10 @@ package funkotlin.fp_in_kotlin_book.chapter10
 
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
+import funkotlin.fp_in_kotlin_book.chapter08.Gen
+import funkotlin.fp_in_kotlin_book.chapter08.Passed
+import funkotlin.fp_in_kotlin_book.chapter08.Prop
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -110,5 +114,13 @@ class MonoidTest : StringSpec({
         f1f2.combine(inc1, nil)(2) shouldBe 3
         f1f2.combine(nil, mul2)(2) shouldBe 4
         f1f2.combine(nil, nil)(2) shouldBe 2
+    }
+
+    "monoid laws for int monoids" {
+        val rng = SimpleRNG(1L)
+        val intGen = Gen.choose(-1000, 1000)
+
+        Prop.run(monoidLaws(intAddition(), intGen), 100, 100, rng) shouldBe Passed
+        Prop.run(monoidLaws(intMultiplication(), intGen), 100, 100, rng) shouldBe Passed
     }
 })
