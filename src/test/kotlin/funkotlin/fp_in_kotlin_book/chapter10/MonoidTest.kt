@@ -1,5 +1,8 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
+import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Option
+import funkotlin.fp_in_kotlin_book.chapter04.Some
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -50,5 +53,33 @@ class MonoidTest : StringSpec({
         // and
         andMonoid.combine(false, nil) shouldBe false
         andMonoid.combine(true, nil) shouldBe true
+    }
+
+    "first Option monoid" {
+        val intOption = firstOptionMonoid<Int>()
+        val nil = intOption.nil
+
+        intOption.combine(Some(1), Some(2)) shouldBe Some(1)
+        intOption.combine(Some(1), None) shouldBe Some(1)
+        intOption.combine(None, Some(2)) shouldBe Some(2)
+        intOption.combine(None, None) shouldBe None
+        // and: id law
+        intOption.combine(Some(1), nil) shouldBe Some(1)
+        intOption.combine(nil, Some(1)) shouldBe Some(1)
+        intOption.combine(nil, nil) shouldBe nil
+    }
+
+    "last Option monoid" {
+        val intOption = lastOptionMonoid<Int>()
+        val nil = intOption.nil
+
+        intOption.combine(Some(1), Some(2)) shouldBe Some(2)
+        intOption.combine(Some(1), None) shouldBe Some(1)
+        intOption.combine(None, Some(2)) shouldBe Some(2)
+        intOption.combine(None, None) shouldBe None
+        // and: id law
+        intOption.combine(Some(1), nil) shouldBe Some(1)
+        intOption.combine(nil, Some(1)) shouldBe Some(1)
+        intOption.combine(nil, nil) shouldBe nil
     }
 })
