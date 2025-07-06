@@ -88,3 +88,21 @@ fun <A> concatenate(ls: List<A>, m: Monoid<A>): A =
 fun <A, B> foldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B =
     ls.map(f)
         .foldLeft(m.nil, m::combine)
+
+
+fun <B> foldMonoid(): Monoid<(B) -> B> = object : Monoid<(B) -> B> {
+    override fun combine(a1: (B) -> B, a2: (B) -> B): (B) -> B = a1 andThen a2
+    override val nil: (B) -> B get() = { b -> b }
+}
+
+fun <A, B> foldRight(ls: Sequence<A>, z: B, f: (A, B) -> B): B {
+    val fc: (A) -> (B) -> B = { a -> { b -> f(a, b) }}
+
+    return foldMap(ls.toList(), foldMonoid(), fc)(z)
+}
+
+fun <A, B> foldLeft(ls: Sequence<A>, z: B, f: (B, A) -> B): B {
+    val fc: (A) -> (B) -> B = { a -> { b -> f(b, a) }}
+
+    return foldMap(ls.toList(), dual(foldMonoid()), fc)(z)
+}

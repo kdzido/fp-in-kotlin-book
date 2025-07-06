@@ -151,4 +151,16 @@ class MonoidTest : StringSpec({
 
         foldMap(nums, stringMonoid, num2word) shouldBe "OneTwoThree"
     }
+
+    "should foldLeft list" {
+        val words = listOf("aa", "bbb", "cccc")
+
+        words.foldRight(1, { s: String, acc: Int -> acc * s.length }) shouldBe 24
+        words.foldLeft(1, { acc: Int, s: String -> acc * s.length }) shouldBe 24
+
+        // expect
+        foldRight(words.asSequence(), 1, { s: String, acc: Int -> acc * s.length }) shouldBe 24
+        foldLeft(words.asSequence(), 1, { acc: Int, s: String -> acc * s.length }) shouldBe 24
+    }
+
 })
