@@ -89,6 +89,18 @@ fun <A, B> foldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B =
     ls.map(f)
         .foldLeft(m.nil, m::combine)
 
+fun <A, B> balFoldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B {
+    return when {
+        ls.isEmpty() -> m.nil
+        ls.size == 1 -> f(ls.first())
+        else -> {
+            val index: Int = ls.size / 2
+            val l1 = ls.take(index)
+            val l2 = ls.drop(index)
+            m.combine(balFoldMap(l1, m, f), balFoldMap(l2, m, f))
+        }
+    }
+}
 
 fun <B> foldMonoid(): Monoid<(B) -> B> = object : Monoid<(B) -> B> {
     override fun combine(a1: (B) -> B, a2: (B) -> B): (B) -> B = a1 andThen a2

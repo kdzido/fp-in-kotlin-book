@@ -152,6 +152,30 @@ class MonoidTest : StringSpec({
         foldMap(nums, stringMonoid, num2word) shouldBe "OneTwoThree"
     }
 
+    "should balFoldMap over list" {
+        val nums0 = listOf<Int>()
+        val nums1 = listOf(1)
+        val nums2 = listOf(1, 2)
+        val nums4 = listOf(1, 2, 3, 4)
+        val nums5 = listOf(1, 2, 3, 4, 5)
+        val num2word: (Int) -> String = {
+            when (it) {
+                1 -> "One"
+                2 -> "Two"
+                3 -> "Three"
+                4 -> "Four"
+                5 -> "Five"
+                else -> TODO("Unsupported number")
+            }
+        }
+
+        balFoldMap(nums0, stringMonoid, num2word) shouldBe ""
+        balFoldMap(nums1, stringMonoid, num2word) shouldBe "One"
+        balFoldMap(nums2, stringMonoid, num2word) shouldBe "OneTwo"
+        balFoldMap(nums4, stringMonoid, num2word) shouldBe "OneTwoThreeFour"
+        balFoldMap(nums5, stringMonoid, num2word) shouldBe "OneTwoThreeFourFive"
+    }
+
     "should foldLeft list" {
         val words = listOf("aa", "bbb", "cccc")
 
