@@ -6,9 +6,12 @@ import arrow.core.extensions.list.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.orElse
+import funkotlin.fp_in_kotlin_book.chapter07.Par
+import funkotlin.fp_in_kotlin_book.chapter07.Pars
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
 import funkotlin.fp_in_kotlin_book.chapter08.Prop
 import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
+import kotlin.Int
 
 interface Monoid<A> {
     fun combine(a1: A, a2: A): A
@@ -89,8 +92,8 @@ fun <A, B> foldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B =
     ls.map(f)
         .foldLeft(m.nil, m::combine)
 
-fun <A, B> balFoldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B {
-    return when {
+fun <A, B> balFoldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B =
+    when {
         ls.isEmpty() -> m.nil
         ls.size == 1 -> f(ls.first())
         else -> {
@@ -100,7 +103,24 @@ fun <A, B> balFoldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B {
             m.combine(balFoldMap(l1, m, f), balFoldMap(l2, m, f))
         }
     }
-}
+
+fun <A, B> parFoldMap(ls: List<A>, m: Monoid<Par<B>>, f: (A) -> B): Par<B> =
+    when {
+        ls.isEmpty() -> m.nil
+        ls.size == 1 -> Pars.lazyUnit { f(ls.first()) }
+        else -> {
+            val index: Int = ls.size / 2
+            val l1 = ls.take(index)
+            val l2 = ls.drop(index)
+            m.combine(parFoldMap(l1, m, f), parFoldMap(l2, m, f))
+        }
+    }
+
+fun <A> monoidPar(m: Monoid<A>): Monoid<Par<A>> =
+    object : Monoid<Par<A>> {
+        override fun combine(a1: Par<A>, a2: Par<A>, ): Par<A> = Pars.map2(a1, a2, m::combine)
+        override val nil: Par<A> get() = Pars.unit(m.nil)
+    }
 
 fun <B> foldMonoid(): Monoid<(B) -> B> = object : Monoid<(B) -> B> {
     override fun combine(a1: (B) -> B, a2: (B) -> B): (B) -> B = a1 andThen a2
@@ -118,3 +138,25 @@ fun <A, B> foldLeft(ls: Sequence<A>, z: B, f: (B, A) -> B): B {
 
     return foldMap(ls.toList(), dual(foldMonoid()), fc)(z)
 }
+
+data class ListInterval(
+    val first: Int,
+    val last: Int,
+    val isInOrder: Boolean
+)
+
+fun orderedIntervalsMonoid(): Monoid<ListInterval> = object : Monoid<ListInterval> {
+    // a1.last < a2.first, remember combine is not commutative in monoids
+    override fun combine(a1: ListInterval, a2: ListInterval): ListInterval =
+        when {
+            a1.isInOrder && a2.isInOrder && a1.last < a2.first -> ListInterval(a1.first, a2.last, true)
+            else -> ListInterval(a1.last, a2.last, false)
+        }
+    override val nil: ListInterval get() = ListInterval(0, 0, true)
+}
+
+fun ordered(ints: Sequence<Int>): Boolean =
+    balFoldMap(ints.toList(), orderedIntervalsMonoid(), { a: Int ->
+        ListInterval(a, a, true)
+    }
+    ).isInOrder

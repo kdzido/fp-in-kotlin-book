@@ -9,6 +9,7 @@ import funkotlin.fp_in_kotlin_book.chapter08.Passed
 import funkotlin.fp_in_kotlin_book.chapter08.Prop
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import java.util.concurrent.Executors
 
 class MonoidTest : StringSpec({
     "should combine strings" {
@@ -158,22 +159,33 @@ class MonoidTest : StringSpec({
         val nums2 = listOf(1, 2)
         val nums4 = listOf(1, 2, 3, 4)
         val nums5 = listOf(1, 2, 3, 4, 5)
-        val num2word: (Int) -> String = {
-            when (it) {
-                1 -> "One"
-                2 -> "Two"
-                3 -> "Three"
-                4 -> "Four"
-                5 -> "Five"
-                else -> TODO("Unsupported number")
-            }
-        }
 
         balFoldMap(nums0, stringMonoid, num2word) shouldBe ""
         balFoldMap(nums1, stringMonoid, num2word) shouldBe "One"
         balFoldMap(nums2, stringMonoid, num2word) shouldBe "OneTwo"
         balFoldMap(nums4, stringMonoid, num2word) shouldBe "OneTwoThreeFour"
         balFoldMap(nums5, stringMonoid, num2word) shouldBe "OneTwoThreeFourFive"
+    }
+
+    "should parFoldMap over list" {
+        val pool = Executors.newFixedThreadPool(10)
+        val stringMonoidPar = monoidPar(stringMonoid)
+
+        val nums0 = listOf<Int>()
+        val nums1 = listOf(1)
+        val nums2 = listOf(1, 2)
+        val nums4 = listOf(1, 2, 3, 4)
+        val nums10 = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val nums13 = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3)
+        val nums100 = List(10) { nums10 }.flatten()
+
+        parFoldMap(nums0, stringMonoidPar, num2word)(pool).get() shouldBe ""
+        parFoldMap(nums1, stringMonoidPar, num2word)(pool).get() shouldBe "One"
+        parFoldMap(nums2, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwo"
+        parFoldMap(nums4, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFour"
+        parFoldMap(nums10, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTen"
+        parFoldMap(nums13, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTenOneTwoThree"
+        parFoldMap(nums100, stringMonoidPar, num2word)(pool).get() shouldBe ("OneTwoThreeFourFiveSixSevenEightNineTen".repeat(10))
     }
 
     "should foldLeft list" {
@@ -187,4 +199,58 @@ class MonoidTest : StringSpec({
         foldLeft(words.asSequence(), 1, { acc: Int, s: String -> acc * s.length }) shouldBe 24
     }
 
+    "should detect ascending order of List<Int>" {
+        val nums0 = listOf<Int>()
+        val nums1 = listOf(1)
+        val nums2asc = listOf(1, 2)
+        val nums2not = listOf(1, 0)
+        val nums4asc = listOf(1, 2, 3, 4)
+        val nums4not = listOf(1, 2, 3, 4, 3)
+        val nums10asc = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        val nums10not10 = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, -1)
+        val nums10not9 = listOf(1, 2, 3, 4, 5, 6, 7, 8, -1, 10)
+        val nums10not8 = listOf(1, 2, 3, 4, 5, 6, 7, -1, 9, 10)
+        val nums10not7 = listOf(1, 2, 3, 4, 5, 6, -1, 8, 9, 10)
+        val nums10not6 = listOf(1, 2, 3, 4, 5, -1, 7, 8, 9, 10)
+        val nums10not5 = listOf(1, 2, 3, 4, -1, 6, 7, 8, 9, 10)
+        val nums10not4 = listOf(1, 2, 3, -1, 5, 6, 7, 8, 9, 10)
+        val nums10not3 = listOf(1, 2, -1, 4, 5, 6, 7, 8, 9, 10)
+        val nums10not2 = listOf(1, -1, 3, 4, 5, 6, 7, 8, 9, 10)
+        val nums10not1 = listOf(50, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+        ordered(nums0.asSequence()) shouldBe true
+        ordered(nums1.asSequence()) shouldBe true
+        ordered(nums2asc.asSequence()) shouldBe true
+        ordered(nums4asc.asSequence()) shouldBe true
+        ordered(nums10asc.asSequence()) shouldBe true
+        // and
+        ordered(nums2not.asSequence()) shouldBe false
+        ordered(nums4not.asSequence()) shouldBe false
+        ordered(nums10not10.asSequence()) shouldBe false
+        ordered(nums10not9.asSequence()) shouldBe false
+        ordered(nums10not8.asSequence()) shouldBe false
+        ordered(nums10not7.asSequence()) shouldBe false
+        ordered(nums10not6.asSequence()) shouldBe false
+        ordered(nums10not5.asSequence()) shouldBe false
+        ordered(nums10not4.asSequence()) shouldBe false
+        ordered(nums10not3.asSequence()) shouldBe false
+        ordered(nums10not2.asSequence()) shouldBe false
+        ordered(nums10not1.asSequence()) shouldBe false
+    }
 })
+
+val num2word: (Int) -> String = {
+    when (it) {
+        1 -> "One"
+        2 -> "Two"
+        3 -> "Three"
+        4 -> "Four"
+        5 -> "Five"
+        6 -> "Six"
+        7 -> "Seven"
+        8 -> "Eight"
+        9 -> "Nine"
+        10 -> "Ten"
+        else -> TODO("Unsupported number")
+    }
+}
