@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
+import arrow.core.extensions.list.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
@@ -122,5 +123,32 @@ class MonoidTest : StringSpec({
 
         Prop.run(monoidLaws(intAddition(), intGen), 100, 100, rng) shouldBe Passed
         Prop.run(monoidLaws(intMultiplication(), intGen), 100, 100, rng) shouldBe Passed
+    }
+
+    "should fold list with stringMonoid" {
+        val words = listOf("Hic", "Est", "Index")
+
+        words.foldRight(stringMonoid.nil, stringMonoid::combine) shouldBe "HicEstIndex"
+        words.foldLeft(stringMonoid.nil, stringMonoid::combine) shouldBe "HicEstIndex"
+    }
+
+    "should concat list with given monoid" {
+        val words = listOf("Hic", "Est", "Index")
+
+        concatenate(words, stringMonoid) shouldBe "HicEstIndex"
+    }
+
+    "should foldMap over list" {
+        val nums = listOf(1, 2, 3)
+        val num2word: (Int) -> String = {
+            when (it) {
+                1 -> "One"
+                2 -> "Two"
+                3 -> "Three"
+                else -> "<unsuported number>"
+            }
+        }
+
+        foldMap(nums, stringMonoid, num2word) shouldBe "OneTwoThree"
     }
 })

@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter10
 
 import arrow.core.andThen
 import arrow.core.compose
+import arrow.core.extensions.list.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.orElse
@@ -80,3 +81,10 @@ fun <A> monoidLaws(m: Monoid<A>, g: Gen<A>): Prop =
                 m.combine(m.nil, a) == a &&
                 m.combine(m.nil, m.nil) == m.nil
     }
+
+fun <A> concatenate(ls: List<A>, m: Monoid<A>): A =
+    ls.foldLeft(m.nil, m::combine)
+
+fun <A, B> foldMap(ls: List<A>, m: Monoid<B>, f: (A) -> B): B =
+    ls.map(f)
+        .foldLeft(m.nil, m::combine)
