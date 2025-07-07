@@ -21,11 +21,12 @@ class WCTest : StringSpec({
         wcMonoid.combine(Part("lorem", 1, "do"), Part("able", 0, "end")) shouldBe Part("lorem", 2, "end")
     }
 
-    "should count over" {
-//        countWords("lorem ipsum do") shouldBe
-//                Part("lorem", 1, "do")
-//        countWords("lor sit amet, ") shouldBe
-//                Part("lor", 2, "") // comma discareded
+    "should count words over String" {
+        wordCount("") shouldBe 0
+        wordCount(" one ") shouldBe 1
+        wordCount("one") shouldBe 1
+        wordCount("lorem ipsum do") shouldBe 3
+        wordCount("lor sit amet, ") shouldBe 3
     }
 
     "should parse chunks in parallel" {
