@@ -13,8 +13,11 @@ import funkotlin.fp_in_kotlin_book.chapter08.Prop
 import funkotlin.fp_in_kotlin_book.chapter08.Prop.Companion.forAll
 import kotlin.Int
 
-interface Monoid<A> {
+interface Semigroup<A> {
     fun combine(a1: A, a2: A): A
+}
+
+interface Monoid<A> : Semigroup<A> {
     val nil: A
 }
 
