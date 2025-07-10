@@ -194,3 +194,12 @@ fun <K, V> mapMergeMonoid(v: Monoid<V>): Monoid<Map<K, V>> =
                 )
             }
     }
+
+fun <A, B> functionMonoid(b: Monoid<B>): Monoid<(A) -> B> =
+    object : Monoid<(A) -> B> {
+        override val nil: (A) -> B
+            get() = { a -> b.nil }
+
+        override fun combine(a1: (A) -> B, a2: (A) -> B): (A) -> B =
+            { a -> b.combine(a1(a), a2(a)) }
+    }

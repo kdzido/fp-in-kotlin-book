@@ -263,6 +263,16 @@ class MonoidTest : StringSpec({
             "second" to listOf(11, 12, 13)
         )
     }
+
+    "should combine with functionMonoid" {
+        val fm = functionMonoid<String, List<String>>(listMonoid())
+
+        fm.combine(
+            { s -> listOf(s, s) },
+            { s -> listOf(s.uppercase()) },
+        )("one") shouldBe
+                listOf("one", "one", "ONE")
+    }
 })
 
 val num2word: (Int) -> String = {
