@@ -79,4 +79,15 @@ class FoldableTest: StringSpec({
         OptionFoldable.foldLeft(Some(1), "", { acc, b ->  b.toString() + acc }) shouldBe "1"
     }
 
+    "should toList any foldable" {
+        ListFoldable.toList(List.of<Int>()) shouldBe List.of()
+        ListFoldable.toList(List.of<Int>(1, 2, 3)) shouldBe List.of(3, 2, 1)
+        // and
+        TreeFoldable.toList(Leaf(5)) shouldBe List.of(5)
+        TreeFoldable.toList(Branch(Leaf(1), Branch(Leaf(5), Leaf(3)))) shouldBe
+                List.of(1, 5, 3)
+        // and
+        OptionFoldable.toList(None) shouldBe List.of()
+        OptionFoldable.toList(Some(1)) shouldBe List.of(1)
+    }
 })

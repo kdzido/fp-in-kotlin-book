@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter10
 
 import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter03.Branch
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
 import funkotlin.fp_in_kotlin_book.chapter03.ForTree
 import funkotlin.fp_in_kotlin_book.chapter03.Leaf
@@ -24,6 +25,9 @@ interface Foldable<F> {
 
     fun <A> concatenate(fa: Kind<F, A>, m: Monoid<A>): A =
         foldLeft(fa, m.nil, m::combine)
+
+    fun <A> toList(fa: Kind<F, A>): List<A> =
+        foldLeft(fa, List.of()) { la, a -> Cons(a, la) }
 }
 
 object ListFoldable : Foldable<ForList> {
