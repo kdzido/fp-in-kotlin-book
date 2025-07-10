@@ -1,6 +1,9 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter03.ForList
+import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.fix
 
 interface Foldable<F> {
     fun <A, B> foldRight(fa: Kind<F, A>, z: B, f: (A, B) -> B): B =
@@ -14,4 +17,18 @@ interface Foldable<F> {
 
     fun <A> concatenate(fa: Kind<F, A>, m: Monoid<A>): A =
         foldLeft(fa, m.nil, m::combine)
+}
+
+object ListFoldable : Foldable<ForList> {
+    override fun <A, B> foldRight(
+        fa: Kind<ForList, A>,
+        z: B,
+        f: (A, B) -> B,
+    ): B = List.foldRight(fa.fix(), z, f)
+
+    override fun <A, B> foldLeft(
+        fa: Kind<ForList, A>,
+        z: B,
+        f: (B, A) -> B,
+    ): B = List.foldLeft(fa.fix(), z, f)
 }

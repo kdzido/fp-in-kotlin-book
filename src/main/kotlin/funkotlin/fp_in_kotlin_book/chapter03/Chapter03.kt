@@ -1,6 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter03
 
-sealed class List<out A> {
+sealed class List<out A> : ListOf<A> {
     companion object {
         fun <A> of(vararg aa: A): List<A> {
             val tail = aa.sliceArray(1 until aa.size)
