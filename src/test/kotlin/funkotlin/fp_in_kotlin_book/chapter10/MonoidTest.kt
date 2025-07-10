@@ -237,6 +237,16 @@ class MonoidTest : StringSpec({
         ordered(nums10not2.asSequence()) shouldBe false
         ordered(nums10not1.asSequence()) shouldBe false
     }
+
+    "should productMonoid" {
+        val pm = productMonoid(intAddition(), stringMonoid)
+
+        // expect: "id laws hold"
+        pm.combine(1 to "one", pm.nil) shouldBe (1 to "one")
+        pm.combine(pm.nil, 1 to "one") shouldBe (1 to "one")
+        // and:
+        pm.combine(1 to "one", 2 to "two") shouldBe (3 to "onetwo")
+    }
 })
 
 val num2word: (Int) -> String = {
