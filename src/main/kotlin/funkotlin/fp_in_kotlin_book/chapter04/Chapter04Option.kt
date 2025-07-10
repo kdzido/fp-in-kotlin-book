@@ -5,7 +5,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import kotlin.math.pow
 
-sealed class Option<out A>
+sealed class Option<out A> : OptionOf<A>
 data class Some<A>(val value: A) : Option<A>()
 data object None : Option<Nothing>()
 

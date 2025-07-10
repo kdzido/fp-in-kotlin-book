@@ -7,6 +7,10 @@ import funkotlin.fp_in_kotlin_book.chapter03.ForTree
 import funkotlin.fp_in_kotlin_book.chapter03.Leaf
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.fix
+import funkotlin.fp_in_kotlin_book.chapter04.ForOption
+import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 
 interface Foldable<F> {
     fun <A, B> foldRight(fa: Kind<F, A>, z: B, f: (A, B) -> B): B =
@@ -44,5 +48,16 @@ object TreeFoldable : Foldable<ForTree> {
     ): B = when (val t = fa.fix()) {
         is Branch -> m.combine(foldMap(t.left, m, f), foldMap(t.right, m, f))
         is Leaf -> f(t.value)
+    }
+}
+
+object OptionFoldable : Foldable<ForOption> {
+    override fun <A, B> foldMap(
+        fa: Kind<ForOption, A>,
+        m: Monoid<B>,
+        f: (A) -> B,
+    ): B = when (val t = fa.fix()) {
+        is None -> m.nil
+        is Some -> f(t.value)
     }
 }

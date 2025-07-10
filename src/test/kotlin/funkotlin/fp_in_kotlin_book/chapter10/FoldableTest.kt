@@ -4,6 +4,8 @@ import funkotlin.fp_in_kotlin_book.chapter03.Branch
 import funkotlin.fp_in_kotlin_book.chapter03.Leaf
 import io.kotest.core.spec.style.StringSpec
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Some
 import io.kotest.matchers.shouldBe
 
 class FoldableTest: StringSpec({
@@ -66,4 +68,15 @@ class FoldableTest: StringSpec({
             f
         ) shouldBe "153"
     }
+
+    "should foldRight Option" {
+        OptionFoldable.foldRight(None, "", { a, acc -> a.toString() + acc }) shouldBe ""
+        OptionFoldable.foldRight(Some(1), "", { a, acc -> a.toString() + acc }) shouldBe "1"
+    }
+
+    "should foldLeft Option" {
+        OptionFoldable.foldLeft(None, "", { acc, b ->  b.toString() + acc }) shouldBe ""
+        OptionFoldable.foldLeft(Some(1), "", { acc, b ->  b.toString() + acc }) shouldBe "1"
+    }
+
 })
