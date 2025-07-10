@@ -1,7 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter03.Branch
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
+import funkotlin.fp_in_kotlin_book.chapter03.ForTree
+import funkotlin.fp_in_kotlin_book.chapter03.Leaf
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.fix
 
@@ -31,4 +34,15 @@ object ListFoldable : Foldable<ForList> {
         z: B,
         f: (B, A) -> B,
     ): B = List.foldLeft(fa.fix(), z, f)
+}
+
+object TreeFoldable : Foldable<ForTree> {
+    override fun <A, B> foldMap(
+        fa: Kind<ForTree, A>,
+        m: Monoid<B>,
+        f: (A) -> B,
+    ): B = when (val t = fa.fix()) {
+        is Branch -> m.combine(foldMap(t.left, m, f), foldMap(t.right, m, f))
+        is Leaf -> f(t.value)
+    }
 }

@@ -181,7 +181,7 @@ object Nil : List<Nothing>() {
 data class Cons<out A>(val head: A, val tail: List<A>) : List<A>()
 
 // Listing 3.12
-sealed class Tree<out A> {
+sealed class Tree<out A> : TreeOf<A> {
     companion object {
         // exercise 3.24
         fun <A> size(t: Tree<A>): Int = when (t) {
