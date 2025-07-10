@@ -3,6 +3,7 @@ package funkotlin.fp_in_kotlin_book.chapter10
 import arrow.core.andThen
 import arrow.core.compose
 import arrow.core.extensions.list.foldable.foldLeft
+import arrow.core.extensions.set.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.orElse
@@ -175,3 +176,21 @@ fun ordered(ints: Sequence<Int>): Boolean =
         ListInterval(a, a, true)
     }
     ).isInOrder
+
+fun <K, V> mapMergeMonoid(v: Monoid<V>): Monoid<Map<K, V>> =
+    object : Monoid<Map<K, V>> {
+        override val nil: Map<K, V> get() = emptyMap<K, V>()
+
+        override fun combine(
+            a1: Map<K, V>,
+            a2: Map<K, V>,
+        ): Map<K, V> =
+            (a1.keys + a2.keys).foldLeft(nil) { acc: Map<K, V>, k: K ->
+                acc + mapOf(
+                    k to v.combine(
+                        a1.getOrDefault(k, v.nil),
+                        a2.getOrDefault(k, v.nil),
+                    )
+                )
+            }
+    }

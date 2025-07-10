@@ -247,6 +247,22 @@ class MonoidTest : StringSpec({
         // and:
         pm.combine(1 to "one", 2 to "two") shouldBe (3 to "onetwo")
     }
+
+    "should merge Maps with mapMergeMonoid" {
+        val mmm = mapMergeMonoid<String, List<Int>>(listMonoid())
+
+        // expect:
+        mmm.combine(
+            mapOf(
+                "first" to listOf(1, 2, 3),
+                "second" to listOf(11, 12, 13)
+            ),
+            mapOf("first" to listOf(4, 5, 6)),
+        ) shouldBe mapOf(
+            "first" to listOf(1, 2, 3, 4, 5, 6),
+            "second" to listOf(11, 12, 13)
+        )
+    }
 })
 
 val num2word: (Int) -> String = {
