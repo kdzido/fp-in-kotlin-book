@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter10
 
 import arrow.core.ListK
 import arrow.core.extensions.list.foldable.foldLeft
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
@@ -284,6 +285,19 @@ class MonoidTest : StringSpec({
             "rose" to 2,
             "is" to 1,
         )
+    }
+
+    "should fuse traversals" {
+        val la = ListCh3.of(2, 2, 3, 4, 5)
+
+        // when
+        val m = productMonoid(intAddition(), intAddition())
+        val p = ListFoldable.foldMap(la, m) { v ->
+            v to 1
+        }
+        // then
+        val mean: Double = p.first / p.second.toDouble()
+        mean shouldBe 3.2
     }
 })
 
