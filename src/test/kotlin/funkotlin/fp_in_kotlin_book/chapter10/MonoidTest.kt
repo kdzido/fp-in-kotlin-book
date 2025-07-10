@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter10
 
+import arrow.core.ListK
 import arrow.core.extensions.list.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
@@ -272,6 +273,17 @@ class MonoidTest : StringSpec({
             { s -> listOf(s.uppercase()) },
         )("one") shouldBe
                 listOf("one", "one", "ONE")
+    }
+
+    "should calculate bag from list using monoids" {
+        val la = ListK(listOf("a", "rose", "is", "a", "rose"))
+
+        // expect:
+        bag(la) shouldBe mapOf(
+            "a" to 2,
+            "rose" to 2,
+            "is" to 1,
+        )
     }
 })
 

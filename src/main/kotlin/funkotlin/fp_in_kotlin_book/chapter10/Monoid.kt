@@ -203,3 +203,12 @@ fun <A, B> functionMonoid(b: Monoid<B>): Monoid<(A) -> B> =
         override fun combine(a1: (A) -> B, a2: (A) -> B): (A) -> B =
             { a -> b.combine(a1(a), a2(a)) }
     }
+
+fun <A> bag(la: List<A>): Map<A, Int> {
+    val m = listBagMonoid<A>()
+    return la.foldRight(m.nil) { a: A, acc: Map<A, Int> ->
+        m.combine(acc, mapOf(a to 1))
+    }
+}
+
+fun <A> listBagMonoid() = mapMergeMonoid<A, Int>(intAddition())
