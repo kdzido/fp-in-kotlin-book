@@ -4,6 +4,9 @@ import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
 import funkotlin.fp_in_kotlin_book.chapter03.fix
+import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.Right
 
 interface Functor<F> {
     fun <A, B> map(fa: Kind<F, A>, f: (A) -> B): Kind<F, B>
@@ -12,6 +15,13 @@ interface Functor<F> {
         fab: Kind<F, Pair<A, B>>
     ): Pair<Kind<F, A>, Kind<F, B>>
 
+    fun <A, B> codistribute(
+        e: Either<Kind<F, A>, Kind<F, B>>
+    ): Kind<F, Either<A, B>> =
+        when (e) {
+            is Left -> map(e.value ) { Left(it)}
+            is Right -> map(e.value) { Right(it)}
+        }
 }
 
 val listFunctor = object : Functor<ForList> {

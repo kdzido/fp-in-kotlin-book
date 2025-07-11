@@ -6,7 +6,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 
 // listing 4.5
-sealed class Either<out E, out A>
+sealed class Either<out E, out A> : EitherOf<E, A>
 data class Left<out E>(val value: E) : Either<E, Nothing>()
 data class Right<out A>(val value: A) : Either<Nothing, A>()
 
