@@ -11,4 +11,5 @@
 8. Property-based testing
 9. Parser combinators
 * PART 3: COMMON STRUCTURES IN FUNCTIONAL DESIGN
-10. Monoids
+10. Monoid
+11. Monads and functors
