@@ -114,7 +114,7 @@ class PropTest : StringSpec({
         val es = Executors.newCachedThreadPool()
 
         val p1 = forAll(Gen.unit(Pars.unit(1))) { pi: Par<Int> ->
-            map(pi, { it + 1 })(es).get() == Pars.unit(2)(es).get()
+            map(pi, { it + 1 }).run(es).get() == Pars.unit(2).run(es).get()
         }
         Prop.run(p1).shouldBeInstanceOf<Passed>()
     }

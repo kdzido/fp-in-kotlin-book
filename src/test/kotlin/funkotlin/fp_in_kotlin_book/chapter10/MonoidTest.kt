@@ -181,13 +181,13 @@ class MonoidTest : StringSpec({
         val nums13 = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3)
         val nums100 = List(10) { nums10 }.flatten()
 
-        parFoldMap(nums0, stringMonoidPar, num2word)(pool).get() shouldBe ""
-        parFoldMap(nums1, stringMonoidPar, num2word)(pool).get() shouldBe "One"
-        parFoldMap(nums2, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwo"
-        parFoldMap(nums4, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFour"
-        parFoldMap(nums10, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTen"
-        parFoldMap(nums13, stringMonoidPar, num2word)(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTenOneTwoThree"
-        parFoldMap(nums100, stringMonoidPar, num2word)(pool).get() shouldBe ("OneTwoThreeFourFiveSixSevenEightNineTen".repeat(10))
+        parFoldMap(nums0, stringMonoidPar, num2word).run(pool).get() shouldBe ""
+        parFoldMap(nums1, stringMonoidPar, num2word).run(pool).get() shouldBe "One"
+        parFoldMap(nums2, stringMonoidPar, num2word).run(pool).get() shouldBe "OneTwo"
+        parFoldMap(nums4, stringMonoidPar, num2word).run(pool).get() shouldBe "OneTwoThreeFour"
+        parFoldMap(nums10, stringMonoidPar, num2word).run(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTen"
+        parFoldMap(nums13, stringMonoidPar, num2word).run(pool).get() shouldBe "OneTwoThreeFourFiveSixSevenEightNineTenOneTwoThree"
+        parFoldMap(nums100, stringMonoidPar, num2word).run(pool).get() shouldBe ("OneTwoThreeFourFiveSixSevenEightNineTen".repeat(10))
     }
 
     "should foldLeft list" {

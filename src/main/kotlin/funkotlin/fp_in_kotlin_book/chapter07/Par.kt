@@ -8,11 +8,12 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 
-typealias Par<A> = (ExecutorService) -> Future<A>
+class Par<A>(val run: (ExecutorService) -> Future<A>) : ParOf<A>
 
+val test: Par<String> = Par({ es -> TODO()})
 
 object Pars {
-    fun <A> unit(a: A): Par<A> = { es: ExecutorService -> UnitFuture(a) }
+    fun <A> unit(a: A): Par<A> = Par({ es: ExecutorService -> UnitFuture(a) })
     fun <A> lazyUnit(a: () -> A): Par<A> = Pars.fork { Pars.unit(a()) }
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
     fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
@@ -73,25 +74,25 @@ object Pars {
     fun <A, B> chooser(pa: Par<A>, choices: (A) -> Par<B>): Par<B> =
         flatMap(pa, choices)
 
-    fun <A, B> flatMap(pa: Par<A>, f: (A) -> Par<B>): Par<B> = { es ->
-        val k = pa(es).get()
-        f(k)(es)
-    }
+    fun <A, B> flatMap(pa: Par<A>, f: (A) -> Par<B>): Par<B> = Par({ es ->
+        val k = pa.run(es).get()
+        f(k).run(es)
+    })
 
-    fun <A> join(pa: Par<Par<A>>): Par<A> = { es ->
-        pa(es).get()(es)
-    }
+    fun <A> join(pa: Par<Par<A>>): Par<A> = Par({ es ->
+        pa.run(es).get().run(es)
+    })
 
     fun <A, B> map(par: Par<A>, f: (A) -> B): Par<B> = map2(par, unit(Unit)) { a, _ -> f(a) }
     fun <A, B, C> map2(
         a: Par<A>,
         b: Par<B>,
         f: (A, B) -> C
-    ): Par<C> = { es: ExecutorService ->
-        val af: Future<A> = a(es)
-        val bf: Future<B> = b(es)
+    ): Par<C> = Par({ es: ExecutorService ->
+        val af: Future<A> = a.run(es)
+        val bf: Future<B> = b.run(es)
         TimeoutableUnitFuture(af, bf, f)
-    }
+    })
 
     fun <A, B, C, D> map3(
         ap: Par<A>,
@@ -151,30 +152,35 @@ object Pars {
         g(a, b, c, d, e)
     }
 
-    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = { es ->
+    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = Par({ es ->
         tailrec fun go(left: List<Par<A>>, acc: List<A>): List<A> {
             return when {
                 left.isEmpty() -> acc
                 else -> {
                     val h: Par<A> = left.first()
                     val ts: List<Par<A>> = left.drop(1)
-                    go(ts, listOf(h(es).get()) + acc)
+                    go(ts, listOf(h.run(es).get()) + acc)
                 }
             }
         }
         es.submit(Callable { go(ps, listOf()).reversed() })
-    }
+    })
 
-    fun <A> fork(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
-        es.submit(Callable<A> { a()(es).get() })
-    }
+    fun <A> fork(a: () -> Par<A>): Par<A> = Par({ es: ExecutorService ->
+        es.submit(Callable<A> { a().run(es).get() })
+    })
 
-    fun <A> delay(a: () -> Par<A>): Par<A> = { es: ExecutorService ->
-        a()(es)
-    }
+    fun <A> delay(a: () -> Par<A>): Par<A> = Par({ es: ExecutorService ->
+        a().run(es)
+    })
 
     infix fun <A> Par<A>.shouldBePar(other: Par<A>) = { es: ExecutorService ->
-        if (this(es).get() != other(es).get())
+        if (this.run(es).get() != other.run(es).get())
+            throw AssertionError("Par instance not equal")
+    }
+
+    infix fun <A> ParOf<A>.shouldBePar(other: ParOf<A>) = { es: ExecutorService ->
+        if (this.fix().run(es).get() != other.fix().run(es).get())
             throw AssertionError("Par instance not equal")
     }
 

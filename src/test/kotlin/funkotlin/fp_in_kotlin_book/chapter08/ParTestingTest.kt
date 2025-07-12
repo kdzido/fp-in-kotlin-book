@@ -11,7 +11,7 @@ class ParTestingTest : StringSpec({
         val p = Prop.check {
             val p1 = Pars.map(Pars.unit(1)) { it + 1}
             val p2 = Pars.unit(2)
-            p1(es).get() == p2(es).get()
+            p1.run(es).get() == p2.run(es).get()
         }
         Prop.run(p)
     }
@@ -22,7 +22,7 @@ class ParTestingTest : StringSpec({
         val p = Prop.check {
             val p1 = Pars.map(Pars.unit(1)) { it + 1}
             val p2 = Pars.unit(2)
-            equal(p1, p2)(es).get()
+            equal(p1, p2).run(es).get()
         }
         Prop.run(p)
     }

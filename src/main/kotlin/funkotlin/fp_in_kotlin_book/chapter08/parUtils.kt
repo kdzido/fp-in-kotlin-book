@@ -26,16 +26,16 @@ fun checkPar(p: Par<Boolean>): Prop =
 fun <A> forAllPar(ga: Gen<A>, f: (A) -> Par<Boolean>): Prop =
     forAll(
         map2(ges, ga) { es, a -> es to a }
-    ) { (es, a) -> f(a)(es).get() }
+    ) { (es, a) -> f(a).run(es).get() }
 
 fun <A> forAllPar2(ga: Gen<A>, f: (A) -> Par<Boolean>): Prop =
     forAll(
         combine(ges, ga)
-    ) { (es, a) -> f(a)(es).get() }
+    ) { (es, a) -> f(a).run(es).get() }
 
 fun <A> forAllPar3(ga: Gen<A>, f: (A) -> Par<Boolean>): Prop =
     forAll(ges combine2 ga) {
-        (es, a) -> f(a)(es).get()
+        (es, a) -> f(a).run(es).get()
     }
 
 fun <A, B> combine(ga: Gen<A>, gb: Gen<B>): Gen<Pair<A, B>> =
