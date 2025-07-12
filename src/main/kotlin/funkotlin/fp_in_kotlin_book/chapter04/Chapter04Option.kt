@@ -128,14 +128,10 @@ fun <A, B, C, D> map3(a: Option<A>, b: Option<B>, c: Option<C>, f: (A, B, C) -> 
     }
 
 // Exercise 4.4
-fun <A> sequence(xs: List<Option<A>>): Option<List<A>> = when(xs) {
-    is Nil -> None
-    is Cons -> {
-        List.foldRight2(xs, Some(List.of()), { e: Option<A>, ol: Option<List<A>> ->
-            map2(ol, e, { x: List<A>, y: A -> Cons(y, x)})
-        })
-    }
-}
+fun <A> sequence(xs: List<Option<A>>): Option<List<A>> =
+    List.foldRight2(xs, Some(List.of()), { e: Option<A>, ol: Option<List<A>> ->
+        map2(ol, e, { x: List<A>, y: A -> Cons(y, x) })
+    })
 
 fun <A> sequence2(xs: List<Option<A>>): Option<List<A>> =
     traverse2(xs, {oa -> oa})
@@ -148,14 +144,10 @@ fun <A, B> traverse(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> =
     sequence(List.map(xs, { f(it) }))
 
 // Exercise 4.5 - more efficient
-fun <A, B> traverse2(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> = when(xs) {
-        is Nil -> None
-        is Cons -> {
-            List.foldRight2(xs, Some(List.of()), { e: A, ol: Option<List<B>> ->
-                map2(ol, f(e), { x: List<B>, y: B -> Cons(y, x)})
-            })
-        }
-    }
+fun <A, B> traverse2(xs: List<A>, f: (A) -> Option<B>): Option<List<B>> =
+    List.foldRight2(xs, Some(List.of()), { e: A, ol: Option<List<B>> ->
+        map2(ol, f(e), { x: List<B>, y: B -> Cons(y, x) })
+    })
 
 fun main4() {
     println(failingFn2(1))

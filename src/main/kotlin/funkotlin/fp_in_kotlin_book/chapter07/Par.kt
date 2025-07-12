@@ -14,7 +14,7 @@ val test: Par<String> = Par({ es -> TODO()})
 
 object Pars {
     fun <A> unit(a: A): Par<A> = Par({ es: ExecutorService -> UnitFuture(a) })
-    fun <A> lazyUnit(a: () -> A): Par<A> = Pars.fork { Pars.unit(a()) }
+    fun <A> lazyUnit(a: () -> A): Par<A> = fork { unit(a()) }
     fun <A, B> asyncF(f: (A) -> B): (A) -> Par<B> =  { a: A -> lazyUnit{ f(a) } }
     fun sortPar(parList: Par<List<Int>>): Par<List<Int>> = map(parList) { a -> a.sorted() }
 
@@ -34,8 +34,8 @@ object Pars {
         else {
             val (l, r) = ps.splitAt(ps.size / 2)
             map2(
-                Pars.fork { parFilter(l, f) },
-                Pars.fork { parFilter(r, f) }
+                fork { parFilter(l, f) },
+                fork { parFilter(r, f) }
             ) { lx: List<A>, rx: List<A> -> lx + rx}
         }
 
@@ -67,7 +67,7 @@ object Pars {
 
     fun <A> choice2(cond: Par<Boolean>, t: Par<A>, f: Par<A>): Par<A> =
         choiceN(
-            Pars.map(cond) { it -> if (it) 0 else 1},
+            map(cond) { it -> if (it) 0 else 1},
             listOf(t, f)
         )
 
@@ -152,19 +152,10 @@ object Pars {
         g(a, b, c, d, e)
     }
 
-    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> = Par({ es ->
-        tailrec fun go(left: List<Par<A>>, acc: List<A>): List<A> {
-            return when {
-                left.isEmpty() -> acc
-                else -> {
-                    val h: Par<A> = left.first()
-                    val ts: List<Par<A>> = left.drop(1)
-                    go(ts, listOf(h.run(es).get()) + acc)
-                }
-            }
+    fun <A> sequence(ps: List<Par<A>>): Par<List<A>> =
+        ps.foldRight(unit(listOf())) { pa: Par<A>, pla: Par<List<A>> ->
+            map2(pa, pla) { a, l -> listOf(a) + l }
         }
-        es.submit(Callable { go(ps, listOf()).reversed() })
-    })
 
     fun <A> fork(a: () -> Par<A>): Par<A> = Par({ es: ExecutorService ->
         es.submit(Callable<A> { a().run(es).get() })

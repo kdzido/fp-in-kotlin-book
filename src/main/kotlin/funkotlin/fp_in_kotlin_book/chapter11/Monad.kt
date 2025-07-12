@@ -7,6 +7,7 @@ import arrow.core.ListK
 import arrow.core.SequenceK
 import arrow.core.extensions.listk.monad.flatMap
 import arrow.core.extensions.sequencek.monad.flatMap
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
 import funkotlin.fp_in_kotlin_book.chapter03.fix
@@ -39,6 +40,21 @@ interface Monad<F> : Functor<F> {
         f: (A, B) -> C,
     ): Kind<F, C> =
         flatMap(fa) { a -> map(fb) { b -> f(a, b) } }
+
+    fun <A> sequence(lfa: List<Kind<F, A>>): Kind<F, List<A>> =
+        List.foldRight2(
+            lfa,
+            unit(List.of()),
+            { fa: Kind<F, A>, fla: Kind<F, List<A>> ->
+                map2(fa, fla) { a: A, la: List<A> -> Cons(a, la) }
+            }
+        )
+
+    fun <A, B> traverse(
+        la: List<A>,
+        f: (A) -> Kind<F, B>,
+    ): Kind<F, List<B>> =
+        sequence(List.map(la, f))
 }
 
 object Monads {

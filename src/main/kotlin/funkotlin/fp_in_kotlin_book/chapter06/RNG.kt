@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter06
 
 import arrow.core.Tuple2
 import funkotlin.fp_in_kotlin_book.chapter02.Example.abs
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.nonNegativeInt
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
@@ -18,7 +19,7 @@ data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
 
     // EXER 6.5, 6.9, 6.10
     fun <B> map(f: (A) -> B): State<S, B> =
-        this.flatMap { a -> State.unit(f(a)) }
+        this.flatMap { a -> unit(f(a)) }
 
     companion object {
         // EXER 6.10
@@ -28,7 +29,7 @@ data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
         fun <S, A, B, C> map2(ra : State<S, A>, rb: State<S, B>, f: (A, B) -> C): State<S, C> =
             ra.flatMap { a ->
                 rb.flatMap { b ->
-                    State.unit(f(a, b))
+                    unit(f(a, b))
                 }
             }
 
@@ -36,22 +37,10 @@ data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
             map2(ra, rb) { a, b -> a to b}
 
         // EXER 6.10
-        fun <A> sequence(fs: ListL<Rand<A>>): Rand<ListL<A>> = State { rng ->
-            fun go(l: ListL<Rand<A>>, acc: ListL<A>, r: RNG): Pair<ListL<A>, RNG> {
-                return when (l) {
-                    is NilL -> Pair(acc, r)
-                    is ConsL -> {
-                        val (h2: A, r2: RNG) = l.head.run(r)
-                        go(l.tail, ConsL(h2, acc), r2)
-                    }
-                }
+        fun <A> sequence(fs: ListL<Rand<A>>): Rand<ListL<A>> =
+            ListL.foldRight2<Rand<A>, Rand<ListL<A>>>(fs, Rand.unit(ListL.of())) { ra: Rand<A>, rla: Rand<ListL<A>> ->
+                map2(ra, rla) { a, la -> Cons(a, la) }
             }
-
-            val (l2: ListL<A>, rng2: RNG) = go(fs, NilL, rng)
-            val inOrder = ListL.foldLeft(l2, NilL as ListL<A>, { a, b -> ConsL(b, a)})
-
-            Pair(inOrder, rng2)
-        }
     }
 }
 

@@ -10,7 +10,9 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.catches
 import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter06.RNG
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
@@ -136,6 +138,26 @@ class MonadTest : StringSpec({
         val (n3, rng3) = incr1.run(rng2)
         n2 shouldBe 16159454
         n3 shouldBe 1281479698
+    }
+
+    "optionMonad should sequence" {
+        val m = optionMonad()
+
+        m.sequence<Int>(ListCh3.of()).fix() shouldBe Some(Nil)
+        m.sequence<Int>(ListCh3.of(None)).fix() shouldBe None
+        m.sequence(ListCh3.of(None, Some(1))).fix() shouldBe None
+        m.sequence(ListCh3.of(Some(1), None)).fix() shouldBe None
+        m.sequence(ListCh3.of(Some(1), Some(2))).fix() shouldBe Some(ListCh3.of(1, 2))
+    }
+
+    "optionMonad should traverse list of ints" {
+        val m = optionMonad()
+
+        val toIntO: (String) -> Option<Int> = { a -> catches { a.toInt() } }
+        m.traverse(ListCh3.of(), toIntO).fix() shouldBe Some(Nil)
+        m.traverse(ListCh3.of("1", "2"), toIntO).fix() shouldBe Some(ListCh3.of(1, 2))
+        m.traverse(ListCh3.of("One", "2"), toIntO).fix() shouldBe None
+        m.traverse(ListCh3.of("1", "Two"), toIntO).fix() shouldBe None
     }
 })
 

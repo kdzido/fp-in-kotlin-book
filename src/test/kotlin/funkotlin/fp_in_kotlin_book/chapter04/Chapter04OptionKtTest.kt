@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
 
 class Chapter04OptionKtTest : FunSpec({
     test("should throw for mean of empty list") {
@@ -99,13 +100,13 @@ class Chapter04OptionKtTest : FunSpec({
     }
 
     test("should sequence") {
-        sequence<Int>(List.of()) shouldBe None
+        sequence<Int>(List.of()) shouldBe Some(Nil)
         sequence<Int>(List.of(None)) shouldBe None
         sequence(List.of(None, Some(1))) shouldBe None
         sequence(List.of(Some(1), None)) shouldBe None
         sequence(List.of(Some(1), Some(2))) shouldBe Some(List.of(1, 2))
         // nd
-        sequence2<Int>(List.of()) shouldBe None
+        sequence2<Int>(List.of()) shouldBe Some(Nil)
         sequence2<Int>(List.of(None)) shouldBe None
         sequence2(List.of(None, Some(1))) shouldBe None
         sequence2(List.of(Some(1), None)) shouldBe None
@@ -113,7 +114,7 @@ class Chapter04OptionKtTest : FunSpec({
     }
 
     test("should parse list of ints") {
-        parseInts(List.of()) shouldBe None
+        parseInts(List.of()) shouldBe Some(Nil)
         parseInts(List.of("1", "2")) shouldBe Some(List.of(1, 2))
         parseInts(List.of("1", "Two")) shouldBe None
         parseInts(List.of("One", "2")) shouldBe None
@@ -122,12 +123,12 @@ class Chapter04OptionKtTest : FunSpec({
     // Exercise 4.5
     test("should traverse list of ints") {
         val toIntO: (String) -> Option<Int> = { a -> catches { a.toInt() } }
-        traverse(List.of(), toIntO) shouldBe None
+        traverse(List.of(), toIntO) shouldBe Some(Nil)
         traverse(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
         traverse(List.of("One", "2"), toIntO) shouldBe None
         traverse(List.of("1", "Two"), toIntO) shouldBe None
         // and
-        traverse2(List.of(), toIntO) shouldBe None
+        traverse2(List.of(), toIntO) shouldBe Some(Nil)
         traverse2(List.of("1", "2"), toIntO) shouldBe Some(List.of(1, 2))
         traverse2(List.of("One", "2"), toIntO) shouldBe None
         traverse2(List.of("1", "Two"), toIntO) shouldBe None
