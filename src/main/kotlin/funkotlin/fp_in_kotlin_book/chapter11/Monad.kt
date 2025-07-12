@@ -14,6 +14,10 @@ import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter04.flatMap
+import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.StateOf
+import funkotlin.fp_in_kotlin_book.chapter06.StatePartialOf
+import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter07.ForPar
 import funkotlin.fp_in_kotlin_book.chapter07.Pars
 import funkotlin.fp_in_kotlin_book.chapter07.fix
@@ -98,4 +102,19 @@ object Monads {
         ): Kind<ForSequenceK, B> =
             fa.flatMap(f)
     }
+
+    fun <S> stateMonad() = object : StateMonad<S> {}
+}
+
+typealias IntState<A> = State<Int, A>
+
+interface StateMonad<S> : Monad<StatePartialOf<S>> {
+    override fun <A> unit(a: A): StateOf<S, A> =
+        State { s -> a to s }
+
+    override fun <A, B> flatMap(
+        fa: StateOf<S, A>,
+        f: (A) -> StateOf<S, B>,
+    ): StateOf<S, B> =
+        fa.fix().flatMap { a -> f(a).fix() }
 }

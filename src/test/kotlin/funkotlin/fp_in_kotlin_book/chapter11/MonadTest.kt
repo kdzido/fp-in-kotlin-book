@@ -12,7 +12,10 @@ import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
+import funkotlin.fp_in_kotlin_book.chapter06.RNG
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
+import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter07.Par
 import funkotlin.fp_in_kotlin_book.chapter07.Pars.shouldBePar
 import funkotlin.fp_in_kotlin_book.chapter07.fix
@@ -24,6 +27,7 @@ import funkotlin.fp_in_kotlin_book.chapter11.Monads.listMonad
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.optionMonad
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.parMonad
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.sequenceKMonad
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import java.util.concurrent.Executors
@@ -119,6 +123,19 @@ class MonadTest : StringSpec({
                 "1.23", "1.23"
             )
         )
+    }
+
+    "stateMonad should flatMap" {
+        val rng = SimpleRNG(42)
+        val f: State<RNG, Int> = State { r -> RNG.nonNegativeInt().run(r) }
+
+        val m = stateMonad<RNG>()
+
+        val incr1 = m.flatMap(f) { i -> m.unit(i + 1) }.fix()
+        val (n2, rng2) = incr1.run(rng)
+        val (n3, rng3) = incr1.run(rng2)
+        n2 shouldBe 16159454
+        n3 shouldBe 1281479698
     }
 })
 
