@@ -13,7 +13,8 @@ interface Functor<F> {
 
     fun <A, B> distribute(
         fab: Kind<F, Pair<A, B>>
-    ): Pair<Kind<F, A>, Kind<F, B>>
+    ): Pair<Kind<F, A>, Kind<F, B>> =
+        map(fab) {it.first} to map(fab) { it.second }
 
     fun <A, B> codistribute(
         e: Either<Kind<F, A>, Kind<F, B>>
@@ -30,10 +31,5 @@ val listFunctor = object : Functor<ForList> {
         f: (A) -> B,
     ): Kind<ForList, B> =
         List.map(fa.fix(), f)
-
-    override fun <A, B> distribute(
-        fab: Kind<ForList, Pair<A, B>>
-    ): Pair<Kind<ForList, A>, Kind<ForList, B>> =
-        map(fab) { it.first} to map(fab) { it.second }
 }
 
