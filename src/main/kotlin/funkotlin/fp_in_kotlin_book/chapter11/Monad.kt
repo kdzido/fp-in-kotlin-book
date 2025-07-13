@@ -30,13 +30,19 @@ import funkotlin.fp_in_kotlin_book.chapter08.fix
 interface Monad<F> : Functor<F> {
     fun <A> unit(a: A): Kind<F, A>
 
-    fun <A, B> flatMap(
+    fun <A, B> _flatMap(
         fa: Kind<F, A>,
         f: (A) -> Kind<F, B>
     ): Kind<F, B> {
         val f1: (Kind<F, A>) -> Kind<F, A> = { k -> k }
         return compose(f1, f)(fa)
     }
+
+    fun <A, B> flatMap(
+        fa: Kind<F, A>,
+        f: (A) -> Kind<F, B>
+    ): Kind<F, B> =
+        compose<Unit, A, B>({ _ -> fa }, f)(Unit)
 
     override fun <A, B> map(fa: Kind<F, A>, f: (A) -> B): Kind<F, B> =
         flatMap(fa) { a -> unit(f(a)) }
