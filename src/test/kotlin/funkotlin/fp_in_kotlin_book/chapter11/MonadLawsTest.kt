@@ -2,7 +2,9 @@ package funkotlin.fp_in_kotlin_book.chapter11
 
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
+import funkotlin.fp_in_kotlin_book.chapter04.OptionOf
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter04.flatMap
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.optionMonad
 import io.kotest.core.spec.style.StringSpec
@@ -46,4 +48,15 @@ class MonadLawsTest : StringSpec({
                 f(v).flatMap(g)
     }
 
+    "law of associativity in terms of compose" {
+        val m = optionMonad()
+
+        val v = 1
+        val f: (Int) -> OptionOf<Int> = { x -> Some(x + 1) }
+        val g: (Int) -> OptionOf<Int> = { x -> Some(x * 2) }
+        val h: (Int) -> OptionOf<Int> = { x -> Some(x * x) }
+
+        m.compose(m.compose(f, g), h)(v).fix() shouldBe
+                m.compose(f, m.compose(g, h))(v).fix()
+    }
 })
