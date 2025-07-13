@@ -13,6 +13,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
+import funkotlin.fp_in_kotlin_book.chapter04.OptionOf
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.catches
 import funkotlin.fp_in_kotlin_book.chapter04.fix
@@ -255,6 +256,27 @@ class MonadTest : StringSpec({
         val l = ListCh3.of(1, 2, 3, 4)
         m.filterM(l) { a -> None }.fix() shouldBe None
         m.filterM(l) { a -> Some(a % 2 == 0) }.fix() shouldBe Some(ListCh3.of(2, 4))
+    }
+
+    "optionMonad should compose" {
+        val m = optionMonad()
+
+        val k1: (Int) -> OptionOf<String> = { i: Int ->
+            when (i) {
+                0 -> Some("zero")
+                1 -> Some("one")
+                2 -> Some("two")
+                else -> None
+            }
+        }
+        val k2: (String) -> OptionOf<String> = { s: String -> Some("__" + s ) }
+        val k3: (Int) -> OptionOf<String> = m.compose(k1, k2)
+
+        k3(-1) shouldBe None
+        k3(0) shouldBe Some("__zero")
+        k3(1) shouldBe Some("__one")
+        k3(2) shouldBe Some("__two")
+        k3(3) shouldBe None
     }
 })
 
