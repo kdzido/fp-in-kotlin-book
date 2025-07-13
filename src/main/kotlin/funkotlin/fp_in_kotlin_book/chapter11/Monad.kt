@@ -61,7 +61,7 @@ interface Monad<F> : Functor<F> {
 
     fun <A> _replicateM(n: Int, ma: Kind<F, A>): Kind<F, List<A>> =
         if (n >= 1) {
-            map2(ma, _replicateM(n - 1, ma)) { a, la -> Cons(a, la) }
+            map2(ma, _replicateM(n - 1, ma)) { a: A, la: List<A> -> Cons(a, la) }
         } else {
             unit(List.of())
         }
@@ -100,7 +100,7 @@ object Monads {
     }
 
     fun listMonad(): Monad<ForList> = object : Monad<ForList> {
-        override fun <A> unit(a: A): Kind<ForList, A> = List.of<A>()
+        override fun <A> unit(a: A): Kind<ForList, A> = List.of<A>(a)
 
         override fun <A, B> flatMap(
             fa: Kind<ForList, A>,

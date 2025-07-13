@@ -5,6 +5,7 @@ import arrow.core.ListKOf
 import arrow.core.SequenceK
 import arrow.core.SequenceKOf
 import arrow.core.fix
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.ListOf
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
@@ -188,6 +189,46 @@ class MonadTest : StringSpec({
         l2 shouldBe ListCh3.of(3, 8, 7, 9, 1)
         l3 shouldBe ListCh3.of(8, 5, 9, 5, 2)
         l4 shouldBe ListCh3.of(9, 4, 1, 1, 5)
+    }
+
+    "describe replicateM on string" {
+        val lm = listMonad()
+
+        lm.replicateM(0, ListCh3.of(1, 2, 3)).fix() shouldBe
+                ListCh3.of(ListCh3.of())
+
+        lm.replicateM(1, ListCh3.of(1, 2, 3)).fix() shouldBe
+                ListCh3.of(
+                    ListCh3.of(1),
+                    ListCh3.of(2),
+                    ListCh3.of(3)
+                )
+
+        lm.replicateM(2, ListCh3.of(1, 2, 3)).fix() shouldBe
+                ListCh3.of(
+                    ListCh3.of(1, 1),
+                    ListCh3.of(1, 2),
+                    ListCh3.of(1, 3),
+                    ListCh3.of(2, 1),
+                    ListCh3.of(2, 2),
+                    ListCh3.of(2, 3),
+                    ListCh3.of(3, 1),
+                    ListCh3.of(3, 2),
+                    ListCh3.of(3, 3),
+                )
+
+    }
+
+    "describe replicateM for optionMonad" {
+        val om = optionMonad()
+
+        om.replicateM(0, Some(1)).fix() shouldBe Some(ListCh3.of())
+        om.replicateM(1, Some(1)).fix() shouldBe Some(ListCh3.of(1))
+        om.replicateM(3, Some(1)).fix() shouldBe Some(ListCh3.of(1, 1, 1))
+
+        om.replicateM(0, None).fix() shouldBe Some(ListCh3.of())
+        om.replicateM(1, None).fix() shouldBe None
+        om.replicateM(3, None).fix() shouldBe None
     }
 })
 
