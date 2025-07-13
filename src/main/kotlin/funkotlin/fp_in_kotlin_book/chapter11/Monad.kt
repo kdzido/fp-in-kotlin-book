@@ -65,6 +65,12 @@ interface Monad<F> : Functor<F> {
         } else {
             unit(List.of())
         }
+
+    fun <A, B> product(
+        ma: Kind<F, A>,
+        mb: Kind<F, B>
+    ): Kind<F, Pair<A, B>> =
+        map2(ma, mb) { a, b -> Pair(a, b) }
 }
 
 object Monads {
