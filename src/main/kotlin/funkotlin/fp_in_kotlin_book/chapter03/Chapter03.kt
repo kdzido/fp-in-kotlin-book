@@ -7,6 +7,12 @@ sealed class List<out A> : ListOf<A> {
             return if (aa.isEmpty()) Nil else Cons(aa[0], of(*tail))
         }
 
+        fun <A> fill(n: Int, a: A): List<A> =
+            when (n) {
+                0 -> List.of()
+                else -> Cons(a, fill(n - 1, a))
+            }
+
         fun <A> empty(): List<A> = Nil
 
         fun sum(ints: List<Int>): Int =

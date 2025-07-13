@@ -55,6 +55,16 @@ interface Monad<F> : Functor<F> {
         f: (A) -> Kind<F, B>,
     ): Kind<F, List<B>> =
         sequence(List.map(la, f))
+
+    fun <A> replicateM(n: Int, ma: Kind<F, A>): Kind<F, List<A>> =
+        sequence(List.fill(n, ma))
+
+    fun <A> _replicateM(n: Int, ma: Kind<F, A>): Kind<F, List<A>> =
+        if (n >= 1) {
+            map2(ma, _replicateM(n - 1, ma)) { a, la -> Cons(a, la) }
+        } else {
+            unit(List.of())
+        }
 }
 
 object Monads {
