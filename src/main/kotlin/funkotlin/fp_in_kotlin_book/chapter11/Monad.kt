@@ -10,6 +10,7 @@ import arrow.core.extensions.sequencek.monad.flatMap
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.Some
@@ -71,6 +72,22 @@ interface Monad<F> : Functor<F> {
         mb: Kind<F, B>
     ): Kind<F, Pair<A, B>> =
         map2(ma, mb) { a, b -> Pair(a, b) }
+
+    fun <A> filterM(
+        ms: List<A>,
+        f: (A) -> Kind<F, Boolean>
+    ): Kind<F, List<A>> = when (ms) {
+        is Nil -> unit(Nil)
+        is Cons ->
+            flatMap(f(ms.head)) { success: Boolean ->
+                if (success)
+                    map(filterM(ms.tail, f)) { tail ->
+                        Cons(ms.head, tail)
+                    }
+                else
+                    filterM(ms.tail, f)
+            }
+    }
 }
 
 object Monads {

@@ -1,15 +1,16 @@
 package funkotlin.fp_in_kotlin_book.chapter11
 
+import arrow.Kind
 import arrow.core.ListK
 import arrow.core.ListKOf
 import arrow.core.SequenceK
 import arrow.core.SequenceKOf
 import arrow.core.fix
-import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.ListOf
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter03.fix
+import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
@@ -229,6 +230,31 @@ class MonadTest : StringSpec({
         om.replicateM(0, None).fix() shouldBe Some(ListCh3.of())
         om.replicateM(1, None).fix() shouldBe None
         om.replicateM(3, None).fix() shouldBe None
+    }
+
+    "filterM for optionMonad" {
+        val m = optionMonad()
+
+        val fS: (Int) -> Kind<ForOption, Boolean> = { a -> Some(a % 2 == 0) }
+        val fN: (Int) -> Kind<ForOption, Boolean> = { a -> None }
+
+        m.filterM<Int>(Nil, { _ -> Some(true) }).fix() shouldBe Some(Nil)
+        m.filterM<Int>(Nil, { _ -> None }).fix() shouldBe Some(Nil)
+
+        m.filterM(ListCh3.of(2)) { a -> Some(true) }.fix() shouldBe Some(ListCh3.of(2))
+        m.filterM(ListCh3.of(2)) { a -> Some(false) }.fix() shouldBe Some(ListCh3.of())
+        m.filterM(ListCh3.of(2)) { a -> Some(a % 2 == 0) }.fix() shouldBe Some(ListCh3.of(2))
+        m.filterM(ListCh3.of(2)) { a -> None }.fix() shouldBe None
+        // and
+        m.filterM(ListCh3.of(1)) { a -> Some(true) }.fix() shouldBe Some(ListCh3.of(1))
+        m.filterM(ListCh3.of(1)) { a -> Some(false) }.fix() shouldBe Some(ListCh3.of())
+        m.filterM(ListCh3.of(1)) { a -> Some(a % 2 == 0) }.fix() shouldBe Some(ListCh3.of())
+        m.filterM(ListCh3.of(1)) { a -> None }.fix() shouldBe None
+
+        // and
+        val l = ListCh3.of(1, 2, 3, 4)
+        m.filterM(l) { a -> None }.fix() shouldBe None
+        m.filterM(l) { a -> Some(a % 2 == 0) }.fix() shouldBe Some(ListCh3.of(2, 4))
     }
 })
 

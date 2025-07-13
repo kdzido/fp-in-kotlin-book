@@ -1,9 +1,11 @@
 package funkotlin.fp_in_kotlin_book.chapter08
 
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter06.RNG
+import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.double2
+import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.ints
 import funkotlin.fp_in_kotlin_book.chapter06.RNG.Companion.nonNegativeInt2
 import funkotlin.fp_in_kotlin_book.chapter06.State
-import kotlin.math.absoluteValue
 
 data class Gen<A>(val sample: State<RNG, A>) : GenOf<A> {
     fun unsized(): SGen<A> = SGen({ n: Int -> Gen(sample)})
@@ -13,7 +15,7 @@ data class Gen<A>(val sample: State<RNG, A>) : GenOf<A> {
         f(a2).sample.run(rng2)
     }))
 
-    fun <B> map(f: (A) -> B): Gen<B> = flatMap { Gen.unit(f(it)) }
+    fun <B> map(f: (A) -> B): Gen<B> = flatMap { unit(f(it)) }
 
     fun listOf(): SGen<List<A>> = SGen({ n ->
         listOfSpecifiedN(n, Gen(sample))
@@ -73,6 +75,16 @@ data class Gen<A>(val sample: State<RNG, A>) : GenOf<A> {
                 State { rng: RNG -> nonNegativeInt2(rng) }
                     .map { start + (it % (stopExclusive - start)) }
             )
+
+        fun double(r: IntRange): Gen<Double> =
+            Gen(double2()).map { d: Double -> r.first.toDouble() + (d * r.last.toDouble()) }
+
+        fun string(): Gen<String> = Gen(State { rng: RNG ->
+            ints(10, rng)
+        }).map { lis: ListL<Int> ->
+            val l: ListL<Char> = ListL.map(lis) { it: Int -> it.digitToChar() }
+            ListL.foldRight2(l, "") { x, acc -> x + acc }
+        }
 
         fun choosePair(start: Int, stopExclusive: Int): Gen<Pair<Int, Int>> = Gen(
             State({ rng ->
