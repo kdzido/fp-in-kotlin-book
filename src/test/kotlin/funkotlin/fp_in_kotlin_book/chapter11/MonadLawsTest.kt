@@ -59,4 +59,35 @@ class MonadLawsTest : StringSpec({
         m.compose(m.compose(f, g), h)(v).fix() shouldBe
                 m.compose(f, m.compose(g, h))(v).fix()
     }
+
+    "verify associativity in terms of flatMap and compose" {
+        val m = optionMonad()
+
+        val v = 1
+        val f: (Int) -> OptionOf<Int> = { x -> Some(x + 1) }
+        val g: (Int) -> OptionOf<Int> = { x -> Some(x * 2) }
+        val h: (Int) -> OptionOf<Int> = { x -> Some(x * x) }
+
+        val left = m.compose(m.compose(f, g), h)(v).fix()
+        val right = m.compose(f, m.compose(g, h))(v).fix()
+
+        // expect: "left side reduction"
+        m.compose(m.compose(f, g), h)(v).fix() shouldBe right
+        { a: Int -> m.flatMap(m.compose(f, g)(a), h) }(v).fix() shouldBe right
+        { a: Int -> m.flatMap({ b: Int -> m.flatMap(f(b), g) }(a), h) } (v).fix() shouldBe right
+        { a: Int -> m.flatMap(m.flatMap(f(a), g), h) }(v).fix() shouldBe right
+        { a: Int -> val x = f(a)
+            m.flatMap(m.flatMap(x, g), h)
+        }(v).fix() shouldBe right
+
+        // expect: "right side reduction"
+        left shouldBe m.compose(f, m.compose(g, h))(v).fix()
+        left shouldBe { a: Int -> m.flatMap(f(a), m.compose(g, h)) }(v).fix()
+        left shouldBe { a: Int -> m.flatMap(f(a)) { b: Int -> m.flatMap(g(b), h) }}(v).fix()
+        left shouldBe { a: Int -> val x = f(a)
+            m.flatMap(x) { b: Int -> m.flatMap(g(b), h)}
+        }(v).fix()
+    }
 })
+
+
