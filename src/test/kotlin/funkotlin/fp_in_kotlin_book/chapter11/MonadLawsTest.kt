@@ -74,19 +74,48 @@ class MonadLawsTest : StringSpec({
         // expect: "left side reduction"
         m.compose(m.compose(f, g), h)(v).fix() shouldBe right
         { a: Int -> m.flatMap(m.compose(f, g)(a), h) }(v).fix() shouldBe right
-        { a: Int -> m.flatMap({ b: Int -> m.flatMap(f(b), g) }(a), h) } (v).fix() shouldBe right
+        { a: Int -> m.flatMap({ b: Int -> m.flatMap(f(b), g) }(a), h) }(v).fix() shouldBe right
         { a: Int -> m.flatMap(m.flatMap(f(a), g), h) }(v).fix() shouldBe right
-        { a: Int -> val x = f(a)
+        { a: Int ->
+            val x = f(a)
+            m.flatMap(m.flatMap(x, g), h)
+        }(v).fix() shouldBe right
+        // and
+        { a: Int ->
+            val x = f(a)
             m.flatMap(m.flatMap(x, g), h)
         }(v).fix() shouldBe right
 
         // expect: "right side reduction"
         left shouldBe m.compose(f, m.compose(g, h))(v).fix()
         left shouldBe { a: Int -> m.flatMap(f(a), m.compose(g, h)) }(v).fix()
-        left shouldBe { a: Int -> m.flatMap(f(a)) { b: Int -> m.flatMap(g(b), h) }}(v).fix()
-        left shouldBe { a: Int -> val x = f(a)
-            m.flatMap(x) { b: Int -> m.flatMap(g(b), h)}
+        left shouldBe { a: Int -> m.flatMap(f(a)) { b: Int -> m.flatMap(g(b), h) } }(v).fix()
+        // and
+        left shouldBe { a: Int ->
+            val x = f(a)
+            m.flatMap(x) { b: Int -> m.flatMap(g(b), h) }
         }(v).fix()
+
+        // expect: "the final law"
+        val leftSide = { a: Int ->
+            val x = f(a)
+            m.flatMap(m.flatMap(x, g), h)
+        }(v).fix()
+        val rightSide = { a: Int ->
+            val x = f(a)
+            m.flatMap(x) { b: Int -> m.flatMap(g(b), h) }
+        }(v).fix()
+        leftSide shouldBe rightSide
+
+        // and: "more expressive with ext fun"
+        { a: Int ->
+            val x = f(a)
+            x.flatMap(g).flatMap(h)
+        }(v).fix() shouldBe
+                { a: Int ->
+                    val x = f(a)
+                    x.flatMap { b: Int -> g(b).flatMap(h) }
+                }(v).fix()
     }
 })
 

@@ -107,6 +107,11 @@ interface Monad<F> : Functor<F> {
     ): (A) -> Kind<F, C>
 }
 
+fun <A, B> Kind<ForOption, A>.flatMap(
+    f: (A) -> Kind<ForOption, B>
+): Kind<ForOption, B> =
+    Monads.optionMonad().flatMap(this, f)
+
 object Monads {
     val genMonad = object : Monad<ForGen> {
         override fun <A> unit(a: A): Kind<ForGen, A> = Gen.unit(a)
