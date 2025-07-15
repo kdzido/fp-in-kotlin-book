@@ -278,6 +278,25 @@ class MonadTest : StringSpec({
         k3(2) shouldBe Some("__two")
         k3(3) shouldBe None
     }
+
+    "prove identity laws for option monad" {
+        val m = optionMonad()
+        val v = 123
+
+        // expect: "right identity"
+        m.compose<Int, Int, Int>({ a -> None} , { a -> m.unit(a) })(v).fix() shouldBe None
+        m.compose<Int, Int, Int>({ a -> Some(a)} , { a -> m.unit(a) })(v).fix() shouldBe Some(v)
+        // and:
+        m.flatMap(None) { a -> m.unit(a) }.fix() shouldBe None
+        m.flatMap(Some(v)) { a -> m.unit(a) }.fix() shouldBe Some(v)
+
+        // expect: "left identity"
+        m.compose<Int, Int, Int>({ a -> m.unit(a) }, { a -> None} )(v).fix() shouldBe None
+        m.compose<Int, Int, Int>({ a -> m.unit(a) }, { a -> Some(a)} , )(v).fix() shouldBe Some(v)
+        // and:
+        m.flatMap(Some(None)) { a -> m.unit(a) }.fix() shouldBe Some(None)
+        m.flatMap(Some(Some(v))) { a -> m.unit(a) }.fix() shouldBe Some(Some(v))
+    }
 })
 
 enum class EnumKey { ONE, TWO, THREE }
