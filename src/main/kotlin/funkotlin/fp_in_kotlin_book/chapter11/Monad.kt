@@ -38,6 +38,19 @@ interface Monad<F> : Functor<F> {
         return compose(f1, f)(fa)
     }
 
+    fun <A, B> __flatMap(
+        fa: Kind<F, A>,
+        f: (A) -> Kind<F, B>
+    ): Kind<F, B> =
+        join(map(fa) { a: A -> f(a) })
+
+    fun <A, B, C> __compose(
+        f: (A) -> Kind<F, B>,
+        g: (B) -> Kind<F, C>,
+    ): (A) -> Kind<F, C> = { a: A ->
+        join(map(f(a)) { b: B -> g(b) })
+    }
+
     fun <A, B> flatMap(
         fa: Kind<F, A>,
         f: (A) -> Kind<F, B>

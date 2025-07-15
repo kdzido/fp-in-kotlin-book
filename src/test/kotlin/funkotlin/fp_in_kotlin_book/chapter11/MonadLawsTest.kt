@@ -58,6 +58,9 @@ class MonadLawsTest : StringSpec({
 
         m.compose(m.compose(f, g), h)(v).fix() shouldBe
                 m.compose(f, m.compose(g, h))(v).fix()
+        // and:
+        m.__compose(m.__compose(f, g), h)(v).fix() shouldBe
+                m.__compose(f, m.__compose(g, h))(v).fix()
     }
 
     "verify associativity in terms of flatMap and compose" {
