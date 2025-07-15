@@ -13,4 +13,23 @@ interface Mon<F> {
         f: (A, B) -> C,
     ): Kind<F, C> =
         flatMap(fa) { a -> map(fb) { b -> f(a, b) } }
+
+    fun <A> equivalenceOfIdentityLaws(
+        m: Monad<F>,
+        f: (A) -> Kind<F, A>,
+        x: Kind<F, A>,
+        v: A,
+    ) {
+        // expect: "right identity"
+        val rightId1: Boolean = m.compose(f, { a: A -> m.unit(a) })(v) == f(v)
+        val rightId2: Boolean = { b: A -> m.flatMap(f(b)) { a: A -> m.unit(a) } }(v) == f(v)
+        val rightId3: Boolean = m.flatMap(f(v)) { a: A -> m.unit(a) } == f(v)
+        val rightId4: Boolean = m.flatMap(x) { a: A -> m.unit(a) } == x
+
+        // expect: "left identity"
+        val leftId1: Boolean = m.compose( { a: A -> m.unit(a) }, f)(v) == f(v)
+        val leftId2: Boolean = { b: A -> m.flatMap({ a: A -> m.unit(a) }(b), f)  }(v) == f(v)
+        val leftId3: Boolean = { b: A -> m.flatMap(m.unit(b), f) }(v) == f(v)
+        val leftId4: Boolean = m.flatMap(m.unit(v), f) == f(v)
+    }
 }
