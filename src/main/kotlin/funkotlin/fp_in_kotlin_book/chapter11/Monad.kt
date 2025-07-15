@@ -47,6 +47,9 @@ interface Monad<F> : Functor<F> {
     override fun <A, B> map(fa: Kind<F, A>, f: (A) -> B): Kind<F, B> =
         flatMap(fa) { a -> unit(f(a)) }
 
+    fun <A> join(ffa: Kind<F, Kind<F, A>>): Kind<F, A> =
+        flatMap(ffa) { fa: Kind<F, A> -> fa }
+
     fun <A, B, C> map2(
         fa: Kind<F, A>,
         fb: Kind<F, B>,

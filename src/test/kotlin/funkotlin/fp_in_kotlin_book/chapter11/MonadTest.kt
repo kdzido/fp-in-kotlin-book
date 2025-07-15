@@ -22,6 +22,7 @@ import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
 import funkotlin.fp_in_kotlin_book.chapter06.State
 import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter07.Par
+import funkotlin.fp_in_kotlin_book.chapter07.Pars
 import funkotlin.fp_in_kotlin_book.chapter07.Pars.shouldBePar
 import funkotlin.fp_in_kotlin_book.chapter07.fix
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
@@ -296,6 +297,19 @@ class MonadTest : StringSpec({
         // and:
         m.flatMap(Some(None)) { a -> m.unit(a) }.fix() shouldBe Some(None)
         m.flatMap(Some(Some(v))) { a -> m.unit(a) }.fix() shouldBe Some(Some(v))
+    }
+
+    "should join Pars" {
+        val es = Executors.newFixedThreadPool(1)
+
+        val m = parMonad()
+        val a: Par<Par<Int>> = m.unit(m.unit(42).fix()).fix()
+        val b: Par<Par<Int>> = m.unit(m.unit(8).fix()).fix()
+        val c: Par<Par<Int>> = m.unit(m.unit(3).fix()).fix()
+
+        (m.join(a).fix() shouldBePar m.unit(42).fix())(es)
+        (Pars.join(b).fix() shouldBePar m.unit(8).fix())(es)
+        (Pars.join(c).fix() shouldBePar m.unit(3).fix())(es)
     }
 })
 
