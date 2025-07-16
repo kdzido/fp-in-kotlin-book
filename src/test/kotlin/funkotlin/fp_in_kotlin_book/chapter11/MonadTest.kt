@@ -142,6 +142,12 @@ class MonadTest : StringSpec({
         val (n3, rng3) = incr1.run(rng2)
         n2 shouldBe 16159454
         n3 shouldBe 1281479698
+        // and:
+        val incr1__ = m.__flatMap(f) { i -> m.unit(i + 1) }.fix()
+        val (_n2, _rng2) = incr1__.run(rng)
+        val (_n3, _rng3) = incr1__.run(_rng2)
+        _n2 shouldBe 16159454
+        _n3 shouldBe 1281479698
     }
 
     "optionMonad should sequence" {

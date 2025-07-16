@@ -32,4 +32,32 @@ interface Mon<F> {
         val leftId3: Boolean = { b: A -> m.flatMap(m.unit(b), f) }(v) == f(v)
         val leftId4: Boolean = m.flatMap(m.unit(v), f) == f(v)
     }
+
+    fun <A> equivalenceOfIdentityLawsInTermsOfJoinMapUnit(
+        m: Monad<F>,
+        f: (A) -> Kind<F, A>,
+        g: (A) -> Kind<F, A>,
+        x: Kind<F, A>, // a appliad to f
+        y3: Kind<F, Kind<F, Kind<F, A>>>, // higher kind
+        v: A,
+    ) {
+        // given: id function
+        val z3: (Kind<F, Kind<F, A>>) -> Kind<F, Kind<F, Kind<F, A>>> = { a -> m.unit(a) }   // id function
+
+        // expect: "left and right identity laws"
+        val line0: Boolean = m.flatMap(f(v)) { a: A -> m.unit(a) } == f(v)
+        val line1: Boolean = m.flatMap(x) { a: A -> m.unit(a) } == x
+        // and: "replace f and g with id functions"
+        val line2: Boolean = m.flatMap(m.flatMap(y3, z3)) { b -> b } ==
+                m.flatMap(y3) { a -> m.flatMap(z3(a)){ b -> b } }
+        val line3: Boolean = m.flatMap(m.flatMap(y3, z3)) { it } ==
+                m.flatMap(y3) { a -> m.flatMap(z3(a)) { it } }
+        val line4: Boolean = m.flatMap(m.join(y3)) { it } ==
+                m.flatMap(y3) { m.join(it) }
+        val line5: Boolean = m.join(m.join(y3)) ==
+                m.join(m.map(y3) { m.join(it) })
+        val line6: Boolean = m.join(m.unit(x)) ==
+                m.join(m.map(x) { m.unit(it) })
+    }
+
 }
