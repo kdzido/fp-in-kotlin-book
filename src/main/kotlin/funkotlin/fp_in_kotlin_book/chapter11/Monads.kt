@@ -13,9 +13,8 @@ import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
-import funkotlin.fp_in_kotlin_book.chapter06.ForIntState
-import funkotlin.fp_in_kotlin_book.chapter06.IntStateOf
 import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.StateOf
 import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter04.flatMap as flatMapOption
 import funkotlin.fp_in_kotlin_book.chapter07.ForPar
@@ -93,12 +92,13 @@ object Monads {
         }
     }
 
-    fun intStateMonad() = object : Monad<ForIntState> {
-        override fun <A> unit(a: A): IntStateOf<A> = State<Int, A> { s -> a to s }
+    fun intStateMonad() = object : StateMonad<Int> {
+        override fun <A> unit(a: A): StateOf<Int, A> = State { s -> a to s}
+
         override fun <A, B, C> compose(
-            f: (A) -> IntStateOf<B>,
-            g: (B) -> IntStateOf<C>,
-        ): (A) -> IntStateOf<C> = { a: A ->
+            f: (A) -> StateOf<Int, B>,
+            g: (B) -> StateOf<Int, C>,
+        ): (A) -> StateOf<Int, C> = { a: A ->
             f(a).fix().flatMap { b: B -> g(b).fix() }
         }
     }
