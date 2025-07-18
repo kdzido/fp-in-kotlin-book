@@ -4,9 +4,10 @@ import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 
 // fns of this type are called state actions of state transitions
+
+//data class State<S, out A>(val run: (S) -> Pair<A, S>) {
+data class State<S, out A>(val run: (S) -> Pair<A, S>) : IntStateOf<A> {
 //data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
-//data class State<S, out A>(val run: (S) -> Pair<A, S>) : IntStateOf<S, A> {
-data class State<S, out A>(val run: (S) -> Pair<A, S>) {
     // EXER 6.8, 6.10
     fun < B> flatMap(f: (A) -> State<S, B>): State<S, B> = State { rng ->
         val (s1, r2) = this.run(rng)
