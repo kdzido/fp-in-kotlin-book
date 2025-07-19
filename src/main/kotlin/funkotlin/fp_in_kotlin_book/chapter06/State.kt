@@ -10,13 +10,17 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
     // EXER 6.8, 6.10
     fun < B> flatMap(f: (A) -> State<S, B>): State<S, B> = State { rng ->
-        val (s1, r2) = this.run(rng)
-        f(s1).run(r2)
+        val (a1, s2) = this.run(rng)
+        f(a1).run(s2)
     }
 
     // EXER 6.5, 6.9, 6.10
     fun <B> map(f: (A) -> B): State<S, B> =
         this.flatMap { a -> unit(f(a)) }
+
+    fun <S> getState(): State<S, S> = State { s -> s to s }
+
+    fun <S> setState(s: S): State<S, Unit> = State { Unit to s }
 
     companion object {
         // EXER 6.10

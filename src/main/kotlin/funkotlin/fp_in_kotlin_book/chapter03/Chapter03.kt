@@ -186,6 +186,9 @@ object Nil : List<Nothing>() {
 }
 data class Cons<out A>(val head: A, val tail: List<A>) : List<A>()
 
+fun <A> List<A>.reversed(): List<A> =
+    List.Companion.foldLeft(this, Nil as List<A>, { x, y -> Cons(y, x)})
+
 // Listing 3.12
 sealed class Tree<out A> : TreeOf<A> {
     companion object {

@@ -7,9 +7,11 @@ import arrow.core.ListK
 import arrow.core.SequenceK
 import arrow.core.extensions.listk.monad.flatMap
 import arrow.core.fix
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
-import funkotlin.fp_in_kotlin_book.chapter03.List
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter03.fix
+import funkotlin.fp_in_kotlin_book.chapter03.reversed
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
@@ -23,6 +25,7 @@ import funkotlin.fp_in_kotlin_book.chapter07.fix
 import funkotlin.fp_in_kotlin_book.chapter08.ForGen
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
 import funkotlin.fp_in_kotlin_book.chapter08.fix
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.intStateMonad
 
 object Monads {
     val genMonad = object : Monad<ForGen> {
@@ -66,7 +69,7 @@ object Monads {
             f: (A) -> Kind<ForList, B>,
             g: (B) -> Kind<ForList, C>,
         ): (A) -> Kind<ForList, C> = { a: A ->
-            List.flatMap(f(a).fix()) { b: B -> g(b).fix() }
+            ListCh3.flatMap(f(a).fix()) { b: B -> g(b).fix() }
         }
     }
 
@@ -102,4 +105,21 @@ object Monads {
             f(a).fix().flatMap { b: B -> g(b).fix() }
         }
     }
+}
+
+fun <A> zipWithIndex(la: ListCh3<A>): ListCh3<Pair<Int, A>> {
+    val m = intStateMonad()
+
+    return ListCh3.foldLeft<A, StateOf<Int, ListCh3<Pair<Int, A>>>>(
+        la,
+        m.unit<ListCh3<Pair<Int, A>>>(ListCh3.of<Pair<Int, A>>())
+    ) { acc: StateOf<Int, ListCh3<Pair<Int, A>>>, a: A ->
+        acc.fix<Int, ListCh3<Pair<Int, A>>>().flatMap<Cons<Pair<Int, A>>> { xs ->
+            acc.fix<Int, ListCh3<Pair<Int, A>>>().getState<Int>().flatMap<Cons<Pair<Int, A>>> { n ->
+                acc.fix<Int, ListCh3<Pair<Int, A>>>().setState(n + 1).fix().map<Cons<Pair<Int, A>>> { u ->
+                    Cons<Pair<Int, A>>(n to a, xs)
+                }
+            }
+        }
+    }.fix<Int, ListCh3<Pair<Int, A>>>().run(0).first.reversed<Pair<Int, A>>()
 }

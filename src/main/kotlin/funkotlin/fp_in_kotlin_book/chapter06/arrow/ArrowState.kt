@@ -9,6 +9,7 @@ import arrow.mtl.extensions.fx
 import arrow.mtl.run
 import funkotlin.fp_in_kotlin_book.chapter06.RNG
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
+import kotlin.Int
 
 val int: State<RNG, Int> = State { rng -> rng.nextIntTup() }
 

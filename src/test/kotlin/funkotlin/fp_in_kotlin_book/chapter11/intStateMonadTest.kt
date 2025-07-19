@@ -48,4 +48,14 @@ class intStateMonadTest : StringSpec({
         sequenceIntState().fix().run(1) shouldBe
                 Pair(ListCh3.of(1, 11), 110)
     }
+
+    "zipWithIndex" {
+        val expectedList = ListCh3.of(
+            0 to 1,
+            1 to 2,
+            2 to 3,
+        )
+
+        zipWithIndex(ListCh3.of(1, 2, 3)) shouldBe expectedList
+    }
 })
