@@ -20,7 +20,13 @@ data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
 
     companion object {
         // EXER 6.10
-        fun <S, A> unit(a: A): State<S, A> = State { rng -> a to rng }
+        fun <S, A> unit(a: A): State<S, A> = State { s -> a to s }
+
+        fun <S> getState(): State<S, S> =
+            State { s -> s to s }
+
+        fun <S> setState(s: S): State<S, Unit> =
+            State { Unit to s }
 
         // EXER 6.6, 6.9, 6.10
         fun <S, A, B, C> map2(ra : State<S, A>, rb: State<S, B>, f: (A, B) -> C): State<S, C> =
