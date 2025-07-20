@@ -2,9 +2,16 @@ package funkotlin.fp_in_kotlin_book.chapter06
 
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
+import arrow.Kind
+import arrow.Kind2
+
+class ForState private constructor() { companion object }
+
+typealias StateOf<S, T> = Kind2<ForState, S, T>
+typealias StatePartialOf<S> = Kind<ForState, S>
+fun <S, T> StateOf<S, T>.fix() = this as State<S, T>
 
 // fns of this type are called state actions of state transitions
-
 //data class State<S, out A>(val run: (S) -> Pair<A, S>) {
 //data class State<S, out A>(val run: (S) -> Pair<A, S>) : IntStateOf<A> {
 data class State<S, out A>(val run: (S) -> Pair<A, S>) : StateOf<S, A> {
