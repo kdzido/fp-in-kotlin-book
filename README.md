@@ -13,3 +13,4 @@
 * PART 3: COMMON STRUCTURES IN FUNCTIONAL DESIGN
 10. Monoid
 11. Monads and functors
+12. Applicatives and traversable functors
