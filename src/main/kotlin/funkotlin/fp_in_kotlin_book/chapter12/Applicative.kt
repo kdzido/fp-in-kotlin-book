@@ -28,4 +28,23 @@ interface Applicative<F> : Functor<F> {
                 map2(f(a), acc) { b: B, lb: ListL<B> -> Cons(b, lb) }
             }
         )
+
+    fun <A> sequence(lfa: ListL<Kind<F, A>>): Kind<F, ListL<A>> =
+        ListL.foldRight2(
+            lfa,
+            unit(ListL.of()),
+            { fa: Kind<F, A>, fla: Kind<F, ListL<A>> ->
+                map2(fa, fla) { a: A, la: ListL<A> -> Cons(a, la) }
+            }
+        )
+
+    fun <A> replicateM(n: Int, ma: Kind<F, A>): Kind<F, ListL<A>> =
+        sequence(ListL.fill(n, ma))
+
+    fun <A, B> product(
+        ma: Kind<F, A>,
+        mb: Kind<F, B>
+    ): Kind<F, Pair<A, B>> =
+        map2(ma, mb) { a, b -> Pair(a, b) }
+
 }
