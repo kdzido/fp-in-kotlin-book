@@ -6,16 +6,27 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
 
 interface Applicative<F> : Functor<F> {
-    fun <A, B, C> map2(
+    fun <A, B> apply(
+        fab: Kind<F, (A) -> B>,
         fa: Kind<F, A>,
-        fb: Kind<F, B>,
-        f: (A, B) -> C
-    ): Kind<F, C>
+    ): Kind<F, B> =
+        map2(fa, fab) { a: A, f: (A) -> B -> f(a) }
 
     fun <A> unit(a: A): Kind<F, A>
 
     override fun <A, B> map(fa: Kind<F, A>, f: (A) -> B): Kind<F, B> =
-        map2(fa, unit(Unit)) { a, _ -> f(a) }
+        apply(unit(f), fa)
+//        map2(fa, unit(Unit)) { a, _ -> f(a) }
+
+    fun <A, B, C> map2(
+        fa: Kind<F, A>,
+        fb: Kind<F, B>,
+        f: (A, B) -> C
+    ): Kind<F, C> {
+        val fCurried: (A) -> (B) -> C = { a -> { b -> f(a, b) } }
+        val l1: Kind<F, (B) -> C> = apply(unit(fCurried), fa)
+        return apply(l1, fb)
+    }
 
     fun <A, B> traverse(
         la: ListL<A>,

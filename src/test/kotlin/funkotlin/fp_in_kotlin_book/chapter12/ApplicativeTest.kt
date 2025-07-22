@@ -48,4 +48,17 @@ class ApplicativeTest : StringSpec({
         a.product(Some(1), None).fix() shouldBe None
         a.product(None, None).fix() shouldBe None
     }
+
+    "optionApplicative should map" {
+        val a = optionApplicative()
+
+        a.map(Some(1)) { a -> (a + 1).toString() }.fix() shouldBe Some("2")
+    }
+
+    "optionApplicative should product" {
+        val a = optionApplicative()
+
+        a.apply(Some({ a -> (a + 1).toString() }), Some(1)).fix() shouldBe Some("2")
+    }
+
 })
