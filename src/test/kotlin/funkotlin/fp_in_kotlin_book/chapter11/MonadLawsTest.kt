@@ -1,5 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter11
 
+import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.OptionOf
@@ -58,9 +60,6 @@ class MonadLawsTest : StringSpec({
 
         m.compose(m.compose(f, g), h)(v).fix() shouldBe
                 m.compose(f, m.compose(g, h))(v).fix()
-        // and:
-        m.__compose(m.__compose(f, g), h)(v).fix() shouldBe
-                m.__compose(f, m.__compose(g, h))(v).fix()
     }
 
     "verify associativity in terms of flatMap and compose" {
@@ -121,5 +120,11 @@ class MonadLawsTest : StringSpec({
                 }(v).fix()
     }
 })
+
+fun <A, B> Kind<ForOption, A>.flatMap(
+    f: (A) -> Kind<ForOption, B>
+): Kind<ForOption, B> =
+    Monads.optionMonad().flatMap(this, f)
+
 
 

@@ -147,21 +147,6 @@ class MonadTest : StringSpec({
         m.traverse(ListCh3.of("1", "Two"), toIntO).fix() shouldBe None
     }
 
-    "_replicateM for genMonad" {
-        val rng = SimpleRNG(1)
-
-        val m = genMonad
-        val (l1, rng2) = m._replicateM(5, Gen.choose(1, 10)).fix().sample.run(rng)
-        val (l2, rng3) = m._replicateM(5, Gen.choose(1, 10)).fix().sample.run(rng2)
-        val (l3, rng4) = m._replicateM(5, Gen.choose(1, 10)).fix().sample.run(rng3)
-        val (l4, rng5) = m._replicateM(5, Gen.choose(1, 10)).fix().sample.run(rng4)
-
-        l1 shouldBe ListCh3.of(8, 5, 6, 7, 2)
-        l2 shouldBe ListCh3.of(3, 8, 7, 9, 1)
-        l3 shouldBe ListCh3.of(8, 5, 9, 5, 2)
-        l4 shouldBe ListCh3.of(9, 4, 1, 1, 5)
-    }
-
     "replicateM for genMonad" {
         val rng = SimpleRNG(1)
 
