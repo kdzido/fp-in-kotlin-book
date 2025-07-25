@@ -1,0 +1,72 @@
+package funkotlin.fp_in_kotlin_book.chapter12
+
+import arrow.Kind
+import arrow.core.Option
+import arrow.core.toOption
+import arrow.core.Some
+import arrow.core.ForOption
+import arrow.core.fix
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+
+import funkotlin.fp_in_kotlin_book.chapter11.Monad
+
+class MonadVsApplicativeTest : StringSpec({
+    "optionApplicative " should {
+        // given: "applicative instance"
+        val FA = object : Applicative<ForOption> {
+            override fun <A> unit(a: A): Kind<ForOption, A> = Some(a)
+
+            override fun <A, B, C> map2(
+                fa: Kind<ForOption, A>,
+                fb: Kind<ForOption, B>,
+                f: (A, B) -> C,
+            ): Kind<ForOption, C> =
+                fa.fix().flatMap { a -> fb.fix().flatMap { b -> unit(f(a, b)) } }
+        }
+        // given: "monad instance"
+        val FM = object : Monad<ForOption> {
+            override fun <A> unit(a: A): Kind<ForOption, A> = Some(a)
+
+            override fun <A, B> flatMap(
+                fa: Kind<ForOption, A>,
+                f: (A) -> Kind<ForOption, B>,
+            ): Kind<ForOption, B> =
+                fa.fix().flatMap { a -> f(a).fix() }
+        }
+
+        "independent lookups using optionApplicative" {
+            val employee = "Alice"
+            val departments: Map<String, String> = mapOf("Alice" to "Tech")
+            val salaries: Map<String, Double> = mapOf("Alice" to 100_000.0)
+
+            val o: Option<String> = FA.map2(
+                departments[employee].toOption(),
+                salaries[employee].toOption(),
+            ) { dept: String, salary: Double ->
+                "$employee in $dept makes $salary per year."
+            }.fix()
+
+            o shouldBe Some("Alice in Tech makes 100000.0 per year.")
+        }
+
+        "dependent lookups using optionMonad" {
+            val employee = "Bob"
+            val idByName: Map<String, Int> = mapOf("Bob" to 101)
+            val departments: Map<Int, String> = mapOf(101 to "Sales")
+            val salaries: Map<Int, Double> = mapOf(101 to 100_000.0)
+
+            val o: Option<String> = idByName[employee].toOption().flatMap { id ->
+                FM.map2(
+                    departments[id].toOption(),
+                    salaries[id].toOption(),
+                ) { dept: String, salary: Double ->
+                    "$employee in $dept makes $salary per year."
+                }
+            }.fix()
+
+            o shouldBe Some("Bob in Sales makes 100000.0 per year.")
+        }
+    }
+})
