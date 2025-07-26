@@ -1,11 +1,15 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
+import java.util.Date
 import arrow.Kind
 import arrow.core.Option
 import arrow.core.toOption
 import arrow.core.Some
 import arrow.core.ForOption
 import arrow.core.fix
+import funkotlin.fp_in_kotlin_book.chapter09.ForParser
+import funkotlin.fp_in_kotlin_book.chapter09.Parser
+import funkotlin.fp_in_kotlin_book.chapter09.fix
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -68,5 +72,19 @@ class MonadVsApplicativeTest : StringSpec({
 
             o shouldBe Some("Bob in Sales makes 100000.0 per year.")
         }
+    }
+
+    "parserApplicative"  {
+        data class Row(val date: Date, val temp: Double)
+        fun <A> Parser<A>.sep(s: String): Parser<List<Row>> = TODO()
+
+        // given: "applicative instance"
+        val F:  Applicative<ForParser> = TODO()
+
+        val date: Parser<Date> = TODO()
+        val temp: Parser<Double> = TODO()
+
+        val row: Parser<Row> = F.map2(date, temp) { d, t -> Row(d, t) }.fix()
+        val rows: Parser<List<Row>> = row.sep("\n")
     }
 })
