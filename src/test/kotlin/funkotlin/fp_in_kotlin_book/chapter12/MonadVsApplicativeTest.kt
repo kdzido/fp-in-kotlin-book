@@ -237,15 +237,18 @@ class MonadVsApplicativeTest : StringSpec({
 
             val name = "alice"
             val dob = "2025-01-01"
-            val phone = "123-456-789"
+            val dobExpectedMillis = 1735686000000L
+            val phone = "1234567891"
 
             // expect:
-            M.map3(
+            val res: Validation<String, WebForm> = M.map3(
                 validName(name),
                 validDateOfBirth(dob),
                 validPhone(phone),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
-                    Success(WebForm(name, Date(1234567), phone))
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix()
+
+            res shouldBe
+                    Success(WebForm(name, Date(dobExpectedMillis), phone))
         }
 
         "validationApplicative failed validation" {
@@ -258,10 +261,10 @@ class MonadVsApplicativeTest : StringSpec({
                 validPhone(""),
             ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
                     Failure(
-                        head = "<Invalid phone>",
+                        head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
-                            "<Invalid date>",
-                            "<Invalid name>",
+                                "<Date of birth must be in format yyyy-MM-dd>",
+                            "<Name cannot be empty>",
                         )
                     )
             // expect:
@@ -271,9 +274,9 @@ class MonadVsApplicativeTest : StringSpec({
                 validPhone(""),
             ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
                     Failure(
-                        head = "<Invalid phone>",
+                        head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
-                            "<Invalid date>",
+                            "<Date of birth must be in format yyyy-MM-dd>",
                         )
                     )
             // expect:
@@ -283,9 +286,9 @@ class MonadVsApplicativeTest : StringSpec({
                 validPhone(""),
             ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
                     Failure(
-                        head = "<Invalid phone>",
+                        head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
-                            "<Invalid name>",
+                            "<Name cannot be empty>",
                         )
                     )
             // expect:
@@ -295,9 +298,9 @@ class MonadVsApplicativeTest : StringSpec({
                 validPhone("1234567890"),
             ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
                     Failure(
-                        head = "<Invalid date>",
+                        head = "<Date of birth must be in format yyyy-MM-dd>",
                         tail = ListL.of(
-                            "<Invalid name>",
+                            "<Name cannot be empty>",
                         )
                     )
         }

@@ -6,6 +6,7 @@ import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import java.text.SimpleDateFormat
 import java.util.Date
 
 data class WebForm(val f1: String, val f2: Date, val f3: String)
@@ -49,15 +50,18 @@ fun <E, A, B, C> map2(
 object Validations {
     fun validName(name: String): Validation<String, String> = when {
         name.isNotBlank() -> Success(name)
-        else -> Failure("<Invalid name>")
+        else -> Failure("<Name cannot be empty>")
     }
-    fun validDateOfBirth(dob: String): Validation<String, Date> = when {
-        dob.isNotBlank() -> Success(Date(1234567))
-        else -> Failure("<Invalid date>")
-    }
+    fun validDateOfBirth(dob: String): Validation<String, Date> =
+        try {
+            Success(SimpleDateFormat("yyyy-MM-dd").parse(dob))
+        } catch (e: Exception) {
+            Failure("<Date of birth must be in format yyyy-MM-dd>")
+        }
+
     fun validPhone(phone: String): Validation<String, String> = when {
-        phone.isNotBlank() -> Success(phone)
-        else -> Failure("<Invalid phone>")
+        phone.matches("[0-9]{10}".toRegex()) -> Success(phone)
+        else -> Failure("<Phone number must be 10 digits>")
     }
 }
 
