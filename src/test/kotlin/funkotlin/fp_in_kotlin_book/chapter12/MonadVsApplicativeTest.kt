@@ -21,7 +21,6 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
 import funkotlin.fp_in_kotlin_book.chapter05.StreamOf
 import funkotlin.fp_in_kotlin_book.chapter05.fix
-import funkotlin.fp_in_kotlin_book.chapter12.WebForm
 import funkotlin.fp_in_kotlin_book.chapter12.Validations.validName
 import funkotlin.fp_in_kotlin_book.chapter12.Validations.validDateOfBirth
 import funkotlin.fp_in_kotlin_book.chapter12.Validations.validPhone
@@ -178,9 +177,9 @@ class MonadVsApplicativeTest : StringSpec({
             val dob = "2025-01-01"
             val phone = "123-456-789"
 
-            F.flatMap<String, WebForm>(validName(name)) { f1: String ->
-                F.flatMap<Date, WebForm>(validDateOfBirth(dob)) { f2: Date ->
-                    F.map<String, WebForm>(validPhone(phone)) { f3: String ->
+            F.flatMap(ValidationsEither.validName(name)) { f1: String ->
+                F.flatMap(ValidationsEither.validDateOfBirth(dob)) { f2: Date ->
+                    F.map(ValidationsEither.validPhone(phone)) { f3: String ->
                         WebForm(f1, f2, f3)
                     }
                 }
@@ -224,11 +223,83 @@ class MonadVsApplicativeTest : StringSpec({
 
             // expect:
             M.map3(
+                ValidationsEither.validName(name),
+                ValidationsEither.validDateOfBirth(dob),
+                ValidationsEither.validPhone(phone),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+                    Right(WebForm(name, Date(1234567), phone))
+        }
+    }
+
+    "validationApplicative" should {
+        "validationApplicative successful validation" {
+            val M = validation<String>()
+
+            val name = "alice"
+            val dob = "2025-01-01"
+            val phone = "123-456-789"
+
+            // expect:
+            M.map3(
                 validName(name),
                 validDateOfBirth(dob),
                 validPhone(phone),
             ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
-                    Right(WebForm(name, Date(1234567), phone))
+                    Success(WebForm(name, Date(1234567), phone))
+        }
+
+        "validationApplicative failed validation" {
+            val M = validation<String>()
+
+            // expect:
+            M.map3(
+                validName(""),
+                validDateOfBirth(""),
+                validPhone(""),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+                    Failure(
+                        head = "<Invalid phone>",
+                        tail = ListL.of(
+                            "<Invalid date>",
+                            "<Invalid name>",
+                        )
+                    )
+            // expect:
+            M.map3(
+                validName("Alice"),
+                validDateOfBirth(""),
+                validPhone(""),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+                    Failure(
+                        head = "<Invalid phone>",
+                        tail = ListL.of(
+                            "<Invalid date>",
+                        )
+                    )
+            // expect:
+            M.map3(
+                validName(""),
+                validDateOfBirth("2025-01-01"),
+                validPhone(""),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+                    Failure(
+                        head = "<Invalid phone>",
+                        tail = ListL.of(
+                            "<Invalid name>",
+                        )
+                    )
+            // expect:
+            M.map3(
+                validName(""),
+                validDateOfBirth(""),
+                validPhone("1234567890"),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+                    Failure(
+                        head = "<Invalid date>",
+                        tail = ListL.of(
+                            "<Invalid name>",
+                        )
+                    )
         }
     }
 })
