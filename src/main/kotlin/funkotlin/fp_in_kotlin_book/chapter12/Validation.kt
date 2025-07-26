@@ -63,6 +63,19 @@ object Validations {
         phone.matches("[0-9]{10}".toRegex()) -> Success(phone)
         else -> Failure("<Phone number must be 10 digits>")
     }
+
+    fun validateWebForm(
+        name: String,
+        dob: String,
+        phone: String,
+    ): Validation<String, WebForm> {
+        val F = validationApplicative<String>()
+        return F.map3(
+            validName(name),
+            validDateOfBirth(dob),
+            validPhone(phone),
+        ) { n, d, p -> WebForm(n, d, p) }.fix()
+    }
 }
 
 object ValidationsEither {

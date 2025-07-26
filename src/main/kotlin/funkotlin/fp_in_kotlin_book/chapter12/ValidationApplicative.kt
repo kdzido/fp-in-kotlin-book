@@ -13,7 +13,7 @@ interface ValidationApplicative<E> : Applicative<ValidationPartialOf<E>> {
     ): ValidationOf<E, C>
 }
 
-fun <E> validation(): ValidationApplicative<E> = object : ValidationApplicative<E> {
+fun <E> validationApplicative(): ValidationApplicative<E> = object : ValidationApplicative<E> {
     override fun <A> unit(a: A): ValidationOf<E, A> = Success(a)
 
     override fun <A, B, C> map2(

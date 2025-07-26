@@ -21,9 +21,7 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
 import funkotlin.fp_in_kotlin_book.chapter05.StreamOf
 import funkotlin.fp_in_kotlin_book.chapter05.fix
-import funkotlin.fp_in_kotlin_book.chapter12.Validations.validName
-import funkotlin.fp_in_kotlin_book.chapter12.Validations.validDateOfBirth
-import funkotlin.fp_in_kotlin_book.chapter12.Validations.validPhone
+import funkotlin.fp_in_kotlin_book.chapter12.Validations.validateWebForm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -233,7 +231,7 @@ class MonadVsApplicativeTest : StringSpec({
 
     "validationApplicative" should {
         "validationApplicative successful validation" {
-            val M = validation<String>()
+            val M = validationApplicative<String>()
 
             val name = "alice"
             val dob = "2025-01-01"
@@ -241,38 +239,36 @@ class MonadVsApplicativeTest : StringSpec({
             val phone = "1234567891"
 
             // expect:
-            val res: Validation<String, WebForm> = M.map3(
-                validName(name),
-                validDateOfBirth(dob),
-                validPhone(phone),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix()
-
-            res shouldBe
+            validateWebForm(
+                name = name,
+                dob = dob,
+                phone = phone,
+            ) shouldBe
                     Success(WebForm(name, Date(dobExpectedMillis), phone))
         }
 
         "validationApplicative failed validation" {
-            val M = validation<String>()
+            val M = validationApplicative<String>()
 
             // expect:
-            M.map3(
-                validName(""),
-                validDateOfBirth(""),
-                validPhone(""),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+            validateWebForm(
+                name = "",
+                dob = "",
+                phone = "",
+            ) shouldBe
                     Failure(
                         head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
-                                "<Date of birth must be in format yyyy-MM-dd>",
+                            "<Date of birth must be in format yyyy-MM-dd>",
                             "<Name cannot be empty>",
                         )
                     )
             // expect:
-            M.map3(
-                validName("Alice"),
-                validDateOfBirth(""),
-                validPhone(""),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+            validateWebForm(
+                name = "Alice",
+                dob = "",
+                phone = "",
+            ) shouldBe
                     Failure(
                         head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
@@ -280,11 +276,11 @@ class MonadVsApplicativeTest : StringSpec({
                         )
                     )
             // expect:
-            M.map3(
-                validName(""),
-                validDateOfBirth("2025-01-01"),
-                validPhone(""),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+            validateWebForm(
+                name = "",
+                dob = "2025-01-01",
+                phone = "",
+            ) shouldBe
                     Failure(
                         head = "<Phone number must be 10 digits>",
                         tail = ListL.of(
@@ -292,11 +288,11 @@ class MonadVsApplicativeTest : StringSpec({
                         )
                     )
             // expect:
-            M.map3(
-                validName(""),
-                validDateOfBirth(""),
-                validPhone("1234567890"),
-            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
+            validateWebForm(
+                name = "",
+                dob = "",
+                phone = "1234567890",
+            ) shouldBe
                     Failure(
                         head = "<Date of birth must be in format yyyy-MM-dd>",
                         tail = ListL.of(
