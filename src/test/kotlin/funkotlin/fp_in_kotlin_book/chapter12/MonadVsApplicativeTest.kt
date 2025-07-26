@@ -7,6 +7,11 @@ import arrow.core.toOption
 import arrow.core.Some
 import arrow.core.ForOption
 import arrow.core.fix
+import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter04.EitherOf
+import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter09.ForParser
 import funkotlin.fp_in_kotlin_book.chapter09.Parser
@@ -140,6 +145,90 @@ class MonadVsApplicativeTest : StringSpec({
                 ListL.of(1, 2, 3, 4),
                 ListL.of(1, 2, 3, 4),
             )
+        }
+    }
+
+    "eitherMonad"  should {
+
+        "eitherMonad operations" {
+            val M = eitherMonad<Int>()
+
+            val e1 = M.unit("one").fix()
+            val e2 = M.unit("123").fix()
+
+            // expect:
+            e1 shouldBe Right("one")
+            e2 shouldBe Right("123")
+            // and:
+            M.flatMap(e1) { s: String ->
+                if (s.contains(Regex("[0-9]+"))) Right(s.toInt()) else Left(1)
+            }.fix() shouldBe Left(1)
+            // and:
+            M.flatMap(e2) { s: String ->
+                if (s.contains(Regex("[0-9]+"))) Right(s.toInt()) else Left(1)
+            }.fix() shouldBe Right(123)
+        }
+
+        "eitherMonad WebForm successful validation" {
+            data class WebForm(val f1: String, val f2: Date, val f3: String)
+            val F = eitherMonad<String>()
+
+            val name = "alice"
+            val dob = "2025-01-01"
+            val phone = "123-456-789"
+
+            fun validName(name: String): Either<String, String> = when {
+                name.isNotBlank() -> Right(name)
+                else -> Left("<Invalid name>")
+            }
+            fun validDateOfBirth(dob: String): Either<String, Date> = when {
+                dob.isNotBlank() -> Right(Date(1234567))
+                else -> Left("<Invalid date>")
+            }
+            fun validPhone(phone: String): Either<String, String> = when {
+                phone.isNotBlank() -> Right(phone)
+                else -> Left("<Invalid phone>")
+            }
+
+            F.flatMap<String, WebForm>(validName(name)) { f1: String ->
+                F.flatMap<Date, WebForm>(validDateOfBirth(dob)) { f2: Date ->
+                    F.map<String, WebForm>(validPhone(phone)) { f3: String ->
+                        WebForm(f1, f2, f3)
+                    }
+                }
+            } shouldBe
+                    Right(WebForm(name, Date(1234567), phone))
+        }
+
+        "eitherMonad WebForm successful validation" {
+            data class WebForm(val f1: String, val f2: Date, val f3: String)
+            val F = eitherMonad<String>()
+
+            val name = "alice"
+            val dob = "2025-01-01"
+            val phone = "123-456-789"
+
+            fun validName(name: String): Either<String, String> = when {
+                name.isNotBlank() -> Right(name)
+                else -> Left("<Invalid name>")
+            }
+            fun validDateOfBirth(dob: String): Either<String, Date> = when {
+                dob.isNotBlank() -> Right(Date(1234567))
+                else -> Left("<Invalid date>")
+            }
+            fun validPhone(phone: String): Either<String, String> = when {
+                phone.isNotBlank() -> Right(phone)
+                else -> Left("<Invalid phone>")
+            }
+
+            F.flatMap<String, WebForm>(validName(name)) { f1: String ->
+                F.flatMap<Date, WebForm>(validDateOfBirth(dob)) { f2: Date ->
+                    F.map<String, WebForm>(validPhone(phone)) { f3: String ->
+                        WebForm(f1, f2, f3)
+                    }
+                }
+            } shouldBe
+                    Right(WebForm(name, Date(1234567), phone))
         }
     }
 })

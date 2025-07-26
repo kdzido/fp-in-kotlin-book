@@ -1,9 +1,16 @@
 package funkotlin.fp_in_kotlin_book.chapter04
 
-//import arrow.core.raise.either
+import arrow.Kind
+import arrow.Kind2
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
+
+class ForEither private constructor() { companion object }
+typealias EitherOf<E, A> = Kind2<ForEither, E, A>
+typealias EitherPartialOf<E> = Kind<ForEither, E>
+
+fun <E, A> EitherOf<E, A>.fix() = this as Either<E, A>
 
 // listing 4.5
 sealed class Either<out E, out A> : EitherOf<E, A>
