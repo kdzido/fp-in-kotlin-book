@@ -7,9 +7,17 @@ import arrow.core.toOption
 import arrow.core.Some
 import arrow.core.ForOption
 import arrow.core.fix
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter09.ForParser
 import funkotlin.fp_in_kotlin_book.chapter09.Parser
 import funkotlin.fp_in_kotlin_book.chapter09.fix
+import funkotlin.fp_in_kotlin_book.chapter05.Stream
+import funkotlin.fp_in_kotlin_book.chapter05.ForStream
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.take
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
+import funkotlin.fp_in_kotlin_book.chapter05.StreamOf
+import funkotlin.fp_in_kotlin_book.chapter05.fix
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -97,6 +105,41 @@ class MonadVsApplicativeTest : StringSpec({
             val rows: Parser<List<Row>> = F.flatMap(header) { row: Parser<Row> ->
                 row.sep("\n")
             }.fix()
+        }
+    }
+
+    "streamApplicative" should {
+        // given: "applicative instance"
+        val F:  Applicative<ForStream> = object : Applicative<ForStream> {
+            override fun <A> unit(a: A): Kind<ForStream, A> =
+                Stream.constant(a)
+
+            override fun <A, B, C> map2(
+                fa: StreamOf<A>,
+                fb: StreamOf<B>,
+                f: (A, B) -> C,
+            ): StreamOf<C> =
+                fa.fix().zipWith(fb.fix()) { a, b -> f(a, b) }
+        }
+
+        "streamApplicative sequence" {
+            val s1 = Stream.constant(1)
+            val s2 = Stream.constant(2)
+            val s3 = Stream.constant(3)
+            val s4 = Stream.constant(4)
+            val zs = F.sequence(ListL.of(
+                s1,
+                s2,
+                s3,
+                s4,
+            )).fix()
+
+            zs.take(4).toList() shouldBe ListL.of(
+                ListL.of(1, 2, 3, 4),
+                ListL.of(1, 2, 3, 4),
+                ListL.of(1, 2, 3, 4),
+                ListL.of(1, 2, 3, 4),
+            )
         }
     }
 })

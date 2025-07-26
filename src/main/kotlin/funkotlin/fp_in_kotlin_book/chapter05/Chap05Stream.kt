@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter05
 
+import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter03.Nil as NilL
 import funkotlin.fp_in_kotlin_book.chapter03.Cons as ConsL
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
@@ -8,7 +9,11 @@ import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.map
 
-sealed class Stream<out A> {
+class ForStream private constructor() { companion object }
+typealias StreamOf<T> = Kind<ForStream, T>
+fun <A> StreamOf<A>.fix() = this as Stream<A>
+
+sealed class Stream<out A> : StreamOf<A> {
     companion object {
         fun ones(): Stream<Int> = constant(1)
 
