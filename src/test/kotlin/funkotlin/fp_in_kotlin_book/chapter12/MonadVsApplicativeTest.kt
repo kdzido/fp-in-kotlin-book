@@ -74,17 +74,29 @@ class MonadVsApplicativeTest : StringSpec({
         }
     }
 
-    "parserApplicative"  {
+    "parser applicative vs monad" should {
         data class Row(val date: Date, val temp: Double)
         fun <A> Parser<A>.sep(s: String): Parser<List<Row>> = TODO()
 
-        // given: "applicative instance"
-        val F:  Applicative<ForParser> = TODO()
+        "parserApplicative" {
+            // given: "applicative instance"
+            val F:  Applicative<ForParser> = TODO()
 
-        val date: Parser<Date> = TODO()
-        val temp: Parser<Double> = TODO()
+            val date: Parser<Date> = TODO()
+            val temp: Parser<Double> = TODO()
 
-        val row: Parser<Row> = F.map2(date, temp) { d, t -> Row(d, t) }.fix()
-        val rows: Parser<List<Row>> = row.sep("\n")
+            val row: Parser<Row> = F.map2(date, temp) { d, t -> Row(d, t) }.fix()
+            val rows: Parser<List<Row>> = row.sep("\n")
+        }
+
+        "parserMonad" {
+            // given: "monad instance"
+            val F:  Monad<ForParser> = TODO()
+
+            val header: Parser<Parser<Row>> = TODO()
+            val rows: Parser<List<Row>> = F.flatMap(header) { row: Parser<Row> ->
+                row.sep("\n")
+            }.fix()
+        }
     }
 })
