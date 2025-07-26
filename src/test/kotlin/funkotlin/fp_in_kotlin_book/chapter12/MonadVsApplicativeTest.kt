@@ -7,8 +7,6 @@ import arrow.core.toOption
 import arrow.core.Some
 import arrow.core.ForOption
 import arrow.core.fix
-import funkotlin.fp_in_kotlin_book.chapter04.Either
-import funkotlin.fp_in_kotlin_book.chapter04.EitherOf
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
 import funkotlin.fp_in_kotlin_book.chapter04.fix
@@ -23,6 +21,10 @@ import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
 import funkotlin.fp_in_kotlin_book.chapter05.StreamOf
 import funkotlin.fp_in_kotlin_book.chapter05.fix
+import funkotlin.fp_in_kotlin_book.chapter12.WebForm
+import funkotlin.fp_in_kotlin_book.chapter12.Validations.validName
+import funkotlin.fp_in_kotlin_book.chapter12.Validations.validDateOfBirth
+import funkotlin.fp_in_kotlin_book.chapter12.Validations.validPhone
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -170,25 +172,11 @@ class MonadVsApplicativeTest : StringSpec({
         }
 
         "eitherMonad WebForm successful validation" {
-            data class WebForm(val f1: String, val f2: Date, val f3: String)
             val F = eitherMonad<String>()
 
             val name = "alice"
             val dob = "2025-01-01"
             val phone = "123-456-789"
-
-            fun validName(name: String): Either<String, String> = when {
-                name.isNotBlank() -> Right(name)
-                else -> Left("<Invalid name>")
-            }
-            fun validDateOfBirth(dob: String): Either<String, Date> = when {
-                dob.isNotBlank() -> Right(Date(1234567))
-                else -> Left("<Invalid date>")
-            }
-            fun validPhone(phone: String): Either<String, String> = when {
-                phone.isNotBlank() -> Right(phone)
-                else -> Left("<Invalid phone>")
-            }
 
             F.flatMap<String, WebForm>(validName(name)) { f1: String ->
                 F.flatMap<Date, WebForm>(validDateOfBirth(dob)) { f2: Date ->
@@ -199,35 +187,47 @@ class MonadVsApplicativeTest : StringSpec({
             } shouldBe
                     Right(WebForm(name, Date(1234567), phone))
         }
+    }
 
-        "eitherMonad WebForm successful validation" {
-            data class WebForm(val f1: String, val f2: Date, val f3: String)
-            val F = eitherMonad<String>()
+    "eitherApplicative" should {
+        "eitherApplicative operations" {
+            val M = eitherApplicative<Int>()
+
+            // expect:
+            val e1 = M.unit("one").fix()
+            e1 shouldBe Right("one")
+
+            // expect:
+            M.map2(Right("ab"), Right("cde")) { s1, s2 ->
+                s1.length + s2.length
+            }.fix() shouldBe Right(5)
+            // and:
+            M.map2<String, String, Int>(Left(1), Left(2)) { s1, s2 ->
+                s1.length + s2.length
+            }.fix() shouldBe Left(1)
+            // and:
+            M.map2<String, String, Int>(Left(1), Right("ab")) { s1, s2 ->
+                s1.length + s2.length
+            }.fix() shouldBe Left(1)
+            // and:
+            M.map2<String, String, Int>(Right("ab"), Left(2)) { s1, s2 ->
+                s1.length + s2.length
+            }.fix() shouldBe Left(2)
+        }
+
+        "eitherApplicative successful validation" {
+            val M = eitherApplicative<String>()
 
             val name = "alice"
             val dob = "2025-01-01"
             val phone = "123-456-789"
 
-            fun validName(name: String): Either<String, String> = when {
-                name.isNotBlank() -> Right(name)
-                else -> Left("<Invalid name>")
-            }
-            fun validDateOfBirth(dob: String): Either<String, Date> = when {
-                dob.isNotBlank() -> Right(Date(1234567))
-                else -> Left("<Invalid date>")
-            }
-            fun validPhone(phone: String): Either<String, String> = when {
-                phone.isNotBlank() -> Right(phone)
-                else -> Left("<Invalid phone>")
-            }
-
-            F.flatMap<String, WebForm>(validName(name)) { f1: String ->
-                F.flatMap<Date, WebForm>(validDateOfBirth(dob)) { f2: Date ->
-                    F.map<String, WebForm>(validPhone(phone)) { f3: String ->
-                        WebForm(f1, f2, f3)
-                    }
-                }
-            } shouldBe
+            // expect:
+            M.map3(
+                validName(name),
+                validDateOfBirth(dob),
+                validPhone(phone),
+            ) { f1, f2, f3 -> WebForm(f1, f2, f3) }.fix() shouldBe
                     Right(WebForm(name, Date(1234567), phone))
         }
     }

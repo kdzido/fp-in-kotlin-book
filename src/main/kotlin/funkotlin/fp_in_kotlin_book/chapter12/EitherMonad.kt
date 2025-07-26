@@ -1,5 +1,6 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
+import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.EitherOf
 import funkotlin.fp_in_kotlin_book.chapter04.EitherPartialOf
