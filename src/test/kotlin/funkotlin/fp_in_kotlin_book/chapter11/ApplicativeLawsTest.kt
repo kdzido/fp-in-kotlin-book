@@ -15,7 +15,7 @@ import io.kotest.matchers.shouldBe
 
 class ApplicativeLawsTest : StringSpec({
 
-    "functor law holds for Option None" {
+    "functor law holds for Option" {
         val m: Applicative<ForOption> = optionMonad()
 
         val v0 = None
@@ -30,6 +30,21 @@ class ApplicativeLawsTest : StringSpec({
         m.map(m.map(v1, f), g).fix() shouldBe
                 m.map(v1, f compose g).fix()
     }
+
+    "functor left and right identity law holds for Option" {
+        val m: Applicative<ForOption> = optionMonad()
+
+        val v0 = None
+        val v1 = Some(3)
+
+        // expect: "left identity"
+        m.map2(m.unit(Unit), v0) { _, a -> a }.fix() shouldBe v0
+        m.map2(m.unit(Unit), v1) { _, a -> a }.fix() shouldBe v1
+        // expect: "right identity"
+        m.map2(v0, m.unit(Unit)) { a, _ -> a }.fix() shouldBe v0
+        m.map2(v1, m.unit(Unit)) { a, _ -> a }.fix() shouldBe v1
+    }
+
 })
 
 
