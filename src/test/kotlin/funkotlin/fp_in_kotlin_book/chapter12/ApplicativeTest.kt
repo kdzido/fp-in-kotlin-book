@@ -1,6 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter11.Monads
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.None
@@ -78,5 +79,31 @@ class ApplicativeTest : StringSpec({
         "optionApplicative should apply" {
             A.apply(Some({ a -> (a + 1).toString() }), Some(1)).fix() shouldBe Some("2")
         }
+    }
+
+    "product of two applicatives" {
+        val rng = SimpleRNG(1)
+
+        val OA: Applicative<ForOption> = Monads.optionMonad()
+        val GA: Applicative<ForGen> = Monads.genMonad
+        val OGA = product(OA, GA)
+
+        // when: "product unit"
+        val one: Product<ForOption, ForGen, Int> = OGA.unit(1).fix()
+        // then:
+        one.value.first.fix() shouldBe Some(1)
+        one.value.second.fix().sample.run(rng).first shouldBe 1
+
+        // when: "product apply"
+        val res: Product<ForOption, ForGen, String> = OGA.apply(
+            Product(
+                Some({ a: Int -> (a + 1).toString() }) to
+                        Gen.unit({ a: Int -> (a + 1).toString() })
+            ),
+            Product(Some(1) to Gen.unit(1))
+        ).fix()
+        // then:
+        res.value.first shouldBe Some("2")
+        res.value.second.fix().sample.run(rng).first shouldBe "2"
     }
 })

@@ -1,10 +1,35 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
 import arrow.Kind
-import arrow.core.curry
+import arrow.Kind2
+import arrow.Kind3
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
+
+
+data class Product<F, G, A>(val value: Pair<Kind<F, A>, Kind<G, A>>) : ProductOf<F, G, A>
+class ForProduct private constructor() { companion object }
+typealias ProductOf<F, G, A> = Kind3<ForProduct, F, G, A>
+typealias ProductPartialOf<F, G> = Kind2<ForProduct, F, G>
+fun <F, G, A> ProductOf<F, G, A>.fix() = this as Product<F, G, A>
+
+fun <F, G> product(
+    AF: Applicative<F>,
+    AG: Applicative<G>,
+): Applicative<ProductPartialOf<F, G>> = object : Applicative<ProductPartialOf<F, G>> {
+    override fun <A> unit(a: A): ProductOf<F, G, A> =
+        Product(AF.unit(a) to AG.unit(a))
+
+    override fun <A, B> apply(
+        fgab: ProductOf<F, G, (A) -> B>,
+        fga: ProductOf<F, G, A>,
+    ): ProductOf<F, G, B> {
+        val (fab: Kind<F, (A) -> B>, gab: Kind<G, (A) -> B>) = fgab.fix().value
+        val (fa: Kind<F, A>, ga: Kind<G, A>) = fga.fix().value
+        return Product(AF.apply(fab, fa) to AG.apply(gab, ga))
+    }
+}
 
 interface Applicative<F> : Functor<F> {
     fun <A, B> apply(
