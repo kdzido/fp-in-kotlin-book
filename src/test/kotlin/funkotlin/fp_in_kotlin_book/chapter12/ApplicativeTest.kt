@@ -12,6 +12,7 @@ import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
 import funkotlin.fp_in_kotlin_book.chapter08.ForGen
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
 import funkotlin.fp_in_kotlin_book.chapter08.fix
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.optionMonad
 import funkotlin.fp_in_kotlin_book.chapter11.flatMap
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
@@ -128,4 +129,15 @@ class ApplicativeTest : StringSpec({
             .flatMap { gs: Kind<ForGen, String> -> Some(gs.fix().sample.run(rng)) }
             .fix() shouldBe Some("2" to SimpleRNG(1))
     }
+
+    "optionApplicative should sequence over Map" {
+        val m: Applicative<ForOption> = optionMonad()
+
+        m.sequence<Int, String>(mapOf()).fix() shouldBe Some(mapOf())
+        m.sequence<Int, String>(mapOf(0 to None)).fix() shouldBe None
+        m.sequence<Int, String>(mapOf(1 to None, 2 to Some("two"))).fix() shouldBe None
+        m.sequence<Int, String>(mapOf(1 to Some("one"), 2 to None)).fix() shouldBe None
+        m.sequence<Int, String>(mapOf(1 to Some("one"), 2 to Some("two"))).fix() shouldBe Some(mapOf(1 to "one", 2 to "two"))
+    }
+
 })

@@ -3,6 +3,10 @@ package funkotlin.fp_in_kotlin_book.chapter12
 import arrow.Kind
 import arrow.Kind2
 import arrow.Kind3
+import arrow.core.extensions.map.foldable.fold
+import arrow.core.extensions.set.foldable.foldLeft
+import arrow.core.extensions.set.foldable.foldRight
+import arrow.core.foldRight
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
@@ -130,6 +134,18 @@ interface Applicative<F> : Functor<F> {
                 map2(fa, fla) { a: A, la: ListL<A> -> Cons(a, la) }
             }
         )
+
+    fun <K, V> sequence(
+        mkv: Map<K, Kind<F, V>>
+    ): Kind<F, Map<K, V>> {
+        val zero: Kind<F, Map<K, V>> = unit(mapOf())
+
+        return mkv.entries.foldLeft<Map.Entry<K, Kind<F, V>>, Kind<F, Map<K, V>>>(zero) { facc: Kind<F, Map<K, V>>, (fk: K, fv: Kind<F, V>) ->
+            map2(facc, fv) { acc: Map<K, V>, v: V ->
+                acc + (fk to v)
+            }
+        }
+    }
 
     fun <A> replicateM(n: Int, ma: Kind<F, A>): Kind<F, ListL<A>> =
         sequence(ListL.fill(n, ma))
