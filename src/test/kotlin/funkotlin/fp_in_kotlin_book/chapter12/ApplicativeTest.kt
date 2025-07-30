@@ -106,4 +106,26 @@ class ApplicativeTest : StringSpec({
         res.value.first shouldBe Some("2")
         res.value.second.fix().sample.run(rng).first shouldBe "2"
     }
+
+    // TODO test compose
+    "compose of two applicatives" {
+        val rng = SimpleRNG(1)
+
+        val OA: Applicative<ForOption> = Monads.optionMonad()
+        val GA: Applicative<ForGen> = Monads.genMonad
+        val OGA = compose(OA, GA)
+
+        // expect: "composite applicative unit"
+        val u: Composite<ForOption, ForGen, Int> = OGA.unit(1).fix()
+
+        // when: "composite applicative is applied"
+        val resA: Composite<ForOption, ForGen, String> = OGA.apply(
+            OGA.unit({ a: Int -> (a + 1).toString() }),
+            u
+        ).fix()
+        // then:
+        resA.value.fix()
+            .flatMap { gs: Kind<ForGen, String> -> Some(gs.fix().sample.run(rng)) }
+            .fix() shouldBe Some("2" to SimpleRNG(1))
+    }
 })

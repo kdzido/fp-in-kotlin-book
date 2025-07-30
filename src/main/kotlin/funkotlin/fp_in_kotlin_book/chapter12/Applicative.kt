@@ -14,6 +14,13 @@ typealias ProductOf<F, G, A> = Kind3<ForProduct, F, G, A>
 typealias ProductPartialOf<F, G> = Kind2<ForProduct, F, G>
 fun <F, G, A> ProductOf<F, G, A>.fix() = this as Product<F, G, A>
 
+data class Composite<F, G, A>(val value: Kind<F, Kind<G, A>>) : CompositeOf<F, G, A>
+class ForComposite private constructor() { companion object }
+typealias CompositeOf<F, G, A> = Kind3<ForComposite, F, G, A>
+typealias CompositePartialOf<F, G> = Kind2<ForComposite, F, G>
+fun <F, G, A> CompositeOf<F, G, A>.fix() = this as Composite<F, G, A>
+
+
 fun <F, G> product(
     AF: Applicative<F>,
     AG: Applicative<G>,
@@ -28,6 +35,30 @@ fun <F, G> product(
         val (fab: Kind<F, (A) -> B>, gab: Kind<G, (A) -> B>) = fgab.fix().value
         val (fa: Kind<F, A>, ga: Kind<G, A>) = fga.fix().value
         return Product(AF.apply(fab, fa) to AG.apply(gab, ga))
+    }
+}
+
+fun <F, G> compose(
+    AF: Applicative<F>,
+    AG: Applicative<G>
+): Applicative<CompositePartialOf<F, G>> = object : Applicative<CompositePartialOf<F, G>> {
+    override fun <A> unit(a: A): CompositeOf<F, G, A> =
+        Composite(AF.unit(AG.unit(a)))
+
+    override fun <A, B, C> map2(
+        fa: CompositeOf<F, G, A>,
+        fb: CompositeOf<F, G, B>,
+        f: (A, B) -> C,
+    ): CompositeOf<F, G, C> {
+        val result = AF.map2(
+            fa.fix().value,
+            fb.fix().value,
+            ) { ga: Kind<G, A>, gb: Kind<G, B> ->
+            AG.map2(ga, gb) { a: A, b: B ->
+                f(a, b)
+            }
+        }
+        return Composite(result)
     }
 }
 
