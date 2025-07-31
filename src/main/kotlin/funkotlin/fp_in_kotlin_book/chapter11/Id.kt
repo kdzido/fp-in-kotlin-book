@@ -1,6 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter11
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter12.Applicative
 
 data class Id<out A>(val a: A) : IdOf<A> {
     companion object {
@@ -27,3 +28,14 @@ fun idMonad(): Monad<ForId> = object : Monad<ForId> {
 class ForId private constructor() { companion object }
 typealias IdOf<A> = Kind<ForId, A>
 inline fun <A> IdOf<A>.fix() = this as Id<A>
+
+fun idApplicative(): Applicative<ForId> = object : Applicative<ForId> {
+    override fun <A> unit(a: A): Kind<ForId, A> = Id(a)
+
+    override fun <A, B, C> map2(
+        fa: IdOf<A>,
+        fb: IdOf<B>,
+        f: (A, B) -> C,
+    ): IdOf<C> =
+        fa.fix().flatMap { a -> fb.fix().map { b -> f(a, b) } }
+}

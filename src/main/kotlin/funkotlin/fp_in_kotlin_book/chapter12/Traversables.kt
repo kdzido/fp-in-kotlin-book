@@ -21,12 +21,6 @@ data class Tree<out A>(val head: A, val tail: List<Tree<A>>) : TreeOf<A>
 
 object Traversables {
     fun <A> optionTraversable(): Traversable<ForOption> = object : Traversable<ForOption> {
-        override fun <A, B> map(
-            fa: OptionOf<A>,
-            f: (A) -> B,
-        ): OptionOf<B> =
-            fa.fix().map(f)
-
         override fun <G, A, B> traverse(
             fa: OptionOf<A>,
             AG: Applicative<G>,
@@ -38,12 +32,6 @@ object Traversables {
     }
 
     fun <A> listTraversable(): Traversable<ForList> = object : Traversable<ForList> {
-        override fun <A, B> map(
-            fa: ListOf<A>,
-            f: (A) -> B,
-        ): ListOf<B> =
-            List.map(fa.fix(), f)
-
         override fun <G, A, B> traverse(
             fa: ListOf<A>,
             AG: Applicative<G>,
@@ -55,11 +43,6 @@ object Traversables {
     }
 
     fun <A> treeTraversable(): Traversable<ForTree> = object : Traversable<ForTree> {
-        override fun <A, B> map(
-            fa: TreeOf<A>,
-            f: (A) -> B,
-        ): TreeOf<B> = TODO()
-
         override fun <G, A, B> traverse(
             fa: TreeOf<A>,
             AG: Applicative<G>,
