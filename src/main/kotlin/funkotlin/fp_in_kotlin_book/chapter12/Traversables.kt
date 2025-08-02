@@ -11,7 +11,6 @@ import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.OptionOf
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
-import funkotlin.fp_in_kotlin_book.chapter04.map
 
 class ForTree private constructor() { companion object }
 typealias TreeOf<A> = Kind<ForTree, A>
