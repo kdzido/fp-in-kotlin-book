@@ -3,11 +3,9 @@ package funkotlin.fp_in_kotlin_book.chapter12
 import arrow.Kind
 import arrow.Kind2
 import arrow.Kind3
-import arrow.core.extensions.map.foldable.fold
 import arrow.core.extensions.set.foldable.foldLeft
-import arrow.core.extensions.set.foldable.foldRight
-import arrow.core.foldRight
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
+import funkotlin.fp_in_kotlin_book.chapter10.Monoid
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
 
@@ -24,6 +22,25 @@ typealias CompositeOf<F, G, A> = Kind3<ForComposite, F, G, A>
 typealias CompositePartialOf<F, G> = Kind2<ForComposite, F, G>
 fun <F, G, A> CompositeOf<F, G, A>.fix() = this as Composite<F, G, A>
 
+//typealias ConstInt<A> = Int
+//typealias Const<M, A> = M
+data class Const<M, out A>(val value: M) : ConstOf<M, A>
+class ForConst private constructor() { companion object }
+typealias ConstOf<M, A> = Kind2<ForConst, M, A>
+typealias ConstPartialOf<E> = Kind<ForConst, E>
+fun <M, A> ConstOf<M, A>.fix() = this as Const<M, A>
+
+fun <M> monoidApplicative(m: Monoid<M>): Applicative<ConstPartialOf<M>> =
+    object : Applicative<ConstPartialOf<M>> {
+        override fun <A> unit(a: A): ConstOf<M, A> = Const(m.nil)
+
+        override fun <A, B, C> map2(
+            fa: ConstOf<M, A>,
+            fb: ConstOf<M, B>,
+            f: (A, B) -> C,
+        ): ConstOf<M, C> =
+            Const(m.combine(fa.fix().value, fb.fix().value))
+    }
 
 fun <F, G> product(
     AF: Applicative<F>,
