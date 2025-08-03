@@ -59,6 +59,7 @@ class TraversableTest : StringSpec({
         )
 
         T.zipWithIndex(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+        T.zipWithIndex2(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
     }
 
     "should toList2" {
@@ -66,8 +67,9 @@ class TraversableTest : StringSpec({
 
         val expectedList = ListCh3.of(1, 2, 3)
 
-        T.toList2(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
         T.toList(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+        T.toList2(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+        T.toList3(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
     }
 
 })

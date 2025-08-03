@@ -64,6 +64,10 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
             }
         }.run(0).first
 
+    fun <A> zipWithIndex2(ta: Kind<F, A>): Kind<F, Pair<A, Int>> =
+        mapAccum(ta, 0) { a: A, s: Int ->
+            (a to s) to (s + 1)
+        }.first
 
     fun <A> toList2(ta: Kind<F, A>): ListL<A> =
         traverseS(ta) { a: A ->
@@ -72,4 +76,20 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
             }
         }.run(Nil).second.reversed()
 
+    fun <A> toList3(ta: Kind<F, A>): ListL<A> =
+        mapAccum(ta, Nil) { a: A, sl: ListL<A> ->
+            (Unit) to (Cons(a, sl))
+        }.second.reversed()
+
+    fun <S, A, B> mapAccum(
+        fa: Kind<F, A>,
+        s: S,
+        f: (A, S) -> Pair<B, S>
+    ): Pair<Kind<F, B>, S> =
+        traverseS(fa) { a: A ->
+            State.getState<S>().flatMap { s1 ->
+                val (b, s2) = f(a, s1)
+                State.setState(s2).map { _ -> b }
+            }
+        }.run(s)
 }
