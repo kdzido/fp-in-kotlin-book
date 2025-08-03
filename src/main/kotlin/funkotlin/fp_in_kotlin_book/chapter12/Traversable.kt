@@ -14,6 +14,7 @@ import funkotlin.fp_in_kotlin_book.chapter11.Functor
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 import funkotlin.fp_in_kotlin_book.chapter11.fix
 import funkotlin.fp_in_kotlin_book.chapter11.idApplicative
+import kotlin.collections.first
 
 interface Traversable<F> : Functor<F>, Foldable<F> {
     override fun <A, B> map(
@@ -80,6 +81,14 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
         mapAccum(ta, Nil) { a: A, sl: ListL<A> ->
             (Unit) to (Cons(a, sl))
         }.second.reversed()
+
+    fun <A> reverse(ta: Kind<F, A>): Kind<F, A> =
+        mapAccum(ta, toList3(ta).reversed()) { a: A, sl: ListL<A> ->
+            when (sl) {
+                is Nil -> TODO()
+                is Cons -> sl.head to ListL.drop(sl, 1)
+            }
+        }.first
 
     fun <S, A, B> mapAccum(
         fa: Kind<F, A>,
