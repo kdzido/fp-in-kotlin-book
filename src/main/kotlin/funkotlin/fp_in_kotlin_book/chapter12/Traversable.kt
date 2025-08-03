@@ -1,6 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter03.Cons
+import funkotlin.fp_in_kotlin_book.chapter03.Nil
+import funkotlin.fp_in_kotlin_book.chapter03.reversed
+import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter06.State
 import funkotlin.fp_in_kotlin_book.chapter06.StateOf
 import funkotlin.fp_in_kotlin_book.chapter06.fix
@@ -53,11 +57,19 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
     ): Kind<G, Kind<F, A>> =
         traverse(fga, AG) { it }
 
-    fun <A> zipWithIndex(fa: Kind<F, A>): Kind<F, Pair<A, Int>> =
-        traverseS(fa) { a: A ->
+    fun <A> zipWithIndex(ta: Kind<F, A>): Kind<F, Pair<A, Int>> =
+        traverseS(ta) { a: A ->
             State.getState<Int>().flatMap { s: Int ->
                 State.setState(s + 1).map { _ -> a to s }
             }
         }.run(0).first
+
+
+    fun <A> toList2(ta: Kind<F, A>): ListL<A> =
+        traverseS(ta) { a: A ->
+            State.getState<ListL<A>>().flatMap { la: ListL<A> ->
+                State.setState<ListL<A>>(Cons(a, la)).map { _ -> Unit }
+            }
+        }.run(Nil).second.reversed()
 
 }

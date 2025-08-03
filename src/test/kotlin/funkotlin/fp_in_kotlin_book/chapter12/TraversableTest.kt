@@ -50,7 +50,7 @@ class TraversableTest : StringSpec({
     }
 
     "should zipWithIndex" {
-        val A = Traversables.listTraversable<Int>()
+        val T = Traversables.listTraversable<Int>()
 
         val expectedList = ListCh3.of(
             1 to 0,
@@ -58,8 +58,18 @@ class TraversableTest : StringSpec({
             3 to 2,
         )
 
-        A.zipWithIndex(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+        T.zipWithIndex(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
     }
+
+    "should toList2" {
+        val T = Traversables.listTraversable<Int>()
+
+        val expectedList = ListCh3.of(1, 2, 3)
+
+        T.toList2(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+        T.toList(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+    }
+
 })
 
 fun <A> catchesList(a: () -> A): ListCh3<A> =
