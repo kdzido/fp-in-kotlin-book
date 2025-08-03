@@ -79,6 +79,14 @@ class TraversableTest : StringSpec({
         T.reverse(ListCh3.of(1)).fix() shouldBe ListCh3.of(1)
         T.reverse(ListCh3.of(1, 2, 3)).fix() shouldBe ListCh3.of(3, 2, 1)
     }
+
+    "should foldLeft traversable" {
+        val T = Traversables.listTraversable<Int>()
+
+        val l = ListCh3.of(1, 2, 3)
+
+        T.foldLeft(l, "", { acc, b -> b.toString() + acc }) shouldBe "321"
+    }
 })
 
 fun <A> catchesList(a: () -> A): ListCh3<A> =

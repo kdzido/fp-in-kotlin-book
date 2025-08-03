@@ -90,6 +90,11 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
             }
         }.first
 
+    override fun <A, B> foldLeft(fa: Kind<F, A>, z: B, f: (B, A) -> B): B =
+        mapAccum(fa, z) { a: A, b: B ->
+            Unit to f(b, a)
+        }.second
+
     fun <S, A, B> mapAccum(
         fa: Kind<F, A>,
         s: S,
