@@ -24,7 +24,7 @@ import funkotlin.fp_in_kotlin_book.chapter07.fix
 import funkotlin.fp_in_kotlin_book.chapter08.ForGen
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
 import funkotlin.fp_in_kotlin_book.chapter08.fix
-import funkotlin.fp_in_kotlin_book.chapter11.Monads.intStateMonad
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 
 object Monads {
     val genMonad = object : Monad<ForGen> {
@@ -100,20 +100,26 @@ object Monads {
             fa.fix().flatMap { a -> f(a).fix() }
     }
 
-    fun intStateMonad() = object : StateMonad<Int> {
-        override fun <A> unit(a: A): StateOf<Int, A> = State { s -> a to s}
+    fun <S> stateMonad(): StateMonad<S> = object : StateMonad<S> {
+        override fun <A> unit(a: A): StateOf<S, A> =
+            State { s -> a to s}
+
+        override fun <A, B> flatMap(
+            fa: StateOf<S, A>,
+            f: (A) -> StateOf<S, B>,
+        ): StateOf<S, B> =
+            fa.fix().flatMap { a -> f(a).fix() }
 
         override fun <A, B, C> compose(
-            f: (A) -> StateOf<Int, B>,
-            g: (B) -> StateOf<Int, C>,
-        ): (A) -> StateOf<Int, C> = { a: A ->
-            f(a).fix().flatMap { b: B -> g(b).fix() }
-        }
+            f: (A) -> StateOf<S, B>,
+            g: (B) -> StateOf<S, C>,
+        ): (A) -> StateOf<S, C> =
+            { a ->  join(map(f(a), g)) }
     }
 }
 
 fun <A> zipWithIndex(la: ListCh3<A>): ListCh3<Pair<Int, A>> {
-    val m = intStateMonad()
+    val m = stateMonad<Int>()
 
     return ListCh3.foldLeft<A, StateOf<Int, ListCh3<Pair<Int, A>>>>(
         la,
