@@ -8,6 +8,7 @@ import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.catches
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
+import funkotlin.fp_in_kotlin_book.chapter03.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.listMonad
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.optionMonad
 import io.kotest.core.spec.style.StringSpec
@@ -48,6 +49,17 @@ class TraversableTest : StringSpec({
         A.traverse(Tree("1", ListCh3.of(Tree("Two", Nil))), OA, toIntO) shouldBe None
     }
 
+    "should zipWithIndex" {
+        val A = Traversables.listTraversable<Int>()
+
+        val expectedList = ListCh3.of(
+            1 to 0,
+            2 to 1,
+            3 to 2,
+        )
+
+        A.zipWithIndex(ListCh3.of(1, 2, 3)).fix() shouldBe expectedList
+    }
 })
 
 fun <A> catchesList(a: () -> A): ListCh3<A> =

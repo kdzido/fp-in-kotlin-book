@@ -118,19 +118,19 @@ object Monads {
     }
 }
 
-fun <A> zipWithIndex(la: ListCh3<A>): ListCh3<Pair<Int, A>> {
+fun <A> zipWithIndex(la: ListCh3<A>): ListCh3<Pair<A, Int>> {
     val m = stateMonad<Int>()
 
-    return ListCh3.foldLeft<A, StateOf<Int, ListCh3<Pair<Int, A>>>>(
+    return ListCh3.foldLeft<A, StateOf<Int, ListCh3<Pair<A, Int>>>>(
         la,
-        m.unit<ListCh3<Pair<Int, A>>>(ListCh3.of<Pair<Int, A>>())
-    ) { acc: StateOf<Int, ListCh3<Pair<Int, A>>>, a: A ->
-        acc.fix<Int, ListCh3<Pair<Int, A>>>().flatMap<Cons<Pair<Int, A>>> { xs ->
-            acc.fix<Int, ListCh3<Pair<Int, A>>>().getState<Int>().flatMap<Cons<Pair<Int, A>>> { n ->
-                acc.fix<Int, ListCh3<Pair<Int, A>>>().setState(n + 1).fix().map<Cons<Pair<Int, A>>> { u ->
-                    Cons<Pair<Int, A>>(n to a, xs)
+        m.unit(ListCh3.of<Pair<A, Int>>())
+    ) { acc: StateOf<Int, ListCh3<Pair<A, Int>>>, a: A ->
+        acc.fix().flatMap { xs ->
+            acc.fix().getState<Int>().flatMap { n ->
+                acc.fix().setState(n + 1).fix().map { u ->
+                    Cons(a to n, xs)
                 }
             }
         }
-    }.fix<Int, ListCh3<Pair<Int, A>>>().run(0).first.reversed<Pair<Int, A>>()
+    }.fix().run(0).first.reversed()
 }

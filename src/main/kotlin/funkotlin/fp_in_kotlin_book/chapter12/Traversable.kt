@@ -1,9 +1,13 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.StateOf
+import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter10.Foldable
 import funkotlin.fp_in_kotlin_book.chapter10.Monoid
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 import funkotlin.fp_in_kotlin_book.chapter11.fix
 import funkotlin.fp_in_kotlin_book.chapter11.idApplicative
 
@@ -34,9 +38,26 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
     ): Kind<G, Kind<F, B>> =
         sequence(map(fa, f), AG)
 
+    fun <S, A, B> traverseS(
+        fa: Kind<F, A>,
+        f: (A) -> StateOf<S, B>
+    ): State<S, Kind<F, B>> =
+        traverse(
+            fa = fa,
+            AG = stateMonadApplicative(stateMonad<S>()),
+        ) { a: A -> f(a).fix() }.fix()
+
     fun <G, A> sequence(
         fga: Kind<F, Kind<G, A>>,
         AG: Applicative<G>
     ): Kind<G, Kind<F, A>> =
         traverse(fga, AG) { it }
+
+    fun <A> zipWithIndex(fa: Kind<F, A>): Kind<F, Pair<A, Int>> =
+        traverseS(fa) { a: A ->
+            State.getState<Int>().flatMap { s: Int ->
+                State.setState(s + 1).map { _ -> a to s }
+            }
+        }.run(0).first
+
 }

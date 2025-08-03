@@ -63,9 +63,9 @@ class intStateMonadTest : StringSpec({
 
     "zipWithIndex" {
         val expectedList = ListCh3.of(
-            0 to 1,
-            1 to 2,
-            2 to 3,
+            1 to 0,
+            2 to 1,
+            3 to 2,
         )
 
         zipWithIndex(ListCh3.of(1, 2, 3)) shouldBe expectedList
