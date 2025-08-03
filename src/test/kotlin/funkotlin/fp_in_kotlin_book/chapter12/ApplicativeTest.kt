@@ -9,10 +9,13 @@ import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter06.SimpleRNG
+import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter08.ForGen
 import funkotlin.fp_in_kotlin_book.chapter08.Gen
 import funkotlin.fp_in_kotlin_book.chapter08.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.optionMonad
+import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 import funkotlin.fp_in_kotlin_book.chapter11.flatMap
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
@@ -85,7 +88,7 @@ class ApplicativeTest : StringSpec({
     "product of two applicatives" {
         val rng = SimpleRNG(1)
 
-        val OA: Applicative<ForOption> = Monads.optionMonad()
+        val OA: Applicative<ForOption> = optionMonad()
         val GA: Applicative<ForGen> = Monads.genMonad
         val OGA = product(OA, GA)
 
@@ -112,7 +115,7 @@ class ApplicativeTest : StringSpec({
     "compose of two applicatives" {
         val rng = SimpleRNG(1)
 
-        val OA: Applicative<ForOption> = Monads.optionMonad()
+        val OA: Applicative<ForOption> = optionMonad()
         val GA: Applicative<ForGen> = Monads.genMonad
         val OGA = compose(OA, GA)
 
@@ -140,4 +143,30 @@ class ApplicativeTest : StringSpec({
         m.sequence<Int, String>(mapOf(1 to Some("one"), 2 to Some("two"))).fix() shouldBe Some(mapOf(1 to "one", 2 to "two"))
     }
 
+    "stateMonadApplicative" should {
+        val M = stateMonadApplicative<Int>(stateMonad<Int>())
+
+        "stateMonad should map" {
+            val f: State<Int, Int> = State { s -> Pair( s, s + 1) }
+            val res: State<Int, String> = M.map(f, { a -> a.toString() }).fix()
+
+            val (a2, acc2) = res.run(1)
+            val (a3, acc3) = res.run(acc2)
+            a2 shouldBe "1"
+            a3 shouldBe "2"
+        }
+
+        "stateMonad should map2" {
+            val f1: State<Int, Int> = State { s -> Pair( s, s + 1) }
+            val f2: State<Int, Int> = M.unit(2).fix()
+
+            val res: State<Int, String> = M.map2(f1, f2, { a, b -> (a + b).toString() }).fix()
+
+            val (a2, acc2) = res.run(1)
+            val (a3, acc3) = res.run(acc2)
+            a2 shouldBe "3"
+            a3 shouldBe "4"
+        }
+
+    }
 })

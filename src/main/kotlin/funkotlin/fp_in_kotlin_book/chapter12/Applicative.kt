@@ -5,9 +5,12 @@ import arrow.Kind2
 import arrow.Kind3
 import arrow.core.extensions.set.foldable.foldLeft
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
+import funkotlin.fp_in_kotlin_book.chapter06.StateOf
+import funkotlin.fp_in_kotlin_book.chapter06.StatePartialOf
 import funkotlin.fp_in_kotlin_book.chapter10.Monoid
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter11.Functor
+import funkotlin.fp_in_kotlin_book.chapter11.StateMonad
 
 
 data class Product<F, G, A>(val value: Pair<Kind<F, A>, Kind<G, A>>) : ProductOf<F, G, A>
@@ -41,6 +44,26 @@ fun <M> monoidApplicative(m: Monoid<M>): Applicative<ConstPartialOf<M>> =
         ): ConstOf<M, C> =
             Const(m.combine(fa.fix().value, fb.fix().value))
     }
+
+fun <S> stateMonadApplicative(m: StateMonad<S>) =
+    object : Applicative<StatePartialOf<S>> {
+        override fun <A> unit(a: A): StateOf<S, A> =
+            m.unit(a)
+
+        override fun <A, B, C> map2(
+            fa: StateOf<S, A>,
+            fb: StateOf<S, B>,
+            f: (A, B) -> C,
+        ): StateOf<S, C> =
+            m.map2(fa, fb, f)
+
+        override fun <A, B> map(
+            fa: StateOf<S, A>,
+            f: (A) -> B,
+        ): StateOf<S, B> =
+            m.map(fa, f)
+    }
+
 
 fun <F, G> product(
     AF: Applicative<F>,
