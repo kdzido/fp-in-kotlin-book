@@ -4,6 +4,9 @@ import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter03.Cons
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter03.reversed
+import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Option
+import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListL
 import funkotlin.fp_in_kotlin_book.chapter06.State
 import funkotlin.fp_in_kotlin_book.chapter06.StateOf
@@ -14,7 +17,6 @@ import funkotlin.fp_in_kotlin_book.chapter11.Functor
 import funkotlin.fp_in_kotlin_book.chapter11.Monads.stateMonad
 import funkotlin.fp_in_kotlin_book.chapter11.fix
 import funkotlin.fp_in_kotlin_book.chapter11.idApplicative
-import kotlin.collections.first
 
 interface Traversable<F> : Functor<F>, Foldable<F> {
     override fun <A, B> map(
@@ -87,6 +89,30 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
             when (sl) {
                 is Nil -> TODO()
                 is Cons -> sl.head to ListL.drop(sl, 1)
+            }
+        }.first
+
+    fun <A, B> zip(ta: Kind<F, A>, tb: Kind<F, B>): Kind<F, Pair<A, B>> =
+        mapAccum(ta, toList2(tb)) { a: A, b: ListL<B> ->
+            when (b) {
+                is Nil -> throw IllegalStateException("Incompatible traversals")
+                is Cons -> (a to b.head) to b.tail
+            }
+        }.first
+
+    fun <A, B> zipL(ta: Kind<F, A>, tb: Kind<F, B>): Kind<F, Pair<A, Option<B>>> =
+        mapAccum(ta, toList2(tb)) { a: A, b: ListL<B> ->
+            when (b) {
+                is Nil -> (a to None) to ListL.of()
+                is Cons -> (a to Some(b.head) ) to b.tail
+            }
+        }.first
+
+    fun <A, B> zipR(ta: Kind<F, A>, tb: Kind<F, B>): Kind<F, Pair<Option<A>, B>> =
+        mapAccum(tb, toList2(ta)) { b: B, a: ListL<A> ->
+            when (a) {
+                is Nil -> (None to b) to ListL.of()
+                is Cons -> (Some(a.head) to b) to a.tail
             }
         }.first
 

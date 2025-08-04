@@ -80,6 +80,30 @@ class TraversableTest : StringSpec({
         T.reverse(ListCh3.of(1, 2, 3)).fix() shouldBe ListCh3.of(3, 2, 1)
     }
 
+    "should zip traversables" {
+        val T = Traversables.listTraversable<Int>()
+
+        T.zip(ListCh3.of<Int>(), ListCh3.of<Int>()).fix() shouldBe ListCh3.of()
+        T.zip(ListCh3.of(1, 2, 3), ListCh3.of(3, 2, 1)).fix() shouldBe ListCh3.of(1 to 3, 2 to 2, 3 to 1)
+    }
+
+    "should zipL traversables" {
+        val T = Traversables.listTraversable<Int>()
+
+        T.zipL(ListCh3.of<Int>(), ListCh3.of<Int>()).fix() shouldBe ListCh3.of()
+        T.zipL(ListCh3.of(1), ListCh3.of<Int>()).fix() shouldBe ListCh3.of(1 to None)
+        T.zipL(ListCh3.of(3, 2, 1), ListCh3.of(1)).fix() shouldBe ListCh3.of(3 to Some(1), 2 to None, 1 to None)
+    }
+
+    "should zipR traversables" {
+        val T = Traversables.listTraversable<Int>()
+
+        T.zipR(ListCh3.of<Int>(), ListCh3.of<Int>()).fix() shouldBe ListCh3.of()
+        T.zipR(ListCh3.of<Int>(), ListCh3.of(1)).fix() shouldBe ListCh3.of(None to 1)
+        T.zipR(ListCh3.of(1), ListCh3.of(3, 2, 1)).fix() shouldBe ListCh3.of(Some(1) to 3, None to 2, None to 1)
+    }
+
+
     "should foldLeft traversable" {
         val T = Traversables.listTraversable<Int>()
 
