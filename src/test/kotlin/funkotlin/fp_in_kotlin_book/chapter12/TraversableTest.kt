@@ -1,11 +1,13 @@
 package funkotlin.fp_in_kotlin_book.chapter12
 
+import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter03.ForList
 import funkotlin.fp_in_kotlin_book.chapter03.Nil
 import funkotlin.fp_in_kotlin_book.chapter04.ForOption
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter04.catches
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh3
 import funkotlin.fp_in_kotlin_book.chapter03.fix
@@ -111,6 +113,27 @@ class TraversableTest : StringSpec({
 
         T.foldLeft(l, "", { acc, b -> b.toString() + acc }) shouldBe "321"
     }
+
+    "should fuse traversable" {
+        val T = Traversables.listTraversable<Int>()
+
+        val LA: Applicative<ForList> = listMonad()
+        val OA: Applicative<ForOption> = optionMonad()
+
+        // when:
+        val fused: Pair<Kind<ForList, Kind<ForList, Int>>, Kind<ForOption, Kind<ForList, Int>>> = T.fuse(
+            ListCh3.of(3, 2, 1),
+            LA,
+            OA,
+            { n -> ListCh3.of(n + 1) },
+            { n -> Some(n * 2) },
+            )
+
+        // then:
+        fused.first.fix() shouldBe ListCh3.of(ListCh3.of(4, 3, 2))
+        fused.second.fix() shouldBe Some(ListCh3.of(6, 4, 2))
+    }
+
 })
 
 fun <A> catchesList(a: () -> A): ListCh3<A> =

@@ -116,6 +116,17 @@ interface Traversable<F> : Functor<F>, Foldable<F> {
             }
         }.first
 
+    fun <G, H, A, B> fuse(
+        ta: Kind<F, A>,
+        AG: Applicative<G>,
+        AH: Applicative<H>,
+        f: (A) -> Kind<G, B>,
+        g: (A) -> Kind<H, B>,
+    ): Pair<Kind<G, Kind<F, B>>, Kind<H, Kind<F, B>>> =
+        traverse(ta, product(AG, AH)) { a ->
+            Product(f(a) to g(a))
+        }.fix().value
+
     override fun <A, B> foldLeft(fa: Kind<F, A>, z: B, f: (B, A) -> B): B =
         mapAccum(fa, z) { a: A, b: B ->
             Unit to f(b, a)
