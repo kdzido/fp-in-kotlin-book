@@ -43,3 +43,15 @@ fun winner(p1: Player, p2: Player): Option<Player> = when {
     p1.score < p2.score -> Some(p2)
     else -> None
 }
+
+fun farenheitToCelsius(f: Double): Double = (f - 32) * 5.0 / 9.0
+
+fun converter() {
+    println("Enter a temperature in degrees Farenheit: ")
+    val d = readLine().orEmpty().toDouble()
+    println(farenheitToCelsius(d))
+}
+
+fun main() {
+    converter()
+}
