@@ -14,3 +14,5 @@
 10. Monoid
 11. Monads and functors
 12. Applicatives and traversable functors
+* PART 4: Effects and I/O
+13. External effects and I/O
