@@ -4,10 +4,23 @@ import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter05.Cons
 import funkotlin.fp_in_kotlin_book.chapter05.Empty
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
-import funkotlin.fp_in_kotlin_book.chapter05.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
 
 interface IOMonad : Monad<ForIO> {
+    override fun <A> unit(a: A): Kind<ForIO, A> =
+        IO { a }.fix()
+
+    override fun <A, B> flatMap(
+        fa: Kind<ForIO, A>,
+        f: (A) -> Kind<ForIO, B>,
+    ): Kind<ForIO, B> =
+        fa.fix().flatMap { a -> f(a).fix() }
+
+    override fun <A, B> map(
+        fa: Kind<ForIO, A>,
+        f: (A) -> B,
+    ): Kind<ForIO, B> =
+        fa.fix().flatMap { a -> unit(f(a)).fix() }
 
     fun <A> doWhile(
         fa: IOOf<A>,

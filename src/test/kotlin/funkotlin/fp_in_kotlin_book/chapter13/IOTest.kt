@@ -19,4 +19,14 @@ class IOTest : StringSpec({
 
         contest2(p1, p2).run()
     }
+
+    "should run forever" {
+        val IM = IO.monad()
+
+        val p: IO<Unit> = IM.forever<Unit, Unit>(
+            stdout("Still going...")
+        ).fix()
+
+        p.run() // stack overflow
+    }
 })

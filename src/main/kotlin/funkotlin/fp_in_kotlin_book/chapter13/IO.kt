@@ -46,6 +46,8 @@ interface IO<A> : IOOf<A> {
         }
 }
 
+fun IO.Companion.monad(): IOMonad = object : IOMonad {}
+
 data class Player(val name: String, val score: Int)
 
 fun contest2(p1: Player, p2: Player): IO<Unit> =
@@ -89,22 +91,7 @@ val echo: IO<Unit> = stdin().flatMap(::stdout)
 val readInt: IO<Int> = stdin().map { it.toInt() }
 val readInts: IO<Pair<Int, Int>> = readInt assoc readInt
 
-val ioMonad: IOMonad = object : IOMonad {
-    override fun <A> unit(a: A): Kind<ForIO, A> =
-        IO { a }.fix()
-
-    override fun <A, B> flatMap(
-        fa: Kind<ForIO, A>,
-        f: (A) -> Kind<ForIO, B>,
-    ): Kind<ForIO, B> =
-        fa.fix().flatMap { a -> f(a).fix() }
-
-    override fun <A, B> map(
-        fa: Kind<ForIO, A>,
-        f: (A) -> B,
-    ): Kind<ForIO, B> =
-        fa.fix().flatMap { a -> unit(f(a)).fix() }
-}
+val ioMonad: IOMonad = IO.monad()
 
 private fun factorial(n: Int): IO<Int> =
     IO.ref(1).flatMap { acc: IORef<Int> ->
