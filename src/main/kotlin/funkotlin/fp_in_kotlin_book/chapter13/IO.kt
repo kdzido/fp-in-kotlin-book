@@ -4,47 +4,43 @@ import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
-import funkotlin.fp_in_kotlin_book.chapter11.Monad
 
 sealed class ForIO { companion object }
 typealias IOOf<A> = Kind<ForIO, A>
 inline fun <A> IOOf<A>.fix(): IO<A> = this as IO<A>
 
 data class IORef<A>(var value: A) {
-    fun set(a: A): IO<A> = IO { value = a; a }
-    fun get(): IO<A> = IO { value }
+    fun set(a: A): IO<A> = Suspend { value = a; a }
+    fun get(): IO<A> = Suspend { value }
     fun modify(f: (A) -> A): IO<A> = get().flatMap { a -> set(f(a)) }
 }
 
-interface IO<A> : IOOf<A> {
+sealed class IO<A> : IOOf<A> {
     companion object {
-        fun <A> unit(a: () -> A) = object : IO<A> {
-            override fun run(): A = a()
-        }
+        fun <A> unit(a: () -> A): IO<A> =
+            Suspend(a)
 
         operator fun <A> invoke(a: () -> A) = unit(a)
 
-        fun ref(i: Int): IO<IORef<Int>> = IO { IORef(i) }
+        fun ref(i: Int): IO<IORef<Int>> = Suspend { IORef(i) }
     }
 
-    fun run(): A
-
     fun <B> map(f: (A) -> B): IO<B> =
-        object : IO<B> {
-            override fun run(): B = f(this@IO.run())
-        }
+        flatMap { a -> Return(f(a)) }
 
     fun <B> flatMap(f: (A) -> IO<B>): IO<B> =
-        object : IO<B> {
-            override fun run(): B = f(this@IO.run()).run()
-        }
+        FlatMap(this, f)
 
     infix fun <B> assoc(io: IO<B>): IO<Pair<A, B>> =
-        object : IO<Pair<A, B>> {
-            override fun run(): Pair<A, B> =
-                this@IO.run() to io.run()
-        }
+        unit { runM(this@IO) to runM(io) }
 }
+
+data class Return<A>(val a: A) : IO<A>()
+data class Suspend<A>(val resume: () -> A) : IO<A>()
+data class FlatMap<A, B>(
+    val sub: IO<A>,
+    val f: (A) -> IO<B>,
+) : IO<B>()
 
 fun IO.Companion.monad(): IOMonad = object : IOMonad {}
 
@@ -53,9 +49,9 @@ data class Player(val name: String, val score: Int)
 fun contest2(p1: Player, p2: Player): IO<Unit> =
     stdout(winnerMsg(winner(p1, p2)))
 
-fun stdin(): IO<String> = IO { readLine().orEmpty() }
+fun stdin(): IO<String> = Suspend { readLine().orEmpty() }
 
-fun stdout(msg: String): IO<Unit> = IO { println(msg) }
+fun stdout(msg: String): IO<Unit> = Suspend { println(msg) }
 
 fun contest(p1: Player, p2: Player): Unit =
     println(winnerMsg(winner(p1, p2)))
@@ -121,6 +117,25 @@ val factorialREPL: IO<Unit> =
         }.fix()
     ).fix()
 
+tailrec fun <A> runM(io: IO<A>): A =
+    when (io) {
+        is Return -> io.a
+        is Suspend -> io.resume()
+        is FlatMap<*, *> -> {
+            val x = io.sub as IO<A>
+            val f = io.f as (A) -> IO<A>
+            when (x) {
+                is Return -> runM(f(x.a))
+                is Suspend -> runM(f(x.resume()))
+                is FlatMap<*, *> -> {
+                    val g = x.f as (A) -> IO<A>
+                    val y = x.sub as IO<A>
+                    runM(y.flatMap { a: A -> g(a).flatMap(f) })
+                }
+            }
+        }
+    }
+
 fun main() {
 //    converter()
 //    converter2().run()
@@ -132,5 +147,6 @@ fun main() {
 //    println("readInts: ")
 //    readInts.run()
 
-    factorialREPL.run()
+//    factorialREPL.run()
+    runM(factorialREPL)
 }

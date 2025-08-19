@@ -17,16 +17,16 @@ class IOTest : StringSpec({
         val p1 = Player("Joe", 3)
         val p2 = Player("Adam", 4)
 
-        contest2(p1, p2).run()
+        runM(contest2(p1, p2))
     }
 
     "should run forever" {
         val IM = IO.monad()
 
         val p: IO<Unit> = IM.forever<Unit, Unit>(
-            stdout("Still going...")
+            stdout("To infinity ...")
         ).fix()
 
-        p.run() // stack overflow
+//        runM(p) // never engine
     }
 })
