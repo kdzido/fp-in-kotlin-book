@@ -1,10 +1,9 @@
 package funkotlin.fp_in_kotlin_book.chapter13
 
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 
-class IOTest : StringSpec({
+class TailrecTest : StringSpec({
 
     "contest should print declared winner" {
         val p1 = Player("Joe", 3)
@@ -21,12 +20,24 @@ class IOTest : StringSpec({
     }
 
     "should run forever" {
-        val IM = IO.monad()
+        val IM = Tailrec.monad()
 
-        val p: IO<Unit> = IM.forever<Unit, Unit>(
+        val p: Tailrec<Unit> = IM.forever<Unit, Unit>(
             stdout("To infinity ...")
         ).fix()
 
 //        runM(p) // never engine
+    }
+
+    "should compute large fold" {
+        val f = { x: Int -> Return(x)}
+        val g = List(100000) { idx -> f }
+            .fold(f) { a: (Int) -> Tailrec<Int>, b: (Int) -> Tailrec<Int> ->
+                { x : Int ->
+                    Suspend { Unit }.flatMap { _ -> a(x).flatMap(b) }
+                }
+            }
+
+        runM(g(42)) shouldBe 42
     }
 })

@@ -5,53 +5,53 @@ import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 
-sealed class ForIO { companion object }
-typealias IOOf<A> = Kind<ForIO, A>
-inline fun <A> IOOf<A>.fix(): IO<A> = this as IO<A>
+sealed class ForTailrec { companion object }
+typealias TailrecOf<A> = Kind<ForTailrec, A>
+inline fun <A> TailrecOf<A>.fix(): Tailrec<A> = this as Tailrec<A>
 
 data class IORef<A>(var value: A) {
-    fun set(a: A): IO<A> = Suspend { value = a; a }
-    fun get(): IO<A> = Suspend { value }
-    fun modify(f: (A) -> A): IO<A> = get().flatMap { a -> set(f(a)) }
+    fun set(a: A): Tailrec<A> = Suspend { value = a; a }
+    fun get(): Tailrec<A> = Suspend { value }
+    fun modify(f: (A) -> A): Tailrec<A> = get().flatMap { a -> set(f(a)) }
 }
 
-sealed class IO<A> : IOOf<A> {
+sealed class Tailrec<A> : TailrecOf<A> {
     companion object {
-        fun <A> unit(a: () -> A): IO<A> =
+        fun <A> unit(a: () -> A): Tailrec<A> =
             Suspend(a)
 
         operator fun <A> invoke(a: () -> A) = unit(a)
 
-        fun ref(i: Int): IO<IORef<Int>> = Suspend { IORef(i) }
+        fun ref(i: Int): Tailrec<IORef<Int>> = Suspend { IORef(i) }
     }
 
-    fun <B> map(f: (A) -> B): IO<B> =
+    fun <B> map(f: (A) -> B): Tailrec<B> =
         flatMap { a -> Return(f(a)) }
 
-    fun <B> flatMap(f: (A) -> IO<B>): IO<B> =
+    fun <B> flatMap(f: (A) -> Tailrec<B>): Tailrec<B> =
         FlatMap(this, f)
 
-    infix fun <B> assoc(io: IO<B>): IO<Pair<A, B>> =
-        unit { runM(this@IO) to runM(io) }
+    infix fun <B> assoc(io: Tailrec<B>): Tailrec<Pair<A, B>> =
+        unit { runM(this@Tailrec) to runM(io) }
 }
 
-data class Return<A>(val a: A) : IO<A>()
-data class Suspend<A>(val resume: () -> A) : IO<A>()
+data class Return<A>(val a: A) : Tailrec<A>()
+data class Suspend<A>(val resume: () -> A) : Tailrec<A>()
 data class FlatMap<A, B>(
-    val sub: IO<A>,
-    val f: (A) -> IO<B>,
-) : IO<B>()
+    val sub: Tailrec<A>,
+    val f: (A) -> Tailrec<B>,
+) : Tailrec<B>()
 
-fun IO.Companion.monad(): IOMonad = object : IOMonad {}
+fun Tailrec.Companion.monad(): IOMonad = object : IOMonad {}
 
 data class Player(val name: String, val score: Int)
 
-fun contest2(p1: Player, p2: Player): IO<Unit> =
+fun contest2(p1: Player, p2: Player): Tailrec<Unit> =
     stdout(winnerMsg(winner(p1, p2)))
 
-fun stdin(): IO<String> = Suspend { readLine().orEmpty() }
+fun stdin(): Tailrec<String> = Suspend { readLine().orEmpty() }
 
-fun stdout(msg: String): IO<Unit> = Suspend { println(msg) }
+fun stdout(msg: String): Tailrec<Unit> = Suspend { println(msg) }
 
 fun contest(p1: Player, p2: Player): Unit =
     println(winnerMsg(winner(p1, p2)))
@@ -76,21 +76,21 @@ fun converter() {
     println(farenheitToCelsius(d))
 }
 
-fun converter2(): IO<Unit> =
+fun converter2(): Tailrec<Unit> =
     stdout("Enter a temperature in degrees Farenheit: ").flatMap {
         stdin().map { it.toDouble() }.flatMap { df ->
             stdout("Degrees Celsius: ${farenheitToCelsius(df)}")
         }
     }
 
-val echo: IO<Unit> = stdin().flatMap(::stdout)
-val readInt: IO<Int> = stdin().map { it.toInt() }
-val readInts: IO<Pair<Int, Int>> = readInt assoc readInt
+val echo: Tailrec<Unit> = stdin().flatMap(::stdout)
+val readInt: Tailrec<Int> = stdin().map { it.toInt() }
+val readInts: Tailrec<Pair<Int, Int>> = readInt assoc readInt
 
-val ioMonad: IOMonad = IO.monad()
+val ioMonad: IOMonad = Tailrec.monad()
 
-private fun factorial(n: Int): IO<Int> =
-    IO.ref(1).flatMap { acc: IORef<Int> ->
+private fun factorial(n: Int): Tailrec<Int> =
+    Tailrec.ref(1).flatMap { acc: IORef<Int> ->
         ioMonad.foreachM((1..n).toStream()) { i ->
             acc.modify { it * i }.map { Unit }
         }.fix().flatMap {
@@ -105,31 +105,31 @@ private val help = """
         | <anything else> - bomb with horrible error
         """.trimMargin("|")
 
-val factorialREPL: IO<Unit> =
+val factorialREPL: Tailrec<Unit> =
     ioMonad.sequenceDiscard(
-        IO { println(help) }.fix(),
-        ioMonad.doWhile(IO { readLine().orEmpty() }) { line ->
+        Tailrec { println(help) }.fix(),
+        ioMonad.doWhile(Tailrec { readLine().orEmpty() }) { line ->
             ioMonad.whenM(line != "q") {
                 factorial(line.toInt()).flatMap { n ->
-                    IO { println("factorial: $n") }
+                    Tailrec { println("factorial: $n") }
                 }
             }
         }.fix()
     ).fix()
 
-tailrec fun <A> runM(io: IO<A>): A =
+tailrec fun <A> runM(io: Tailrec<A>): A =
     when (io) {
         is Return -> io.a
         is Suspend -> io.resume()
         is FlatMap<*, *> -> {
-            val x = io.sub as IO<A>
-            val f = io.f as (A) -> IO<A>
+            val x = io.sub as Tailrec<A>
+            val f = io.f as (A) -> Tailrec<A>
             when (x) {
                 is Return -> runM(f(x.a))
                 is Suspend -> runM(f(x.resume()))
                 is FlatMap<*, *> -> {
-                    val g = x.f as (A) -> IO<A>
-                    val y = x.sub as IO<A>
+                    val g = x.f as (A) -> Tailrec<A>
+                    val y = x.sub as Tailrec<A>
                     runM(y.flatMap { a: A -> g(a).flatMap(f) })
                 }
             }
