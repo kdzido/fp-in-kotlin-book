@@ -8,7 +8,12 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 
-class Par<A>(val run: (ExecutorService) -> Future<A>) : ParOf<A>
+class Par<A>(val run: (ExecutorService) -> Future<A>) : ParOf<A> {
+    companion object
+}
+
+fun <A, B> Par<A>.flatMap(f: (A) -> Par<B>): Par<B> =
+    Pars.flatMap(this, f)
 
 val test: Par<String> = Par({ es -> TODO()})
 
