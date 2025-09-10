@@ -1,9 +1,11 @@
-package funkotlin.fp_in_kotlin_book.chapter13
+package funkotlin.fp_in_kotlin_book.chapter13.tailrec
 
 import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter13.IOMonad
+import funkotlin.fp_in_kotlin_book.chapter13.toStream
 
 sealed class ForTailrec { companion object }
 typealias TailrecOf<A> = Kind<ForTailrec, A>

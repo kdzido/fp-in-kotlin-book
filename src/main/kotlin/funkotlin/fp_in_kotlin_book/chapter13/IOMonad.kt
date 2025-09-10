@@ -5,6 +5,10 @@ import funkotlin.fp_in_kotlin_book.chapter05.Cons
 import funkotlin.fp_in_kotlin_book.chapter05.Empty
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
+import funkotlin.fp_in_kotlin_book.chapter13.tailrec.ForTailrec
+import funkotlin.fp_in_kotlin_book.chapter13.tailrec.Tailrec
+import funkotlin.fp_in_kotlin_book.chapter13.tailrec.TailrecOf
+import funkotlin.fp_in_kotlin_book.chapter13.tailrec.fix
 
 interface IOMonad : Monad<ForTailrec> {
     override fun <A> unit(a: A): Kind<ForTailrec, A> =

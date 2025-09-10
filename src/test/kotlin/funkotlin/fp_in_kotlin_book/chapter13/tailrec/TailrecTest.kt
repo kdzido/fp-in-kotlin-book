@@ -1,4 +1,4 @@
-package funkotlin.fp_in_kotlin_book.chapter13
+package funkotlin.fp_in_kotlin_book.chapter13.tailrec
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -29,9 +29,17 @@ class TailrecTest : StringSpec({
 //        runM(p) // never engine
     }
 
+    "should run out of call frames" {
+        val f: (Int) -> Int = { x: Int -> x }
+        val g: (Int) -> Int = List(100_000) { idx -> f }
+            .fold(f) { ff, h -> { n: Int -> ff(h(n)) } }
+
+//        g(42) shouldBe 42 // causes StackOverFlow
+    }
+
     "should compute large fold" {
-        val f = { x: Int -> Return(x)}
-        val g = List(100000) { idx -> f }
+        val f: (Int) -> Return<Int> = { x: Int -> Return(x) }
+        val g: (Int) -> Tailrec<Int> = List(100000) { idx -> f }
             .fold(f) { a: (Int) -> Tailrec<Int>, b: (Int) -> Tailrec<Int> ->
                 { x : Int ->
                     Suspend { Unit }.flatMap { _ -> a(x).flatMap(b) }
