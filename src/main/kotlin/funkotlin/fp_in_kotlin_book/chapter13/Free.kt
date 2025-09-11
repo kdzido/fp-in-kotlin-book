@@ -2,7 +2,11 @@ package funkotlin.fp_in_kotlin_book.chapter13
 
 import arrow.Kind
 import arrow.Kind2
+import funkotlin.fp_in_kotlin_book.chapter06.State
+import funkotlin.fp_in_kotlin_book.chapter06.StateOf
+import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
+import funkotlin.fp_in_kotlin_book.chapter11.StateMonad
 
 sealed class ForFree { companion object }
 typealias FreeOf<F, A> = Kind2<ForFree, F, A>
@@ -70,6 +74,40 @@ tailrec fun <A> runTrampoline(ffa: Free<ForFunction0, A>): A = when (ffa) {
         }
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+tailrec fun <F, A> step(free: Free<F, A>): Free<F, A> =
+    when (free) {
+        is FlatMap<*, *, *> -> {
+            val y = free.s as Free<F, A>
+            val g = free.f as (A) -> Free<F, A>
+            when (y) {
+                is FlatMap<*, *, *> -> {
+                    val x = y.s as Free<F, A>
+                    val f = y.f as (A) -> Free<F, A>
+                    step(x.flatMap { a: A -> f(a).flatMap(g) })
+                }
+                is Return -> step(g(y.a))
+                else -> free
+            }
+        }
+        else -> free
+    }
+
+@Suppress("UNCHECKED_CAST")
+fun <F, A> run(free: Free<F, A>, M: Monad<F>): Kind<F, A> =
+    when (val stepped = step(free)) {
+        is Return -> M.unit(stepped.a)
+        is Suspend -> stepped.resume
+        is FlatMap<*, *, *> -> {
+            val x = stepped.s as Free<F, A>
+            val f = stepped.f as (A) -> Free<F, A>
+            when (x) {
+                is Suspend -> M.flatMap(x.resume) { a: A -> run(f(a), M)}
+                else -> throw RuntimeException("Impossible, step eliminates such cases")
+            }
+        }
+    }
 
 fun main() {
     println("[main]")
