@@ -16,9 +16,10 @@ sealed class Free<F, A> : FreeOf<F, A> {
 }
 
 data class Return<F, A>(val a: A) : Free<F, A>()
-data class Suspend<F, A>(val s: Kind<F, A>) : Free<F, A>()
+//data class Suspend<F, A>(val s: Kind<F, A>) : Free<F, A>()
+data class Suspend<F, A>(val resume: Kind<F, A>) : Free<F, A>()
 data class FlatMap<F, A, B>(
-    val s: Free<F, A>, // previously Kind<F, A>
+    val s: Free<F, A>,
     val f: (A) -> Free<F, B>
 ): Free<F, B>()
 
@@ -45,5 +46,37 @@ fun <F> freeMonad() = object : Monad<FreePartialOf<F>> {
     override fun <A> unit(a: A): FreeOf<F, A> = Return(a)
 }
 
+
+sealed class ForFunction0 { companion object }
+typealias Function0Of<A> = Kind<ForFunction0, A>
+inline fun <A> Function0Of<A>.fix() = this as Function0<A>
+
+data class Function0<out A>(val f: () -> A) : Function0Of<A>
+
+tailrec fun <A> runTrampoline(ffa: Free<ForFunction0, A>): A = when (ffa) {
+    is Return -> ffa.a
+    is Suspend -> ffa.resume.fix().f()
+    is FlatMap<*, *, *> -> {
+        val sout = ffa.s as Free<ForFunction0, A>
+        val fout = ffa.f as (A) -> Free<ForFunction0, A>
+        when (sout) {
+            is FlatMap<*, *, *> -> {
+                val sin = sout.s as Free<ForFunction0, A>
+                val fin = sout.f as (A) -> Free<ForFunction0, A>
+                runTrampoline(sin.flatMap { a -> fin(a).flatMap(fout) })
+            }
+            is Return -> sout.a
+            is Suspend -> sout.resume.fix().f()
+        }
+    }
+}
+
 fun main() {
+    println("[main]")
+    println("------------")
+    runTrampoline(Return(Function0( { println("Function0_Return"); 123 } ))).f()
+    runTrampoline(Suspend(Function0( { println("Function0_Suspend"); 123 } )))
+
+    val r: Int = runTrampoline(FlatMap( Suspend(Function0( { println("Function0_Sub"); 123 } )), { a: Int -> Return(a * 2)  }))
+    println("FlatMap result: $r ")
 }
