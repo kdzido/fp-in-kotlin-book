@@ -35,6 +35,7 @@ typealias ConsoleIO<A> = Free<ForConsole, A>
 sealed class Console<A> : ConsoleOf<A> {
     abstract fun toPar(): Par<A>
     abstract fun toThunk(): () -> A
+    abstract fun toReader(): ConsoleReader<A>
 
     fun <B> flatMap(f: (A) -> Console<B>): Console<B> =
         when (this) {
@@ -51,8 +52,12 @@ sealed class Console<A> : ConsoleOf<A> {
 }
 
 object ReadLine : Console<Option<String>>() {
-    override fun toPar(): Par<Option<String>> = Pars.unit(run())
-    override fun toThunk(): () -> Option<String> = { run() }
+    override fun toPar(): Par<Option<String>> =
+        Pars.unit(run())
+    override fun toThunk(): () -> Option<String> =
+        { run() }
+    override fun toReader(): ConsoleReader<Option<String>> =
+        ConsoleReader({ s: String -> Some(s) })
 
     private fun run(): Option<String> =
         try {
@@ -63,8 +68,12 @@ object ReadLine : Console<Option<String>>() {
 }
 
 data class PrintLine(val line: String) : Console<Unit>() {
-    override fun toPar(): Par<Unit> = Pars.lazyUnit { println(line) }
-    override fun toThunk(): () -> Unit = { println(line) }
+    override fun toPar(): Par<Unit> =
+        Pars.lazyUnit { println(line) }
+    override fun toThunk(): () -> Unit =
+        { println(line) }
+    override fun toReader(): ConsoleReader<Unit> =
+        ConsoleReader({ s: String -> Unit })
 }
 
 fun functionMonad() = object : Monad<ForFunction0> {
@@ -89,6 +98,9 @@ fun consoleToFunction0() = object : Translate<ForConsole, ForFunction0> {
 fun consoleToPar() = object : Translate<ForConsole, ForPar> {
     override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForPar, A> = fa.fix().toPar()
 }
+fun consoleToReader() = object : Translate<ForConsole, ForConsoleReader> {
+    override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForConsoleReader, A> = fa.fix().toReader()
+}
 
 fun <A> runConsolePar(a: Free<ForConsole, A>): Par<A> =
     runFree(a, consoleToPar(), parMonad()).fix().fix()
@@ -96,6 +108,9 @@ fun <A> runConsolePar(a: Free<ForConsole, A>): Par<A> =
 // not stack-safe
 fun <A> runConsoleFunction0(a: Free<ForConsole, A>): Function0<A> =
     runFree(a, consoleToFunction0(), functionMonad()).fix()
+
+fun <A> runConsoleReader(a: ConsoleIO<A>): ConsoleReader<A> =
+    runFree(a, consoleToReader(), ConsoleReader.monad()).fix().fix()
 
 fun <A> runConsole(a: Free<ForConsole, A>): A {
     val t = object : Translate<ForConsole, ForFunction0> {
@@ -111,8 +126,11 @@ fun main() {
             .flatMap { _ -> Console.stdin() }
 
 //    runConsoleFunction0(f1).fix().f() // not stack-safe
-    runConsole(f1)
+//    runConsole(f1)
 
-    val pool = Executors.newFixedThreadPool(1)  // hangs, awaiting input
-    runConsolePar(f1).fix().run(pool)
+//    val pool = Executors.newFixedThreadPool(1)  // hangs, awaiting input
+//    runConsolePar(f1).fix().run(pool)
+
+    val cr = runConsoleReader(f1).fix().run("one")
+    println("runConsoleReader: $cr")
 }
