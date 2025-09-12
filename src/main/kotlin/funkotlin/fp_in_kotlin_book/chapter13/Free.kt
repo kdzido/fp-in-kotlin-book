@@ -113,6 +113,17 @@ interface Translate<F, G>  {
     operator fun <A> invoke(fa: Kind<F, A>): Kind<G, A>
 }
 
+fun <F, G, A> translate(
+    free: Free<F, A>,
+    t: Translate<F, G>
+): Free<G, A> {
+    val t = object : Translate<F, FreePartialOf<G>> {
+        override fun <A> invoke(fa: Kind<F, A>): Kind<FreePartialOf<G>, A> = Suspend(t(fa))
+    }
+    return runFree(free, t, freeMonad()).fix()
+}
+
+
 fun <F, G, A> runFree(
     free: Free<F, A>,
     t: Translate<F, G>,

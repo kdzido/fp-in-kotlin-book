@@ -1,10 +1,10 @@
 package funkotlin.fp_in_kotlin_book.chapter13.console
 
 import arrow.Kind
-import arrow.typeclasses.Traverse
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter07.ForPar
 import funkotlin.fp_in_kotlin_book.chapter07.Par
 import funkotlin.fp_in_kotlin_book.chapter07.ParOf
@@ -20,7 +20,10 @@ import funkotlin.fp_in_kotlin_book.chapter13.Translate
 import funkotlin.fp_in_kotlin_book.chapter13.console.fix
 import funkotlin.fp_in_kotlin_book.chapter13.fix
 import funkotlin.fp_in_kotlin_book.chapter13.flatMap
+import funkotlin.fp_in_kotlin_book.chapter13.freeMonad
 import funkotlin.fp_in_kotlin_book.chapter13.runFree
+import funkotlin.fp_in_kotlin_book.chapter13.runTrampoline
+import funkotlin.fp_in_kotlin_book.chapter13.translate
 import java.util.concurrent.Executors
 
 sealed class ForConsole { companion object }
@@ -64,9 +67,6 @@ data class PrintLine(val line: String) : Console<Unit>() {
     override fun toThunk(): () -> Unit = { println(line) }
 }
 
-fun <A> runConsolePar(a: Free<ForConsole, A>): Par<A> =
-    runFree(a, consoleToPar(), parMonad()).fix().fix()
-
 fun functionMonad() = object : Monad<ForFunction0> {
     override fun <A> unit(a: A): Function0Of<A> = Function0 { a }
     override fun <A, B> flatMap(
@@ -74,17 +74,6 @@ fun functionMonad() = object : Monad<ForFunction0> {
         f: (A) -> Function0Of<B>
     ): Function0Of<B> = { f(fa.fix().f()) }()
 }
-
-fun consoleToFunction0() = object : Translate<ForConsole, ForFunction0> {
-    override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForFunction0, A> = Function0(fa.fix().toThunk())
-}
-fun consoleToPar() = object : Translate<ForConsole, ForPar> {
-    override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForPar, A> = fa.fix().toPar()
-}
-
-// not stack-safe
-fun <A> runConsoleFunction0(a: Free<ForConsole, A>): Function0<A> =
-    runFree(a, consoleToFunction0(), functionMonad()).fix()
 
 fun parMonad() = object : Monad<ForPar> {
     override fun <A> unit(a: A): ParOf<A> = Pars.unit(a)
@@ -94,12 +83,35 @@ fun parMonad() = object : Monad<ForPar> {
     ): ParOf<B> = Pars.flatMap(fa.fix()) { a -> f(a).fix() }
 }
 
+fun consoleToFunction0() = object : Translate<ForConsole, ForFunction0> {
+    override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForFunction0, A> = Function0(fa.fix().toThunk())
+}
+fun consoleToPar() = object : Translate<ForConsole, ForPar> {
+    override fun <A> invoke(fa: Kind<ForConsole, A>): Kind<ForPar, A> = fa.fix().toPar()
+}
+
+fun <A> runConsolePar(a: Free<ForConsole, A>): Par<A> =
+    runFree(a, consoleToPar(), parMonad()).fix().fix()
+
+// not stack-safe
+fun <A> runConsoleFunction0(a: Free<ForConsole, A>): Function0<A> =
+    runFree(a, consoleToFunction0(), functionMonad()).fix()
+
+fun <A> runConsole(a: Free<ForConsole, A>): A {
+    val t = object : Translate<ForConsole, ForFunction0> {
+        override fun <A> invoke(ca: ConsoleOf<A>): Function0Of<A> =
+            Function0(ca.fix().toThunk())
+    }
+    return runTrampoline(translate(a, t))
+}
+
 fun main() {
     val f1: Free<ForConsole, Option<String>> =
         Console.stdout("I can only interact with the console")
             .flatMap { _ -> Console.stdin() }
 
-    runConsoleFunction0(f1).fix().f()
+//    runConsoleFunction0(f1).fix().f() // not stack-safe
+    runConsole(f1)
 
     val pool = Executors.newFixedThreadPool(1)  // hangs, awaiting input
     runConsolePar(f1).fix().run(pool)
