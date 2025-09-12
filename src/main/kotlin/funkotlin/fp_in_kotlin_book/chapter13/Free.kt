@@ -2,11 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter13
 
 import arrow.Kind
 import arrow.Kind2
-import funkotlin.fp_in_kotlin_book.chapter06.State
-import funkotlin.fp_in_kotlin_book.chapter06.StateOf
-import funkotlin.fp_in_kotlin_book.chapter06.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
-import funkotlin.fp_in_kotlin_book.chapter11.StateMonad
 
 sealed class ForFree { companion object }
 typealias FreeOf<F, A> = Kind2<ForFree, F, A>
@@ -55,7 +51,11 @@ sealed class ForFunction0 { companion object }
 typealias Function0Of<A> = Kind<ForFunction0, A>
 inline fun <A> Function0Of<A>.fix() = this as Function0<A>
 
-data class Function0<out A>(val f: () -> A) : Function0Of<A>
+data class Function0<out A>(val f: () -> A) : Function0Of<A> {
+    companion object {
+        operator fun <A> invoke(f: () -> A) = Function0(f)
+    }
+}
 
 tailrec fun <A> runTrampoline(ffa: Free<ForFunction0, A>): A = when (ffa) {
     is Return -> ffa.a
@@ -104,6 +104,28 @@ fun <F, A> run(free: Free<F, A>, M: Monad<F>): Kind<F, A> =
             val f = stepped.f as (A) -> Free<F, A>
             when (x) {
                 is Suspend -> M.flatMap(x.resume) { a: A -> run(f(a), M)}
+                else -> throw RuntimeException("Impossible, step eliminates such cases")
+            }
+        }
+    }
+
+interface Translate<F, G>  {
+    operator fun <A> invoke(fa: Kind<F, A>): Kind<G, A>
+}
+
+fun <F, G, A> runFree(
+    free: Free<F, A>,
+    t: Translate<F, G>,
+    MG: Monad<G>
+): Kind<G, A> =
+    when (val stepped = step(free)) {
+        is Return -> MG.unit(stepped.a)
+        is Suspend -> t(stepped.resume)
+        is FlatMap<*, *, *> -> {
+            val x = stepped.s as Free<F, A>
+            val f = stepped.f as (A) -> Free<F, A>
+            when (x) {
+                is Suspend -> MG.flatMap(t(x.resume)) { a: A -> runFree(f(a), t, MG)}
                 else -> throw RuntimeException("Impossible, step eliminates such cases")
             }
         }
