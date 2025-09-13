@@ -7,6 +7,11 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
+import arrow.Kind
+
+class ForPar private constructor() { companion object }
+typealias ParOf<T> = Kind<ForPar, T>
+fun <A> ParOf<A>.fix() = this as Par<A>
 
 class Par<A>(val run: (ExecutorService) -> Future<A>) : ParOf<A> {
     companion object

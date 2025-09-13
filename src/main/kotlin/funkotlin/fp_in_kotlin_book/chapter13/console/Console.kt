@@ -1,6 +1,7 @@
 package funkotlin.fp_in_kotlin_book.chapter13.console
 
 import arrow.Kind
+import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
@@ -18,9 +19,11 @@ import funkotlin.fp_in_kotlin_book.chapter13.Suspend
 import funkotlin.fp_in_kotlin_book.chapter13.Translate
 import funkotlin.fp_in_kotlin_book.chapter13.fix
 import funkotlin.fp_in_kotlin_book.chapter13.flatMap
+import funkotlin.fp_in_kotlin_book.chapter13.map
 import funkotlin.fp_in_kotlin_book.chapter13.runFree
 import funkotlin.fp_in_kotlin_book.chapter13.runTrampoline
 import funkotlin.fp_in_kotlin_book.chapter13.translate
+import java.util.concurrent.Executors
 
 sealed class ForConsole { companion object }
 typealias ConsoleOf<A> = Kind<ForConsole, A>
@@ -135,6 +138,27 @@ fun <A> runConsole(a: Free<ForConsole, A>): A {
     return runTrampoline(translate(a, t))
 }
 
+interface Source<A> {
+    fun readBytes(
+        numBytes: Int,
+        callback: (Either<Throwable, Array<Byte>>) -> Unit
+    ): Unit
+}
+
+fun <A> nonblockingRead(
+    source: Source<A>,
+    numBytes: Int,
+): Par2<Either<Throwable, Array<Byte>>> =
+    Par2.async { cb: (Either<Throwable, Array<Byte>>) -> Unit ->
+        source.readBytes(numBytes, cb)
+    }
+
+fun <A> readPar(
+    source: Source<A>,
+    numBytes: Int
+): Free<ForPar2, Either<Throwable, Array<Byte>>> =
+    Suspend(nonblockingRead(source, numBytes))
+
 fun main() {
     val f1: Free<ForConsole, Option<String>> =
         Console.stdout("I can only interact with the console")
@@ -142,9 +166,35 @@ fun main() {
     val f2 = Console.stdin()
         .flatMap { ins: Option<String> -> Console.stdout("Console echo: $ins") }
 
-    runConsoleFunction0(f1).fix().f() // not stack-safe
-    runConsole(f1)
+//    runConsoleFunction0(f1).fix().f() // not stack-safe
+//    runConsole(f1)
 
-//    val pool = Executors.newFixedThreadPool(1)  // hangs, awaiting input
+    val pool = Executors.newFixedThreadPool(1)  // hangs, awaiting input
 //    runConsolePar(f1).fix().run(pool)
+
+    val p: ConsoleIO<Unit> =
+        Console.stdout("What's your name?").flatMap { _ ->
+            Console.stdin().map { n ->
+                when (n) {
+                    None -> println("Fine, no name!")
+                    is Some<String> -> println("Hello, $n!")
+                }
+            }
+        }
+
+    val result: Par<Unit> = runConsolePar(p)
+    println("Par.result: ${result.run(pool).get()}")
+
+    val src: Source<String> = object : Source<String> {
+        override fun readBytes(
+            numBytes: Int,
+            callback: (Either<Throwable, Array<Byte>>) -> Unit,
+        ): Unit = Unit
+    }
+    val prog: Free<ForPar2, Unit> =
+        readPar(src, 1024).flatMap { chunk1 ->
+            readPar(src, 1024).map { chunk2 ->
+                // DO SOMETHING WITH CHUNKS
+            }
+        }
 }
