@@ -1,0 +1,39 @@
+package funkotlin.fp_in_kotlin_book.chapter14
+
+import arrow.Kind
+import arrow.Kind2
+
+class ForST private constructor() { companion object }
+typealias STOf<S, A> = Kind2<ForST, S, A>
+typealias STPartialOf<S> = Kind<ForST, S>
+fun <S, T> STOf<S, T>.fix() = this as ST<S, T>
+
+// it can be called: state thread, state transition, state token, state tag
+abstract class ST<S, A> internal constructor() : STOf<S, A> {
+    companion object {
+        operator fun <S, A> invoke(a: () -> A): STOf<S, A> {
+            val memo by lazy(a)
+            return object : ST<S, A>() {
+                override fun run(s: S) = memo to s
+            }
+        }
+    }
+
+    protected abstract fun run(s: S): Pair<A, S>
+
+    fun <B> map(f: (A) -> B): ST<S, B> = object : ST<S, B>() {
+        override fun run(s: S): Pair<B, S> {
+            val (a, s1) = this@ST.run(s)
+            return f(a) to s1
+        }
+    }
+
+    fun <B> flatMap(f: (A) -> ST<S, B>): ST<S, B> = object : ST<S, B>() {
+        override fun run(s: S): Pair<B, S> {
+            val (a, s1) = this@ST.run(s)
+            return f(a).run(s1)
+        }
+    }
+}
+
+
