@@ -11,8 +11,8 @@ fun <S, T> STOf<S, T>.fix() = this as ST<S, T>
 // it can be called: state thread, state transition, state token, state tag
 abstract class ST<S, A> internal constructor() : STOf<S, A> {
     companion object {
-        operator fun <S, A> invoke(a: () -> A): STOf<S, A> {
-            val memo by lazy(a)
+        operator fun <S, A> invoke(a: () -> A): ST<S, A> {
+            val memo by lazy(a) // <2>
             return object : ST<S, A>() {
                 override fun run(s: S) = memo to s
             }
@@ -36,4 +36,31 @@ abstract class ST<S, A> internal constructor() : STOf<S, A> {
     }
 }
 
+abstract class STRef<S, A> private constructor() {
+    companion object {
+        operator fun <S, A> invoke(a: A): ST<S, STRef<S, A>> = ST {
+            object : STRef<S, A>() {
+                override var cell: A = a
+            }
+        }
+    }
+
+    protected abstract var cell: A
+
+    fun read(): ST<S, A> = ST<S, A> {
+        cell
+    }.fix()
+
+    fun write(a: A): ST<S, Unit> = object : ST<S, Unit>() {
+        override fun run(s: S): Pair<Unit, S> {
+            cell = a
+            return Unit to s
+        }
+
+    }
+}
+
+fun main() {
+
+}
 
