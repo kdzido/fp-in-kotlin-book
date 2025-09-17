@@ -3,6 +3,10 @@ package funkotlin.fp_in_kotlin_book.chapter14
 import arrow.Kind
 import arrow.Kind2
 
+interface RunnableST<A> {
+    fun <S> invoke(): ST<S, A>
+}
+
 abstract class STRef<S, A> private constructor() {
     companion object {
         operator fun <S, A> invoke(a: A): ST<S, STRef<S, A>> = ST {
@@ -41,6 +45,9 @@ abstract class ST<S, A> internal constructor() : STOf<S, A> {
                 override fun run(s: S) = memo to s
             }
         }
+
+        fun  <A> runST(st: RunnableST<A>): A =
+            st.invoke<Unit>().run(Unit).first
     }
 
     protected abstract fun run(s: S): Pair<A, S>
