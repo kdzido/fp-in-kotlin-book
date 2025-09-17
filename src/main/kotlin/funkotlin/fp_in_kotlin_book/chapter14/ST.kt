@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter14
 
 import arrow.Kind
 import arrow.Kind2
+import arrow.core.extensions.map.foldable.firstOption
 
 interface RunnableST<A> {
     fun <S> invoke(): ST<S, A>
@@ -55,6 +56,11 @@ abstract class STArray<S, A> @PublishedApi internal constructor() {
     fun read(i: Int): ST<S, A> = ST { value[i] }
     fun freeze(): ST<S, List<A>> = ST { value.toList() }
 }
+
+fun <S, A> STArray<S, A>.fill(xs: Map<Int, A>): ST<S, Unit> =
+    xs.entries.fold(ST { Unit }) { acc, e ->
+        acc.flatMap { _: Unit -> this.write(e.key, e. value)  }
+    }
 
 class ForST private constructor() { companion object }
 typealias STOf<S, A> = Kind2<ForST, S, A>

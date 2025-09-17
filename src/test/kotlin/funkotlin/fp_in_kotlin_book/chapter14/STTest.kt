@@ -68,5 +68,24 @@ class STTest : StringSpec({
         // expect:
         ST.runST(p3) shouldBe listOf(1, 1, 2, 3, 1, 1, 1, 1, 1, 1)
     }
+
+    "should fill array from map" {
+        val p4 = object : RunnableST<List<String>> {
+            override fun <S> invoke(): ST<S, List<String>> {
+                return STArray<S, String>(5, "<nil>").flatMap { r1: STArray<S, String> ->
+                        r1.fill(
+                            mapOf(
+                                0 to "zero",
+                                1 to "one",
+                                2 to "two",
+                            )
+                        ).flatMap { _ -> r1.freeze() }
+                    }
+            }
+        }
+
+        // expect:
+        ST.runST(p4) shouldBe listOf("zero", "one", "two", "<nil>", "<nil>")
+    }
 })
 
