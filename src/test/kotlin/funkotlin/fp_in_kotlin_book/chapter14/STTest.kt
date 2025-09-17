@@ -47,5 +47,26 @@ class STTest : StringSpec({
 
         // TODO runST(p2)
     }
+
+    "should write and read local array state" {
+        val p3 = object : RunnableST<List<Int>> {
+            override fun <S> invoke(): ST<S, List<Int>> {
+                return STArray<S, Int>(10, 1).flatMap { r1: STArray<S, Int> ->
+                    r1.read(1).flatMap { x: Int ->
+                        r1.write(2, x + 1).flatMap { _: Unit ->
+                            r1.write(3, x + 2).flatMap { _: Unit ->
+                                r1.freeze().map { ls: List<Int> ->
+                                    ls
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // expect:
+        ST.runST(p3) shouldBe listOf(1, 1, 2, 3, 1, 1, 1, 1, 1, 1)
+    }
 })
 

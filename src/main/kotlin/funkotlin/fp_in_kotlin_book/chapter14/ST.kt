@@ -31,6 +31,31 @@ abstract class STRef<S, A> private constructor() {
     }
 }
 
+abstract class STArray<S, A> @PublishedApi internal constructor() {
+    companion object {
+        inline operator fun <S, reified A> invoke(
+            sz: Int,
+            v: A
+        ): ST<S, STArray<S, A>> = ST {
+            object : STArray<S, A>() {
+                override val value = Array(sz) { v}
+            }
+        }
+    }
+
+    protected abstract val value: Array<A>
+
+    val size: ST<S, Int> = ST { value.size }
+    fun write(i: Int, a: A): ST<S, Unit> = object : ST<S, Unit>() {
+        override fun run(s: S): Pair<Unit, S> {
+            value[i] = a
+            return Unit to s
+        }
+    }
+    fun read(i: Int): ST<S, A> = ST { value[i] }
+    fun freeze(): ST<S, List<A>> = ST { value.toList() }
+}
+
 class ForST private constructor() { companion object }
 typealias STOf<S, A> = Kind2<ForST, S, A>
 typealias STPartialOf<S> = Kind<ForST, S>
