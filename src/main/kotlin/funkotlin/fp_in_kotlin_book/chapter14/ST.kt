@@ -54,6 +54,15 @@ abstract class STArray<S, A> @PublishedApi internal constructor() {
         }
     }
     fun read(i: Int): ST<S, A> = ST { value[i] }
+
+    fun swap(i: Int, j: Int): ST<S, Unit> = read(i).flatMap { x ->
+        read(j).flatMap { y ->
+            write(i, y).flatMap {
+                write(j, x)
+            }
+        }
+    }
+
     fun freeze(): ST<S, List<A>> = ST { value.toList() }
 }
 
