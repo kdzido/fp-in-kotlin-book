@@ -62,6 +62,15 @@ fun <S, A> STArray<S, A>.fill(xs: Map<Int, A>): ST<S, Unit> =
         acc.flatMap { _: Unit -> this.write(e.key, e. value)  }
     }
 
+inline fun <S, reified A> fromList(
+    xs: List<A>
+): ST<S, STArray<S, A>> =
+    ST {
+        object : STArray<S, A>() {
+            override val value: Array<A> = xs.toTypedArray()
+        }
+    }
+
 class ForST private constructor() { companion object }
 typealias STOf<S, A> = Kind2<ForST, S, A>
 typealias STPartialOf<S> = Kind<ForST, S>

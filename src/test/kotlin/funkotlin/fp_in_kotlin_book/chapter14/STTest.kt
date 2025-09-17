@@ -87,5 +87,17 @@ class STTest : StringSpec({
         // expect:
         ST.runST(p4) shouldBe listOf("zero", "one", "two", "<nil>", "<nil>")
     }
+
+    "should construct STSArray from list" {
+        val p5 = object : RunnableST<List<String>> {
+            override fun <S> invoke(): ST<S, List<String>> =
+                fromList<S, String>(listOf("zero", "one", "two")).flatMap { r1 ->
+                    r1.freeze()
+                }
+        }
+
+        // expect:
+        ST.runST(p5) shouldBe listOf("zero", "one", "two")
+    }
 })
 
