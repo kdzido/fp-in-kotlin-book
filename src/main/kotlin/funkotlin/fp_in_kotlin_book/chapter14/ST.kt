@@ -2,7 +2,6 @@ package funkotlin.fp_in_kotlin_book.chapter14
 
 import arrow.Kind
 import arrow.Kind2
-import arrow.core.extensions.map.foldable.firstOption
 
 interface RunnableST<A> {
     fun <S> invoke(): ST<S, A>
@@ -79,6 +78,7 @@ inline fun <S, reified A> fromList(
             override val value: Array<A> = xs.toTypedArray()
         }
     }
+
 
 class ForST private constructor() { companion object }
 typealias STOf<S, A> = Kind2<ForST, S, A>

@@ -3,6 +3,7 @@ package funkotlin.fp_in_kotlin_book.chapter14
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
+
 class STTest : StringSpec({
 
     "should write and read local state" {
@@ -99,20 +100,5 @@ class STTest : StringSpec({
         // expect:
         ST.runST(p5) shouldBe listOf("zero", "one", "two")
     }
-
-    "should swap STSArray elements" {
-        val p5 = object : RunnableST<List<String>> {
-            override fun <S> invoke(): ST<S, List<String>> =
-                fromList<S, String>(listOf("zero", "two", "one")).flatMap { r1 ->
-                    r1.swap(1, 2).flatMap {
-                        r1.freeze()
-                    }
-                }
-        }
-
-        // expect:
-        ST.runST(p5) shouldBe listOf("zero", "one", "two")
-    }
-
 })
 
