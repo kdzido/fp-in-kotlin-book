@@ -100,5 +100,19 @@ class STTest : StringSpec({
         // expect:
         ST.runST(p5) shouldBe listOf("zero", "one", "two")
     }
+
+    "should construct STSMap from map" {
+        val m = mapOf(0 to "zero", 1 to "one", 2 to "two")
+
+        val p5 = object : RunnableST<Map<Int, String>> {
+            override fun <S> invoke(): ST<S, Map<Int, String>> =
+                STMap.fromMap<S, Int, String>(m).flatMap { r1 ->
+                    r1.freeze()
+                }
+        }
+
+        // expect:
+        ST.runST(p5) shouldBe mapOf(0 to "zero", 1 to "one", 2 to "two")
+    }
 })
 
