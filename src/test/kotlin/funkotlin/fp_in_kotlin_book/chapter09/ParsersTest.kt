@@ -25,12 +25,8 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.char
-import io.kotest.property.arbitrary.choice
-import io.kotest.property.arbitrary.codepoints
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import org.junit.jupiter.api.Test
 import kotlin.run as kotlinRun
 import kotlin.Result as kotlinResult
 
@@ -196,10 +192,7 @@ class ParsersTest : StringSpec({
         errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg1)
     }
 
-
-}) {
-    @Test
-    fun `should attempt to execute branch of and fallback to 2nd branch`() {
+    "should attempt to execute branch of and fallback to 2nd branch" {
         // given
         val scopeMsg2 = "short magic spell"
         val input = "abra cadabra"
@@ -214,5 +207,36 @@ class ParsersTest : StringSpec({
         // then
         errorStack(left.value).head shouldBe Pair(Location(input = input, offset = 0), scopeMsg2)
     }
-}
 
+    "should collapse empty error stack" {
+        val errors = ParseError(listOf())
+
+        errors.toString() shouldBe "no errors"
+    }
+
+    "should collapse error stack" {
+        val input = """[
+            { "key": "value1" },
+            { "key": "value2" },
+            { "key": "value3" },
+            { "MSFT" ; 24 }
+            ]
+            """.trimIndent()
+
+        val errors = ParseError(listOf(
+            Location(input) to "file 'companies.json'",
+            Location(input, 1) to "array",
+            Location(input, 40) to "object",
+            )
+        )
+
+        errors.toString() shouldBe """
+            1.1. file 'companies.json'; array
+            5.1 object
+            5.2 key-value
+            5.10 ':'
+            { "MSFT" ; 24,
+                     ^
+        """.trimIndent()
+    }
+})
