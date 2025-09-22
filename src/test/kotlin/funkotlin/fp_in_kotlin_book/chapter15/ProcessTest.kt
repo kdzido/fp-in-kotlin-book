@@ -72,3 +72,13 @@ class Exercise15_1 : StringSpec({
         dropWhile<Int>({ it <= 4 })(stream).toList() shouldBe ListCh.of(5, 6, 7, 8, 9, 10)
     }
 })
+
+class Exercise15_2 : StringSpec({
+    val stream = Stream.of(1, 2, 3, 4, 5)
+
+    "should count" {
+        count<Int>()(Stream.empty()).toList() shouldBe ListCh.of()
+        count<Int>()(stream).toList() shouldBe ListCh.of(1, 2, 3, 4, 5)
+    }
+})
+

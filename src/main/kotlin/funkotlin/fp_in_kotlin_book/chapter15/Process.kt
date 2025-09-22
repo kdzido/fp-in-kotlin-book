@@ -121,3 +121,13 @@ fun <I> dropWhile(p: (I) -> Boolean): Process<I, I> =
         }
     }.repeat()
 
+fun <I> count(): Process<I, Int> {
+    fun go(acc: Int): Process<I, Int> =
+        Await { i: Option<I> ->
+            when (i) {
+                None -> Halt()
+                is Some -> Emit(acc + 1, go(acc + 1))
+            }
+        }
+    return go(0)
+}
