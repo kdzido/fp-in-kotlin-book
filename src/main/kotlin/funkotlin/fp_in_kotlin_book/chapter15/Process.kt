@@ -89,6 +89,9 @@ fun sum(): Process<Double, Double> {
     return go(0.0)
 }
 
+fun sum2(): Process<Double, Double> =
+    loop(0.0, { i, s -> Pair(i + s, i + s)})
+
 fun <I> take(n: Int): Process<I, I> =
     Await { i: Option<I> ->
         when (i) {
@@ -132,6 +135,9 @@ fun <I> count(): Process<I, Int> {
     return go(0)
 }
 
+fun <I> count2(): Process<I, Int> =
+    loop(0, { i, n -> Pair(n + 1, n + 1)})
+
 fun mean(): Process<Double, Double> {
     fun go(sum: Double, n: Int): Process<Double, Double> =
         Await { i: Option<Double> ->
@@ -142,4 +148,15 @@ fun mean(): Process<Double, Double> {
         }
     return go(0.0, 1)
 }
+
+fun <S, I, O> loop(z: S, f: (I, S) -> Pair<O, S>): Process<I, O> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> {
+                val (o, s2) = f(i.value, z)
+                Emit(o, loop(s2, f))
+            }
+            None -> Halt()
+        }
+    }
 

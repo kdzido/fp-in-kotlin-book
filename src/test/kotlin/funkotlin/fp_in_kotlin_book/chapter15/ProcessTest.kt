@@ -48,7 +48,11 @@ class ProcessTest : StringSpec({
     }
 
     "should sum stream" {
+        sum()(Stream.of()).toList() shouldBe ListCh.of()
         sum()(Stream.of(1.0, 2.0, 3.0)).toList() shouldBe ListCh.of(1.0, 3.0, 6.0)
+        // and:
+        sum2()(Stream.of()).toList() shouldBe ListCh.of()
+        sum2()(Stream.of(1.0, 2.0, 3.0)).toList() shouldBe ListCh.of(1.0, 3.0, 6.0)
     }
 
 })
@@ -79,6 +83,9 @@ class Exercise15_2 : StringSpec({
     "should count" {
         count<Int>()(Stream.empty()).toList() shouldBe ListCh.of()
         count<Int>()(stream).toList() shouldBe ListCh.of(1, 2, 3, 4, 5)
+        // and:
+        count2<Int>()(Stream.empty()).toList() shouldBe ListCh.of()
+        count2<Int>()(stream).toList() shouldBe ListCh.of(1, 2, 3, 4, 5)
     }
 })
 
