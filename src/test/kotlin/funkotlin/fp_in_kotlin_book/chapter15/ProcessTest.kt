@@ -52,3 +52,23 @@ class ProcessTest : StringSpec({
     }
 
 })
+
+class Exercise15_1 : StringSpec({
+    val stream = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    "should take" {
+        take<Int>(5)(stream).toList() shouldBe ListCh.of(1, 2, 3, 4, 5)
+    }
+
+    "should drop" {
+        drop<Int>(5)(stream).toList() shouldBe ListCh.of(6, 7, 8, 9, 10)
+    }
+
+    "should takeWhile" {
+        takeWhile<Int>({ it <= 4 })(stream).toList() shouldBe ListCh.of(1, 2, 3, 4)
+    }
+
+    "should dropWhile" {
+        dropWhile<Int>({ it <= 4 })(stream).toList() shouldBe ListCh.of(5, 6, 7, 8, 9, 10)
+    }
+})

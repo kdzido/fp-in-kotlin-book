@@ -88,3 +88,36 @@ fun sum(): Process<Double, Double> {
         }
     return go(0.0)
 }
+
+fun <I> take(n: Int): Process<I, I> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> if (n > 0) Emit(i.value, take(n - 1)) else Halt()
+            None -> Halt()
+        }
+    }.repeat()
+
+fun <I> drop(n: Int): Process<I, I> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> if (n > 0) drop(n - 1) else Emit(i.value)
+            None -> Halt()
+        }
+    }.repeat()
+
+fun <I> takeWhile(p: (I) -> Boolean): Process<I, I> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> if (p(i.value)) Emit(i.value, takeWhile(p)) else Halt()
+            None -> Halt()
+        }
+    }.repeat()
+
+fun <I> dropWhile(p: (I) -> Boolean): Process<I, I> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> if (p(i.value)) Halt() else Emit(i.value, dropWhile(p))
+            None -> Halt()
+        }
+    }.repeat()
+
