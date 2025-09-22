@@ -34,4 +34,21 @@ class ProcessTest : StringSpec({
         p(Stream.of(1, 2, 3)).toList() shouldBe ListCh.of("one", "two", "three")
     }
 
+    "!should emit infinitely" {
+        val units = Stream.constant(Unit)
+        val p = lift<Unit, Int>{ _ -> 1 }(units)
+
+        p.toList() // runs infinetely
+    }
+
+    "should filter stream" {
+        val even = filter<Int> { it % 2 == 0 }
+
+        even(Stream.of(1, 2, 3, 4, 5, 6)).toList() shouldBe ListCh.of(2, 4, 6)
+    }
+
+    "should sum stream" {
+        sum()(Stream.of(1.0, 2.0, 3.0)).toList() shouldBe ListCh.of(1.0, 3.0, 6.0)
+    }
+
 })

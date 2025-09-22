@@ -43,6 +43,7 @@ sealed class Process<I, O> : ProcessOf<I, O> {
         return go(this)
     }
 
+
     companion object {
     }
 }
@@ -68,3 +69,22 @@ fun <I, O> liftOne(f: (I) -> O): Process<I, O> =
             None -> Halt()
         }
     }
+
+fun <I> filter(p: (I) -> Boolean): Process<I, I> =
+    Await<I, I> { i: Option<I> ->
+        when (i) {
+            is Some -> if (p(i.value)) Emit(i.value) else Halt()
+            None -> Halt()
+        }
+    }.repeat()
+
+fun sum(): Process<Double, Double> {
+    fun go(acc: Double): Process<Double, Double> =
+        Await { i: Option<Double> ->
+            when (i) {
+                is Some -> Emit(i.value + acc, go(i.value + acc))
+                None -> Halt()
+            }
+        }
+    return go(0.0)
+}
