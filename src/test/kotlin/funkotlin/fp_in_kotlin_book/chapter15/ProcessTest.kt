@@ -82,3 +82,12 @@ class Exercise15_2 : StringSpec({
     }
 })
 
+class Exercise15_3 : StringSpec({
+    "should mean" {
+        mean()(Stream.empty()).toList() shouldBe ListCh.of()
+        mean()(Stream.of(1.0)).toList() shouldBe ListCh.of(1.0)
+        mean()(Stream.of(1.0, 2.0)).toList() shouldBe ListCh.of(1.0, 1.5)
+    }
+})
+
+

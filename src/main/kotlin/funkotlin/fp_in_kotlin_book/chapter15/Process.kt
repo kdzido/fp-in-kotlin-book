@@ -131,3 +131,15 @@ fun <I> count(): Process<I, Int> {
         }
     return go(0)
 }
+
+fun mean(): Process<Double, Double> {
+    fun go(sum: Double, n: Int): Process<Double, Double> =
+        Await { i: Option<Double> ->
+            when (i) {
+                is Some -> Emit((i.value + sum) / n, go(i.value + sum, n + 1))
+                None -> Halt()
+            }
+        }
+    return go(0.0, 1)
+}
+
