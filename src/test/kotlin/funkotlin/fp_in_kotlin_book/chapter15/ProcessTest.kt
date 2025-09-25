@@ -34,6 +34,11 @@ class ProcessTest : StringSpec({
         p(Stream.of(1, 2, 3)).toList() shouldBe ListCh.of("one", "two", "three")
     }
 
+    "!should repeat" {
+        val p = Halt<Int, Int>().repeat()   // stack overflow, Halt replaces recursive step of the driver
+        p(Stream.of(1, 2, 3)).toList() shouldBe ListCh.of("one", "two", "three")
+    }
+
     "!should emit infinitely" {
         val units = Stream.constant(Unit)
         val p = lift<Unit, Int>{ _ -> 1 }(units)
@@ -97,4 +102,21 @@ class Exercise15_3 : StringSpec({
     }
 })
 
+class Exercise15_5 : StringSpec({
+    "should pipe processes" {
+        val stream = Stream.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0)
+        val sumP: Process<Double, Double> = sum()
+        val take4 = take<Double>(4)
+        val fused = sumP pipe take4
+
+        fused(stream).toList() shouldBe ListCh.of(1.0, 3.0, 6.0, 10.0)
+    }
+
+    "should map over Process" {
+        val stream = Stream.of(1.0, 2.0, 3.0, 4.0)
+        val fused = sum().map { it + 1.0 }
+
+        fused(stream).toList() shouldBe ListCh.of(2.0, 4.0, 7.0, 11.0)
+    }
+})
 

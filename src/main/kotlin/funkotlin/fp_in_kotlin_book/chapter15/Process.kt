@@ -43,6 +43,7 @@ sealed class Process<I, O> : ProcessOf<I, O> {
         return go(this)
     }
 
+    fun <O2> map(f: (O) -> O2): Process<I, O2> = this pipe lift(f)
 
     companion object {
     }
@@ -58,6 +59,20 @@ data class Await<I, O>(
 ) : Process<I, O>()
 
 class Halt<I, O> : Process<I, O>()
+
+infix fun <I, O, O2> Process<I, O>.pipe(
+    g: Process<O, O2>,
+): Process<I, O2> =
+    when (g) {
+        is Await -> when(this) {
+            is Await -> Await { i -> this.recv(i) pipe g }
+            is Emit -> this.tail pipe g.recv(Some(this.head))
+            is Halt -> Halt<I, O>() pipe g.recv(None)
+        }
+        is Emit -> Emit(g.head, this pipe g.tail)
+        is Halt-> Halt()
+    }
+
 
 fun <I, O> lift(f: (I) -> O): Process<I, O> =
     liftOne(f).repeat()
