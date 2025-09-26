@@ -157,5 +157,42 @@ class Exercise15_5 : StringSpec({
                 )
     }
 
+    "Process monad operations" {
+        val M = Process.monad<Int, Int>()
+
+        val e1 = M.unit(1).fix()
+        val e2 = M.unit(2).fix()
+
+        // expect: "unit"
+        e1 shouldBe Emit(1)
+        e2 shouldBe Emit(2)
+
+        // expect: "map"
+        val f1: (Int) -> String = { i: Int ->
+            when (i) {
+                0 -> "zero"
+                1 -> "one"
+                2 -> "two"
+                else -> "<null>"
+            }
+        }
+        M.map(Halt(), f1).fix() shouldBe Halt()
+        M.map(e1, f1).fix() shouldBe Emit("one")
+        M.map(e2, f1).fix() shouldBe Emit("two")
+
+        // expect: "flatMap"
+        val f2: (Int) -> ProcessOf<Int, String> = { i: Int ->
+            when (i) {
+                0 -> Emit("zero")
+                1 -> Emit("one")
+                2 -> Emit("two")
+                else -> Halt()
+            }
+        }
+        M.flatMap(Halt(), f2).fix() shouldBe Halt()
+        M.flatMap(e1, f2).fix() shouldBe Emit("one")
+        M.flatMap(e2, f2).fix() shouldBe Emit("two")
+    }
+
 })
 

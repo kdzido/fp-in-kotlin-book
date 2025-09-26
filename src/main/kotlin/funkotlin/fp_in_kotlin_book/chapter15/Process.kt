@@ -16,6 +16,8 @@ typealias ProcessPartialOf<I> = Kind<ForProcess, I>
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 inline fun <I, O> ProcessOf<I, O>.fix(): Process<I, O> = this as Process<I, O>
 
+fun <I, O> Process.Companion.monad() = object : ProcessMonad<I, O> {}
+
 sealed class Process<I, O> : ProcessOf<I, O> {
     operator fun invoke(si: Stream<I>): Stream<O> =
         when (this) {
