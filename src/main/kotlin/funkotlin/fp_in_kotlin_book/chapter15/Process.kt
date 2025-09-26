@@ -9,7 +9,9 @@ import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Cons
 import funkotlin.fp_in_kotlin_book.chapter05.Empty
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
+import funkotlin.fp_in_kotlin_book.chapter13.tailrec.runM
 import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
 
 class ForProcess private constructor() { companion object }
@@ -258,4 +260,35 @@ fun <A, B> processFile(
     file.bufferedReader().use { reader: BufferedReader ->
         go(reader.lines().iterator(), proc, z)
     }
+}
+
+fun convert(file: File, outFile: File): File {
+    val p: Process<String, String> = lift {
+        toCelsius(
+            it.toDoubleOrNull() ?: throw IllegalStateException("Invalid")
+        ).toString()
+    }
+
+    outFile.bufferedWriter().use { writer ->
+        println("file: $file, exists: ${file.exists()}, path: ${file.absoluteFile.absolutePath}")
+        runM(processFile(file, p, writer) { bw: BufferedWriter, line: String ->
+            println(">> processing line: $line")
+            bw.append(line)
+            bw.newLine()
+            bw
+        })
+    }
+    return outFile
+}
+
+fun toCelsius(farhenheit: Double): Double =
+    ((farhenheit - 32.0) * 5.0) / 9.0
+
+
+fun main() {
+    val of = convert(
+        File("faren.txt"),
+        File("result_celsius.txt")
+    )
+    println("output file: $of")
 }
