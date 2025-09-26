@@ -3,6 +3,7 @@ package funkotlin.fp_in_kotlin_book.chapter15
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
+import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -107,6 +108,18 @@ class Exercise15_6 : StringSpec({
         mean2()(Stream.empty()).toList() shouldBe ListCh.of()
         mean2()(Stream.of(1.0)).toList() shouldBe ListCh.of(1.0)
         mean2()(Stream.of(1.0, 2.0)).toList() shouldBe ListCh.of(1.0, 1.5)
+    }
+})
+
+class Exercise15_7 : StringSpec({
+    "should zipWithIndex" {
+        val h = Halt<Int, String>()
+        val p1 = Emit("a", Emit("b", h))
+
+        p1.zipWithIndex()(Stream.of()).toList() shouldBe
+                ListCh.of()
+        p1.zipWithIndex()(Stream.of(1, 2)).toList() shouldBe
+                ListCh.of(0 to "a", 1 to "b")
     }
 })
 

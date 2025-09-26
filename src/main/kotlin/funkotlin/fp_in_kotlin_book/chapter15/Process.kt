@@ -192,6 +192,9 @@ fun mean2(): Process<Double, Double> =
     zip(sum(), count()).map { (s: Double, c: Int) -> s / c }
 
 
+fun <I, O> Process<I, O>.zipWithIndex(): Process<I, Pair<Int, O>> =
+    zip(count<I>().map { it - 1 },  this)
+
 // book solution
 fun <I, A, B> zip(p1: Process<I, A>, p2: Process<I, B>): Process<I, Pair<A, B>> =
     when (p1) {
