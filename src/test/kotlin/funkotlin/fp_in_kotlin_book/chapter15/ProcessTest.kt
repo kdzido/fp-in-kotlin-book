@@ -112,11 +112,50 @@ class Exercise15_5 : StringSpec({
         fused(stream).toList() shouldBe ListCh.of(1.0, 3.0, 6.0, 10.0)
     }
 
+    "should pipe in-place processes" {
+        val s1 = Stream.of(1, 2, 3, 4, 5, 6, 7, 8)
+        val p2 = filter<Int> { it % 2 == 0 } pipe lift { it + 1 }
+
+        p2(s1).toList() shouldBe ListCh.of(3, 5, 7, 9)
+    }
+
     "should map over Process" {
         val stream = Stream.of(1.0, 2.0, 3.0, 4.0)
         val fused = sum().map { it + 1.0 }
 
         fused(stream).toList() shouldBe ListCh.of(2.0, 4.0, 7.0, 11.0)
     }
+
+    "should append processes" {
+        val h = Halt<Int, Int>()
+        val p1 = Emit(1, h)
+        val p2 = Emit(3, h)
+
+        val appended = p1 append p2
+        appended shouldBe Emit(1, Emit(3, h))
+    }
+
+    "should flatMap processes" {
+        val p1 = Emit(1, Emit(2, Halt<Int, Int>()))
+
+        fun transform(x: Int): Process<Int, String> =
+            Emit("Number: $x", Emit("Number: $x"))
+
+        p1.flatMap<String>(::transform) shouldBe
+                Emit(
+                    "Number: 1",
+                    Emit(
+                        "Number: 1",
+                        Emit(
+                            "Number: 2",
+                            Emit(
+                                "Number: 2",
+                                Halt()
+                            )
+                        )
+                    )
+                )
+    }
+
 })
 

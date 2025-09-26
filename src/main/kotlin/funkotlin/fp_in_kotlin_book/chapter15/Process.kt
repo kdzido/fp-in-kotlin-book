@@ -2,6 +2,7 @@ package funkotlin.fp_in_kotlin_book.chapter15
 
 import arrow.Kind
 import arrow.Kind2
+import arrow.core.andThen
 import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
@@ -45,6 +46,24 @@ sealed class Process<I, O> : ProcessOf<I, O> {
 
     fun <O2> map(f: (O) -> O2): Process<I, O2> = this pipe lift(f)
 
+    infix fun append(p2: Process<I, O>): Process<I, O> =
+        when (this) {
+            is Halt -> p2
+            is Emit -> Emit(this.head, this.tail append p2)
+            is Await -> Await { i: Option<I> ->
+                (this.recv andThen { p1 -> p1 append p2 })(i)
+            }
+        }
+
+    fun <O2> flatMap(f: (O) -> Process<I, O2>): Process<I, O2> =
+        when (this) {
+            is Halt -> Halt()
+            is Emit -> f(this.head) append this.tail.flatMap(f)
+            is Await -> Await { i: Option<I> ->
+                (this.recv andThen { p -> p.flatMap(f)})(i)
+            }
+        }
+
     companion object {
     }
 }
@@ -58,7 +77,10 @@ data class Await<I, O>(
     val recv: (Option<I>) -> Process<I, O>
 ) : Process<I, O>()
 
-class Halt<I, O> : Process<I, O>()
+class Halt<I, O> : Process<I, O>() {
+    override fun equals(other: Any?): Boolean = true
+    override fun hashCode(): Int = 123
+}
 
 infix fun <I, O, O2> Process<I, O>.pipe(
     g: Process<O, O2>,
