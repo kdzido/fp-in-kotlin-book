@@ -117,6 +117,14 @@ fun <I> filter(p: (I) -> Boolean): Process<I, I> =
         }
     }.repeat()
 
+fun <I> exists(p: (I) -> Boolean): Process<I, Boolean> =
+    Await { i: Option<I> ->
+        when (i) {
+            is Some -> if (p(i.value)) Emit(true) else Emit(false, exists(p) )
+            None -> Halt()
+        }
+    }
+
 fun sum(): Process<Double, Double> {
     fun go(acc: Double): Process<Double, Double> =
         Await { i: Option<Double> ->

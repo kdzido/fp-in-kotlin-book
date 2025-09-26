@@ -3,7 +3,6 @@ package funkotlin.fp_in_kotlin_book.chapter15
 import funkotlin.fp_in_kotlin_book.chapter03.List as ListCh
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
 import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.toList
-import funkotlin.fp_in_kotlin_book.chapter05.Stream.Companion.zipWith
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
@@ -120,6 +119,20 @@ class Exercise15_7 : StringSpec({
                 ListCh.of()
         p1.zipWithIndex()(Stream.of(1, 2)).toList() shouldBe
                 ListCh.of(0 to "a", 1 to "b")
+    }
+})
+
+class Exercise15_8 : StringSpec({
+    "should exists" {
+        val so = Stream.of(1, 3, 5, 7, 9)
+        val se = Stream.of(2, 4, 6, 8, 10)
+        val soe = Stream.of(1, 3, 5, 6, 7)
+        val pe = exists<Int> { it % 2 == 0 }
+
+        pe(Stream.of()).toList() shouldBe ListCh.of()
+        pe(so).toList() shouldBe ListCh.of(false, false, false, false, false)
+        pe(se).toList() shouldBe ListCh.of(true)
+        pe(soe).toList() shouldBe ListCh.of(false, false, false, true)
     }
 })
 

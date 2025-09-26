@@ -58,7 +58,6 @@ object Counting {
             yield(end)
         }
     }
-
 }
 
 fun main() {
