@@ -73,4 +73,15 @@ fun main() {
     val resLines = runM(Counting.lines(FILE_10))
     println("lines count: ${resLines.count()}")
 
+
+    val proc = count<String>() pipe exists { it >= LINE_LIMIT }
+    val pf = processFile(
+        File(FILE_10),
+        proc,
+        false
+    ) { a: Boolean, b: Boolean -> a || b }
+
+    val resPF = runM(pf)
+    println("processFile($FILE_10): $resPF")
+
 }

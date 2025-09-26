@@ -9,6 +9,8 @@ import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter05.Cons
 import funkotlin.fp_in_kotlin_book.chapter05.Empty
 import funkotlin.fp_in_kotlin_book.chapter05.Stream
+import java.io.BufferedReader
+import java.io.File
 
 class ForProcess private constructor() { companion object }
 typealias ProcessOf<I, O> = Kind2<ForProcess, I, O>
@@ -233,3 +235,27 @@ fun <S, I, O> loop(z: S, f: (I, S) -> Pair<O, S>): Process<I, O> =
         }
     }
 
+fun <A, B> processFile(
+    file: File,
+    proc: Process<String, A>,
+    z: B,
+    fn: (B, A) -> B
+): IO<B> = IO {
+    tailrec fun go(
+        ss: Iterator<String>,
+        curr: Process<String, A>,
+        acc: B
+    ): B =
+        when (curr) {
+            is Halt -> acc
+            is Await -> {
+                val next = if (ss.hasNext()) curr.recv(Some(ss.next())) else curr.recv(None)
+                go(ss, next, acc)
+            }
+            is Emit -> go(ss, curr.tail, fn(acc, curr.head))
+        }
+
+    file.bufferedReader().use { reader: BufferedReader ->
+        go(reader.lines().iterator(), proc, z)
+    }
+}
