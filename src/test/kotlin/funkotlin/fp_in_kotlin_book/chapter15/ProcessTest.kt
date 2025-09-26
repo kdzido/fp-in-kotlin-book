@@ -102,6 +102,14 @@ class Exercise15_3 : StringSpec({
     }
 })
 
+class Exercise15_6 : StringSpec({
+    "should mean2" {
+        mean2()(Stream.empty()).toList() shouldBe ListCh.of()
+        mean2()(Stream.of(1.0)).toList() shouldBe ListCh.of(1.0)
+        mean2()(Stream.of(1.0, 2.0)).toList() shouldBe ListCh.of(1.0, 1.5)
+    }
+})
+
 class Exercise15_5 : StringSpec({
     "should pipe processes" {
         val stream = Stream.of(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0)

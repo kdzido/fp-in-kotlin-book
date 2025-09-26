@@ -188,6 +188,29 @@ fun mean(): Process<Double, Double> {
     return go(0.0, 1)
 }
 
+fun mean2(): Process<Double, Double> =
+    zip(sum(), count()).map { (s: Double, c: Int) -> s / c }
+
+
+// book solution
+fun <I, A, B> zip(p1: Process<I, A>, p2: Process<I, B>): Process<I, Pair<A, B>> =
+    when (p1) {
+        is Halt -> Halt()
+        is Await -> Await { oa -> zip(p1.recv(oa), feed(oa, p2)) }
+        is Emit -> when (p2) {
+            is Emit -> Emit(p1.head to p2.head, zip(p1.tail, p2.tail))
+            else -> throw RuntimeException("unreachable")
+        }
+    }
+
+// book solution
+fun <A, B> feed(oa: Option<A>, p1: Process<A, B>): Process<A, B> =
+    when (p1) {
+        is Halt -> Halt()
+        is Await -> p1.recv(oa)
+        is Emit -> Emit(p1.head, feed(oa, p1.tail))
+    }
+
 fun <S, I, O> loop(z: S, f: (I, S) -> Pair<O, S>): Process<I, O> =
     Await { i: Option<I> ->
         when (i) {
