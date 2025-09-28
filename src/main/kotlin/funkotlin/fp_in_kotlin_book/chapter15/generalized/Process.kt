@@ -6,11 +6,13 @@ import arrow.core.andThen
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter11.Monad
 import funkotlin.fp_in_kotlin_book.chapter13.io.ForIO
 import funkotlin.fp_in_kotlin_book.chapter13.io.IO
 import funkotlin.fp_in_kotlin_book.chapter13.io.IOOf
 import funkotlin.fp_in_kotlin_book.chapter13.io.fix
 import funkotlin.fp_in_kotlin_book.chapter15.Counting.FILE_10
+import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.tryP
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.concurrent.ExecutorService
@@ -97,6 +99,34 @@ sealed class Process<F, O> : ProcessOf<F, O> {
                     p.onHalt(f)
                 }
         }
+}
+
+// EXER 15.10
+fun <F, O> Process<F, O>.runLog2(MC: MonadCatch<F>): Kind<F, Sequence<O>> {
+    tailrec fun go(cur: Process<F, O>, acc: Sequence<O>): Kind<F, Sequence<O>> =
+        when (cur) {
+            is Process.Companion.Emit ->
+                go(cur.tail, acc + cur.head)
+            is Process.Companion.Halt ->
+                when (val e = cur.err) {
+                    is Process.Companion.End -> MC.unit(acc)
+                    else -> throw e
+                }
+            is Process.Companion.Await<*, *, *> -> {
+                val re: Kind<F, O> = cur.req as Kind<F, O>
+                val rcv: (Either<Throwable, O>) -> Process<F, O> = cur.recv as (Either<Throwable, O>) -> Process<F, O>
+                MC.flatMap(MC.attempt(re)) { ei ->
+                    go(tryP { rcv(ei) }, acc)
+                }
+            }
+        }
+
+    return go(this, emptySequence())
+}
+
+interface MonadCatch<F> : Monad<F> {
+    fun <A> attempt(a: Kind<F, A>): Kind<F, Either<Throwable, A>>
+    fun <A> fail(t: Throwable): Kind<F, A>
 }
 
 fun <O> runLog(src: Process<ForIO, O>): IO<Sequence<O>> = IO {
