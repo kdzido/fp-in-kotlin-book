@@ -4,6 +4,17 @@ import arrow.Kind
 import arrow.Kind2
 import arrow.core.andThen
 import funkotlin.fp_in_kotlin_book.chapter04.Either
+import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter13.io.ForIO
+import funkotlin.fp_in_kotlin_book.chapter13.io.IO
+import funkotlin.fp_in_kotlin_book.chapter13.io.IOOf
+import funkotlin.fp_in_kotlin_book.chapter13.io.fix
+import funkotlin.fp_in_kotlin_book.chapter15.Counting.FILE_10
+import java.io.BufferedReader
+import java.io.FileReader
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class ForProcess private constructor() { companion object }
 typealias ProcessOf<F, O> = Kind2<ForProcess, F, O>
@@ -86,4 +97,84 @@ sealed class Process<F, O> : ProcessOf<F, O> {
                     p.onHalt(f)
                 }
         }
+}
+
+fun <O> runLog(src: Process<ForIO, O>): IO<Sequence<O>> = IO {
+    val E = Executors.newFixedThreadPool(4)
+
+    tailrec fun go(cur: Process<ForIO, O>, acc: Sequence<O>): Sequence<O> =
+        when (cur) {
+            is Process.Companion.Emit ->
+                go(cur.tail, acc + cur.head)
+            is Process.Companion.Halt ->
+                when (val e = cur.err) {
+                    is Process.Companion.End -> acc
+                    else -> throw e
+                }
+            is Process.Companion.Await<*, *, *> -> {
+                val re = cur.req as IO<O>
+                val rcv = cur.recv as (Either<Throwable, O>) -> Process<ForIO, O>
+                val next: Process<ForIO, O> = try {
+                    rcv(Right(unsafePerformIO(re, E))).fix()
+                } catch (err: Throwable) {
+                    rcv(Left(err))
+                }
+                go(next, acc)
+            }
+        }
+
+    try {
+        go(src, emptySequence())
+    } finally {
+        E.shutdown()
+    }
+}
+
+private fun <A> unsafePerformIO(
+    ioa: IOOf<A>,
+    pool: ExecutorService
+): A = ioa.fix().run()
+
+
+fun <F, A, O> await(
+    req: Kind<Any?, Any?>,
+    recv: (Either<Throwable, Nothing>) -> Process<out Any?, out Any?>
+): Process<F, O> =
+    Process.Companion.Await(
+        req as Kind<F, Nothing>,
+        recv as (Either<Throwable, A>) -> Process<F, A>
+    ).fix()
+
+fun processNext(
+    ei1: Right<BufferedReader>
+): Process<ForIO, String> =
+    await<ForIO, BufferedReader, String>(
+        IO { ei1.value.readLine() }
+    ) { ei2: Either<Throwable, String?> ->
+        when (ei2) {
+            is Right ->
+                if (ei2.value == null) Process.Companion.Halt(Process.Companion.End) else
+                    Process.Companion.Emit(ei2.value, processNext(ei1))
+            is Left ->
+                await<ForIO, Nothing, Nothing>(
+                    IO { ei1.value.close() }
+                ) { Process.Companion.Halt(ei2.value) }
+        }
+    }
+
+fun main() {
+    val p: Process<ForIO, String> =
+        await<ForIO, BufferedReader, String>(
+            IO { BufferedReader(FileReader(FILE_10)) }
+        ) { ei1: Either<Throwable, BufferedReader> ->
+            when (ei1) {
+                is Right -> processNext(ei1)
+                is Left -> Process.Companion.Halt(ei1.value)
+            }
+        }
+
+    val seq = runLog(p).run()
+    for (line in seq) {
+        println("runLog: ${line}")
+    }
 }
