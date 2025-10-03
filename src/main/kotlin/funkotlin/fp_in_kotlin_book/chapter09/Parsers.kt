@@ -3,15 +3,24 @@ package funkotlin.fp_in_kotlin_book.chapter09
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
+import arrow.core.getOrElse
 import arrow.core.lastOrNone
 import arrow.core.toOption
+import arrow.Kind
+
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter05.Stream
 import funkotlin.fp_in_kotlin_book.chapter09.ParsersInterpreter.cons
 import java.util.regex.Pattern
 
-typealias Parser<T> = (Location) -> Result<T>
+class ForParser private constructor() { companion object }
+typealias ParserOf<T> = Kind<ForParser, T>
+fun <A> ParserOf<A>.fix() = this as Parser<A>
+
+data class Parser<T>(val run: (Location) -> Result<T>) : ParserOf<T>
+
 typealias State = Location
 
 sealed class Result<out T>
@@ -48,10 +57,55 @@ fun <A> Result<A>.mapError(f: (ParseError) -> ParseError): Result<A> =
         is Failure -> Failure(f(this.get), this.isCommited)
     }
 
-data class ParseError(val stack: List<Pair<Location, String>>)
+data class ParseError(val stack: List<Pair<Location, String>> = emptyList()) {
+    fun push(loc: Location, msg: String): ParseError =
+        this.copy(stack = (loc to msg) cons this.stack)
 
-fun ParseError.push(loc: Location, msg: String): ParseError =
-    this.copy(stack = (loc to msg) cons this.stack)
+    fun label(s: String): ParseError =
+        ParseError(latestLoc()
+            .map { it to s}
+            .toList()
+        )
+
+    private fun latestLoc(): Option<Location> = latest().map { it.first }
+
+    private fun latest(): Option<Pair<Location, String>> = stack.lastOrNone()
+
+    /** Display collapsed error stack - any adjustment stack elements
+     * with the same location are combined on one line.
+     * For the bottommost error we display the full line,
+     * with a caret pointing to the column of the error.
+     * Example:
+     * 1.1. file 'companies.json'; array
+     * 5.1 object
+     * 5.2 key-value
+     * 5.10 ':'
+     * { "MSFT" ; 24,
+     *          ^
+     *
+     */
+    override fun toString(): String =
+        if (stack.isEmpty()) "no errors" else {
+            val collapsed = collapseStack(stack)
+            val context = collapsed.lastOrNone()
+                .map { "\n\n" + it.first.line }
+                .getOrElse { "" } +
+                    collapsed.lastOrNone()
+                        .map { it: Pair<Location, String> -> "\n" + it.first.column }
+                        .getOrElse { "" }
+
+            collapsed.joinToString { (loc, msg) ->
+                "${loc.line}.${loc.column} $msg"
+            } + context
+        }
+
+    private fun collapseStack(stack: List<Pair<Location, String>>): List<Pair<Location, String>> =
+        stack.groupBy { it.first }
+            .mapValues { e -> e.value.map { it.second } }
+            .mapValues { it.value.joinToString("; ") }
+            .toList()
+            .sortedBy { it.first.offset }
+}
 
 fun ParseError.tag(msg: String): ParseError {
     val latest = this.stack.lastOrNone()
@@ -68,7 +122,7 @@ abstract class Parsers<PE> {
     internal abstract fun <A> slice(p: Parser<A>): Parser<String>
     internal abstract fun <A> succeed(a: A): Parser<A>
     internal abstract fun fail(): Parser<Nothing>
-    internal abstract fun <A, B> flatMap(p1: Parser<A>, f: (A) -> Parser<B>): Parser<B>
+    abstract fun <A, B> flatMap(p1: Parser<A>, f: (A) -> Parser<B>): Parser<B>
     internal abstract fun <A> or(p1: Parser<out A>, p2: () -> Parser<out A>): Parser<A>
     
     internal abstract fun <A> tag(msg: String, pa: Parser<A>): Parser<A>
@@ -81,7 +135,7 @@ abstract class Parsers<PE> {
     internal abstract fun <A> many1(pa: Parser<A>): Parser<List<A>>
     internal abstract fun <A> listOfN(n: Int, p: Parser<A>): Parser<List<A>>
     internal abstract fun <A, B> product(pa: Parser<A>, pb: () -> Parser<B>): Parser<Pair<A, B>>
-    internal abstract fun <A, B, C> map2(pa: Parser<A>, pb: () -> Parser<B>, f: (A, B) -> C): Parser<C>
+    abstract fun <A, B, C> map2(pa: Parser<A>, pb: () -> Parser<B>, f: (A, B) -> C): Parser<C>
     internal abstract fun <A, B> map(pa: Parser<A>, f: (A) -> B): Parser<B>
     internal abstract fun <A> defer(pa: Parser<A>): () -> Parser<A>
 
@@ -195,14 +249,14 @@ abstract class JsonParsers : ParsersDsl<ParseError>() {
 }
 
 object ParsersInterpreter : ParsersDsl<ParseError>() {
-    override fun string(s: String): Parser<String> = { loc: Location ->
+    override fun string(s: String): Parser<String> = Parser { loc: Location ->
         if (loc.input.startsWith(s))
             Success(s, s.length)
         else
             Failure(get = loc.toError("Expected: $s"), isCommited = true)
     }
 
-    override fun regexp(r: String): Parser<String> = { state ->
+    override fun regexp(r: String): Parser<String> = Parser { state ->
         when (val prefix = state.input.findPrefixOf(r.toRegex())) {
             is Some -> Success(prefix.t.value, prefix.t.value.length)
             is None -> Failure(get = state.toError("regex ${r.toRegex()}"), isCommited = true)
@@ -213,26 +267,26 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         r.find(this).toOption().filter { it.range.first == 0}
 
 
-    override fun <A> slice(p: Parser<A>): Parser<String> = { state ->
-        when (val result = p(state)) {
+    override fun <A> slice(p: Parser<A>): Parser<String> = Parser { state ->
+        when (val result = p.run(state)) {
             is Success -> Success(state.slice(result.consumed), result.consumed)
             is Failure -> result
         }
     }
 
     override fun <A> succeed(a: A): Parser<A> =
-        { state -> Success(a, 0) }
+        Parser { state -> Success(a, 0) }
 
     override fun fail(): Parser<Nothing> =
-        { state -> Failure(get = ParseError(listOf(state to "FAIL")), isCommited = true) }
+        Parser { state -> Failure(get = ParseError(listOf(state to "FAIL")), isCommited = true) }
 
     override fun <A, B> flatMap(
         p1: Parser<A>,
         f: (A) -> Parser<B>,
-    ): Parser<B> = { state ->
-        when (val result = p1(state)) {
+    ): Parser<B> = Parser { state ->
+        when (val result = p1.run(state)) {
             is Success ->
-                f(result.a)(state.advanceBy(result.consumed))
+                f(result.a).run(state.advanceBy(result.consumed))
                     .addCommit(result.consumed != 0)
                     .advanceSuccess(result.consumed)
             is Failure -> result
@@ -242,9 +296,9 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> or(
         p1: Parser<out A>,
         p2: () -> Parser<out A>,
-    ): Parser<A> = { state ->
-        when (val r: Result<A> = p1(state) ) {
-            is Failure -> if (!r.isCommited) p2()(state) else r
+    ): Parser<A> = Parser { state ->
+        when (val r: Result<A> = p1.run(state) ) {
+            is Failure -> if (!r.isCommited) p2().run(state) else r
             is Success -> r
         }
     }
@@ -252,8 +306,8 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> tag(
         msg: String,
         pa: Parser<A>,
-    ): Parser<A> = { state ->
-        pa(state).mapError { pe: ParseError ->
+    ): Parser<A> = Parser { state ->
+        pa.run(state).mapError { pe: ParseError ->
             pe.tag(msg)
         }
     }
@@ -261,11 +315,11 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
     override fun <A> scope(
         msg: String,
         pa: Parser<A>,
-    ): Parser<A> = { state ->
-        pa(state).mapError { pe -> pe.push(state, msg)}
+    ): Parser<A> = Parser { state ->
+        pa.run(state).mapError { pe -> pe.push(state, msg)}
     }
 
-    override fun <A> attempt(pa: Parser<A>): Parser<A> = { s -> pa(s).uncommit() }
+    override fun <A> attempt(pa: Parser<A>): Parser<A> = Parser { s -> pa.run(s).uncommit() }
 
     override fun char(c: Char): Parser<Char> =
         string(c.toString()).map { it[0] }
@@ -339,7 +393,7 @@ object ParsersInterpreter : ParsersDsl<ParseError>() {
         p: Parser<A>,
         input: String,
     ): Either<ParseError, A> =
-        when (val res = p(Location(input))) {
+        when (val res = p.run(Location(input))) {
             is Success -> Right(res.a)
             is Failure -> Left(res.get)
         }
