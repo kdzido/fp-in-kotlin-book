@@ -22,11 +22,13 @@ data class WriteLines(
 
 fun fahrenheitToCelsius(f: Double): Double = (f - 32) * 5.0 / 9.0
 
-fun main() {
-    val p: Free<ForFiles, Unit> =
-        Suspend(ReadLines("fahrenheit.txt")).flatMap { lines ->
-            Suspend(WriteLines("celsius.txt", lines.map { s ->
-                farenheitToCelsius(s.toDouble()).toString()
-            }))
-        }
+object FilesMain {
+    fun main() {
+        val p: Free<ForFiles, Unit> =
+            Suspend(ReadLines("fahrenheit.txt")).flatMap { lines ->
+                Suspend(WriteLines("celsius.txt", lines.map { s ->
+                    farenheitToCelsius(s.toDouble()).toString()
+                }))
+            }
+    }
 }

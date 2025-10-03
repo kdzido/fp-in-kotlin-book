@@ -56,7 +56,3 @@ fun <A> run(async: Async<A>): Par<A> =
             }
         }
     }
-
-fun main() {
-
-}

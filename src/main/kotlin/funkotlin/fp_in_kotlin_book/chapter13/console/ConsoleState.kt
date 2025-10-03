@@ -46,8 +46,3 @@ interface ConsoleStateMonad : Monad<ForConsoleState> {
     ): ConsoleStateOf<B> = fa.fix().map(f)
 }
 
-
-
-fun main() {
-
-}

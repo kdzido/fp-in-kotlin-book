@@ -108,8 +108,8 @@ object Quicksort {
     }
 }
 
-
-fun main() {
-    println("sorted: ${quicksort(listOf(3, 1, 2, 4, 5))}")
-
+object QSMain {
+    fun main() {
+        println("sorted: ${quicksort(listOf(3, 1, 2, 4, 5))}")
+    }
 }

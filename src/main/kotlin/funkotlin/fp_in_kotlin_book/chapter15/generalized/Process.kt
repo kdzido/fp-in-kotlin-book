@@ -192,19 +192,22 @@ fun processNext(
         }
     }
 
-fun main() {
-    val p: Process<ForIO, String> =
-        await<ForIO, BufferedReader, String>(
-            IO { BufferedReader(FileReader(FILE_10)) }
-        ) { ei1: Either<Throwable, BufferedReader> ->
-            when (ei1) {
-                is Right -> processNext(ei1)
-                is Left -> Process.Companion.Halt(ei1.value)
-            }
-        }
+object GenProcessMain {
 
-    val seq = runLog(p).run()
-    for (line in seq) {
-        println("runLog: ${line}")
+    fun main() {
+        val p: Process<ForIO, String> =
+            await<ForIO, BufferedReader, String>(
+                IO { BufferedReader(FileReader(FILE_10)) }
+            ) { ei1: Either<Throwable, BufferedReader> ->
+                when (ei1) {
+                    is Right -> processNext(ei1)
+                    is Left -> Process.Companion.Halt(ei1.value)
+                }
+            }
+
+        val seq = runLog(p).run()
+        for (line in seq) {
+            println("runLog: ${line}")
+        }
     }
 }

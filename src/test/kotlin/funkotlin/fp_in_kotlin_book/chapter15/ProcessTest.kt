@@ -10,16 +10,16 @@ class ProcessTest : StringSpec({
 
     "should liftOne to process" {
         val p: Process<Int, String> = liftOne { i: Int ->
-          when (i) {
-              1 -> "one"
-              2 -> "two"
-              3 -> "three"
-              else -> "<UNKNOWN>"
-          }
-      }
+            when (i) {
+                1 -> "one"
+                2 -> "two"
+                3 -> "three"
+                else -> "<UNKNOWN>"
+            }
+        }
 
-      p(Stream.of(1, 2)).toList() shouldBe ListCh.of("one")
-  }
+        p(Stream.of(1, 2)).toList() shouldBe ListCh.of("one")
+    }
 
     "should lift to process" {
         val p: Process<Int, String> = lift { i: Int ->
@@ -41,7 +41,7 @@ class ProcessTest : StringSpec({
 
     "!should emit infinitely" {
         val units = Stream.constant(Unit)
-        val p = lift<Unit, Int>{ _ -> 1 }(units)
+        val p = lift<Unit, Int> { _ -> 1 }(units)
 
         p.toList() // runs infinetely
     }

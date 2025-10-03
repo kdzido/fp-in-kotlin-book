@@ -285,10 +285,13 @@ fun toCelsius(farhenheit: Double): Double =
     ((farhenheit - 32.0) * 5.0) / 9.0
 
 
-fun main() {
-    val of = convert(
-        File("faren.txt"),
-        File("result_celsius.txt")
-    )
-    println("output file: $of")
+object ProcessMain {
+
+    fun main() {
+        val of = convert(
+            File("faren.txt"),
+            File("result_celsius.txt")
+        )
+        println("output file: $of")
+    }
 }

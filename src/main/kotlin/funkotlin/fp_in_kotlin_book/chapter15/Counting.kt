@@ -60,28 +60,30 @@ object Counting {
     }
 }
 
-fun main() {
-    val res10 = runM(Counting.linesGtLimit(FILE_10, LINE_LIMIT))
-    println("file_10: $res10")
+object Counting2r {
+    fun main() {
+        val res10 = runM(Counting.linesGtLimit(FILE_10, LINE_LIMIT))
+        println("file_10: $res10")
 
-    val res20 = runM(Counting.linesGtLimit(FILE_20, LINE_LIMIT))
-    println("file_20: $res20")
+        val res20 = runM(Counting.linesGtLimit(FILE_20, LINE_LIMIT))
+        println("file_20: $res20")
 
-    val resAbra = runM(Counting.firstLettersBeforeLimit(FILE_ABRA, 50))
-    println("abra_50: $resAbra")
+        val resAbra = runM(Counting.firstLettersBeforeLimit(FILE_ABRA, 50))
+        println("abra_50: $resAbra")
 
-    val resLines = runM(Counting.lines(FILE_10))
-    println("lines count: ${resLines.count()}")
+        val resLines = runM(Counting.lines(FILE_10))
+        println("lines count: ${resLines.count()}")
 
 
-    val proc = count<String>() pipe exists { it >= LINE_LIMIT }
-    val pf = processFile(
-        File(FILE_10),
-        proc,
-        false
-    ) { a: Boolean, b: Boolean -> a || b }
+        val proc = count<String>() pipe exists { it >= LINE_LIMIT }
+        val pf = processFile(
+            File(FILE_10),
+            proc,
+            false
+        ) { a: Boolean, b: Boolean -> a || b }
 
-    val resPF = runM(pf)
-    println("processFile($FILE_10): $resPF")
+        val resPF = runM(pf)
+        println("processFile($FILE_10): $resPF")
 
+    }
 }

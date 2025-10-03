@@ -56,8 +56,3 @@ val cs = movingAvg(
     lines.map { s: String ->
         fahrenheitToCelsius(s.toDouble())
     }).map { it.toString() }
-
-
-fun main() {
-
-}

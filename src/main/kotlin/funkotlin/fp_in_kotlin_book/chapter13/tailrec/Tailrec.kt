@@ -138,7 +138,8 @@ tailrec fun <A> runM(io: Tailrec<A>): A =
         }
     }
 
-fun main() {
+object TailrecMain {
+    fun main() {
 //    converter()
 //    converter2().run()
 
@@ -150,5 +151,6 @@ fun main() {
 //    readInts.run()
 
 //    factorialREPL.run()
-    runM(factorialREPL)
+        runM(factorialREPL)
+    }
 }

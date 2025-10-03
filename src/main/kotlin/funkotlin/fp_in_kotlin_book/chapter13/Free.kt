@@ -142,12 +142,15 @@ fun <F, G, A> runFree(
         }
     }
 
-fun main() {
-    println("[main]")
-    println("------------")
-    runTrampoline(Return(Function0( { println("Function0_Return"); 123 } ))).f()
-    runTrampoline(Suspend(Function0( { println("Function0_Suspend"); 123 } )))
+object FreeMain {
+    fun main() {
+        println("[main]")
+        println("------------")
+        runTrampoline(Return(Function0({ println("Function0_Return"); 123 }))).f()
+        runTrampoline(Suspend(Function0({ println("Function0_Suspend"); 123 })))
 
-    val r: Int = runTrampoline(FlatMap( Suspend(Function0( { println("Function0_Sub"); 123 } )), { a: Int -> Return(a * 2)  }))
-    println("FlatMap result: $r ")
+        val r: Int =
+            runTrampoline(FlatMap(Suspend(Function0({ println("Function0_Sub"); 123 })), { a: Int -> Return(a * 2) }))
+        println("FlatMap result: $r ")
+    }
 }
