@@ -4,7 +4,6 @@ import arrow.Kind
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter13.tailrec.Tailrec
 import funkotlin.fp_in_kotlin_book.chapter13.tailrec.farenheitToCelsius
-import funkotlin.fp_in_kotlin_book.ktinactoin.celsiusToFahrenheit
 
 
 sealed class ForFiles { companion object }
@@ -20,6 +19,8 @@ data class WriteLines(
     val file: String,
     val lines: List<String>,
 ): Files<Unit>
+
+fun fahrenheitToCelsius(f: Double): Double = (f - 32) * 5.0 / 9.0
 
 fun main() {
     val p: Free<ForFiles, Unit> =

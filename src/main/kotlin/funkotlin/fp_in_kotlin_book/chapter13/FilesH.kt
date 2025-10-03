@@ -5,7 +5,6 @@ import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter10.Monoid
-import funkotlin.fp_in_kotlin_book.ktinactoin.fahrenheitToCelsius
 
 sealed class ForFilesH { companion object }
 typealias FilesHOf<A> = Kind<ForFilesH, A>
