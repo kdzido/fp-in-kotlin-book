@@ -99,6 +99,32 @@ sealed class Process<F, O> : ProcessOf<F, O> {
                     p.onHalt(f)
                 }
         }
+
+    fun onComplete(p: () -> Process<F, O>): Process<F, O> =
+        this.onHalt { e: Throwable ->
+            when (e) {
+                is End -> p().asFinalizer()
+                else -> p().asFinalizer().append { Halt(e) }
+            }
+        }
+
+    private fun asFinalizer(): Process<F, O> =
+        when (this) {
+            is Halt -> Halt(this.err)
+            is Emit -> Emit(this.head, this.tail.asFinalizer())
+            is Await<*, *, *> -> {
+                await<F, O, O>(this.req) { ei: Either<Throwable, Nothing> ->
+                    when (ei) {
+                        is Left ->
+                            when (val e = ei.value) {
+                                is Kill -> this.asFinalizer()
+                                else -> this.recv(Left(e))
+                            }
+                        is Right -> this.recv(ei)
+                    }
+                }
+            }
+        }
 }
 
 // EXER 15.10
