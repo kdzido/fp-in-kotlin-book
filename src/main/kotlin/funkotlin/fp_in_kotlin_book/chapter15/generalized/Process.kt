@@ -18,6 +18,7 @@ import funkotlin.fp_in_kotlin_book.chapter13.io.fix
 import funkotlin.fp_in_kotlin_book.chapter15.Counting.FILE_10
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.awaitAndThen
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.tryP
+import funkotlin.fp_in_kotlin_book.chapter15.generalized.drain
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.fix
 import java.io.BufferedReader
 import java.io.FileReader
@@ -140,7 +141,32 @@ sealed class Process<F, O> : ProcessOf<F, O> {
             }
         }
 
-    fun <O2> kill(): Process<F, O2> = TODO()
+    fun filter(f: (O) -> Boolean): Process<F, O> =
+        this pipe Process.filter(f)
+
+    fun <O2> drain(): Process<F, O2> =
+        when (this) {
+            is Halt -> Halt(this.err)
+            is Emit -> tail.drain()
+            is Await<*, *, *> ->
+                awaitAndThen<F, O2, O2>(req, recv) { it.drain() }
+        }
+
+    fun <O2> kill(): Process<F, O2> =
+        when (this) {
+            is Await<*, *, *> -> {
+                val rcv = this.recv as (Either<Throwable, O>) -> Process<F, O2>
+                rcv(Left(Kill)).drain<O2>()
+                    .onHalt { e ->
+                        when (e) {
+                            is Kill -> Halt(End)
+                            else -> Halt(e)
+                        }
+                    }
+            }
+            is Emit -> tail.kill()
+            is Halt -> Halt(this.err)
+        }
 
     fun <O2> flatMap(f: (O) -> Process<F, O2>): Process<F, O2> =
         when (this) {
