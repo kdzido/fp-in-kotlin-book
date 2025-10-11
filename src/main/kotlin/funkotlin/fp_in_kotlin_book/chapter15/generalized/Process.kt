@@ -5,14 +5,19 @@ import arrow.Kind2
 import arrow.core.andThen
 import funkotlin.fp_in_kotlin_book.chapter04.Either
 import funkotlin.fp_in_kotlin_book.chapter04.Left
+import funkotlin.fp_in_kotlin_book.chapter04.None
+import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Right
+import funkotlin.fp_in_kotlin_book.chapter04.Some
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
 import funkotlin.fp_in_kotlin_book.chapter13.io.ForIO
 import funkotlin.fp_in_kotlin_book.chapter13.io.IO
 import funkotlin.fp_in_kotlin_book.chapter13.io.IOOf
 import funkotlin.fp_in_kotlin_book.chapter13.io.fix
 import funkotlin.fp_in_kotlin_book.chapter15.Counting.FILE_10
+import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.awaitAndThen
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.tryP
+import funkotlin.fp_in_kotlin_book.effectivekotlin.reusability.createValue
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.concurrent.ExecutorService
@@ -127,6 +132,62 @@ sealed class Process<F, O> : ProcessOf<F, O> {
         }
 }
 
+fun lines(fileName: String): Process<ForIO, String> =
+    resource(
+        IO { BufferedReader(FileReader(fileName)) },
+        { br: BufferedReader ->
+
+            val iter = br.lines().iterator()
+
+            fun step() = if (iter.hasNext()) Some(iter.next()) else None
+
+            fun lns(): Process<ForIO, String> {
+                return eval(IO { step() }).flatMap { ln: Option<String> ->
+                    when (ln) {
+                        is Some -> Process.Companion.Emit(ln.value, lns())
+                        is None -> Process.Companion.Halt<ForIO, String>(Process.Companion.End)
+                    }
+                }
+            }
+
+            lns()
+        },
+        { br: BufferedReader -> evalDrain(IO { br.close() }) }
+    )
+
+fun <R, O> resource(
+    acquire: IO<R>,
+    use: (R) -> Process<ForIO, O>,
+    release: (R) -> Process<ForIO, O>
+): Process<ForIO, O> =
+    eval(acquire)
+        .flatMap { use(it).onComplete { release(it) } }
+
+fun <F, A> eval(fa: Kind<F, A>): Process<F, A> =
+    await<F, A, A>(fa) { ea: Either<Throwable, Nothing> ->
+        when (ea) {
+            is Right<A> ->
+                Process.Companion.Emit(ea.value, Process.Companion.Halt(Process.Companion.End))
+            is Left ->
+                Process.Companion.Halt(ea.value)
+        }
+    }
+
+fun <F, A, B> evalDrain(fa: Kind<F, A>): Process<F, B> =
+    eval(fa).drain()
+
+fun <F, A, B> Process<F, A>.drain(): Process<F, B> =
+    when (this) {
+        is Process.Companion.Halt -> Process.Companion.Halt(this.err)
+        is Process.Companion.Emit -> this.tail.drain()
+        is Process.Companion.Await<*, *, *> ->
+            awaitAndThen<F, A, B>(
+                this.req,
+                { ei: Either<Throwable, Nothing> -> this.recv(ei) },
+                { it.drain() }
+            )
+    }
+
 // EXER 15.10
 fun <F, O> Process<F, O>.runLog2(MC: MonadCatch<F>): Kind<F, Sequence<O>> {
     tailrec fun go(cur: Process<F, O>, acc: Sequence<O>): Kind<F, Sequence<O>> =
@@ -218,7 +279,7 @@ fun processNext(
         }
     }
 
-fun main() {
+fun main0() {
     val p: Process<ForIO, String> =
         await<ForIO, BufferedReader, String>(
             IO { BufferedReader(FileReader(FILE_10)) }
@@ -232,5 +293,14 @@ fun main() {
     val seq = runLog(p).run()
     for (line in seq) {
         println("runLog: ${line}")
+    }
+}
+
+fun main() {
+    val p: Process<ForIO, String> = lines(FILE_10)
+
+    val seq: Sequence<String> = runLog(p).run()
+    for (line in seq) {
+        println("lines: ${line}")
     }
 }
