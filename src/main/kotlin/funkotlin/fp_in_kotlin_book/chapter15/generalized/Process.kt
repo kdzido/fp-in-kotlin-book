@@ -9,6 +9,7 @@ import funkotlin.fp_in_kotlin_book.chapter04.None
 import funkotlin.fp_in_kotlin_book.chapter04.Option
 import funkotlin.fp_in_kotlin_book.chapter04.Right
 import funkotlin.fp_in_kotlin_book.chapter04.Some
+import funkotlin.fp_in_kotlin_book.chapter04.fix
 import funkotlin.fp_in_kotlin_book.chapter11.Monad
 import funkotlin.fp_in_kotlin_book.chapter13.io.ForIO
 import funkotlin.fp_in_kotlin_book.chapter13.io.IO
@@ -17,28 +18,48 @@ import funkotlin.fp_in_kotlin_book.chapter13.io.fix
 import funkotlin.fp_in_kotlin_book.chapter15.Counting.FILE_10
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.awaitAndThen
 import funkotlin.fp_in_kotlin_book.chapter15.generalized.Process.Companion.tryP
-import funkotlin.fp_in_kotlin_book.effectivekotlin.reusability.createValue
+import funkotlin.fp_in_kotlin_book.chapter15.generalized.fix
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+class ForIs {
+    companion object
+}
+typealias IsOf<I> = Kind<ForIs, I>
+inline fun <I> IsOf<I>.fix(): Is<I> = this as Is<I>
+inline fun <I> IsOf<I>.fix1(): Is<I> = this as Is<I>
+class Is<I> : IsOf<I>
+
+typealias Process1<I, O> = Process<ForIs, O>
+
 class ForProcess private constructor() { companion object }
 typealias ProcessOf<F, O> = Kind2<ForProcess, F, O>
 typealias ProcessPartialOf<I> = Kind<ForProcess, I>
+
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 inline fun <I, O> ProcessOf<I, O>.fix(): Process<I, O> = this as Process<I, O>
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <I, O> ProcessOf<I, O>.fix1(): Process1<I, O> =
+    this as Process1<I, O>
+
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <I, O> Process1<I, O>.fix1(): Process<I, O> =
+    this as Process<I, O>
+
 
 sealed class Process<F, O> : ProcessOf<F, O> {
     companion object {
         data class Await<F, A, O>(
             val req: Kind<F, A>,
             val recv: (Either<Throwable, A>) -> Process<F, O>
-        ) : Process<F, A>()
+        ) : Process<F, O>()
 
         data class Emit<F, O>(
             val head: O,
-            val tail: Process<F, O>
+            val tail: Process<F, O> = Halt(End)
         ) : Process<F, O>()
 
         data class Halt<F, O>(val err: Throwable) : Process<F, O>()
@@ -48,6 +69,43 @@ sealed class Process<F, O> : ProcessOf<F, O> {
 
         /** Forcible termination or error */
         object Kill : Exception()
+
+        fun <I, O> await1(
+            recv: (I) -> Process1<ForIs, O>,
+            fallback: Process1<ForIs, O> = halt1<ForIs, O>()
+        ): Process1<I, O> =
+            Await(Is<I>()) { ei: Either<Throwable, I> ->
+                when (ei) {
+                    is Left -> when (val err = ei.value) {
+                        is End -> fallback
+                        else -> Halt(err)
+                    }
+                    is Right -> tryP { recv(ei.value) }
+                }
+            }
+
+        fun <I, O> halt1(): Process1<ForIs, O> =
+            Halt<ForIs, O>(End).fix1()
+
+        fun <I, O> emit1(
+            head: O,
+            tail: Process1<ForIs, O> = halt1<ForIs, O>()
+        ): Process<ForIs, O> =
+            Emit<ForIs, O>(
+                head,
+                tail.fix1()
+            ).fix1()
+
+        fun <I, O> lift(f: (I) -> O): Process1<ForIs, O> =
+            await1({ i: I ->
+                Emit<I, O>(f(i)).fix1()
+            }).repeat()
+
+        fun <I> filter(f: (I) -> Boolean): Process1<ForIs, I> =
+            await1<I, I>({ i ->
+                if (f(i)) Emit<ForIs, I>(i).fix1()
+                else halt1<ForIs, I>()
+            }).repeat()
 
         fun <F, O> tryP(p: () -> Process<F, O>): Process<F, O> =
             try {
@@ -66,6 +124,23 @@ sealed class Process<F, O> : ProcessOf<F, O> {
                 recv as (Either<Throwable, A>) -> Process<F, A> andThen fn
             ).fix()
     }
+
+    infix fun <O2> pipe(p2: Process1<O, O2>): Process<F, O2> =
+        when (p2) {
+            is Halt -> this.kill<O2>().onHalt { e2 -> Halt<F, O2>(p2.err).append { Halt(e2) } }
+            is Emit -> Emit(p2.head, this.pipe(p2.tail.fix1()))
+            is Await<*, *, *> -> {
+                val rcv = p2.recv as (Either<Throwable, O>) -> Process<F, O2>
+                when (this) {
+                    is Halt -> Halt<F, O2>(this.err) pipe rcv(Left(this.err)).fix1()
+                    is Emit -> tail.pipe(tryP { rcv(Right(head).fix()) }.fix1())
+                    is Await<*, *, *> ->
+                        awaitAndThen<F, O, O2>(req, recv) { it pipe p2 }
+                }
+            }
+        }
+
+    fun <O2> kill(): Process<F, O2> = TODO()
 
     fun <O2> flatMap(f: (O) -> Process<F, O2>): Process<F, O2> =
         when (this) {
@@ -104,6 +179,8 @@ sealed class Process<F, O> : ProcessOf<F, O> {
                     p.onHalt(f)
                 }
         }
+
+    fun repeat(): Process<F, O> = this.append { this.repeat() }
 
     fun onComplete(p: () -> Process<F, O>): Process<F, O> =
         this.onHalt { e: Throwable ->
@@ -259,7 +336,7 @@ fun <F, A, O> await(
 ): Process<F, O> =
     Process.Companion.Await(
         req as Kind<F, Nothing>,
-        recv as (Either<Throwable, A>) -> Process<F, A>
+        recv as (Either<Throwable, A>) -> Process<F, O>
     ).fix()
 
 fun processNext(
