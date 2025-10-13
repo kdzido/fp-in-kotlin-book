@@ -71,6 +71,45 @@ sealed class Process<F, O> : ProcessOf<F, O> {
         /** Forcible termination or error */
         object Kill : Exception()
 
+        fun <F, I1, I2, O> tee(
+            p1: Process<F, I1>,
+            p2: Process<F, I2>,
+            t: Tee<I1, I2, O>,
+        ): Process<F, O> = when (t) {
+            is Halt ->
+                p1.kill<O>()
+                    .onComplete { p2.kill() }
+                    .onComplete { Halt(t.err) }
+
+            is Emit ->
+                Emit(t.head, tee(p1, p2, t.tail))
+
+            is Await<*, *, *> -> {
+                val side = t.req as T<I1, I2, O>
+                val rcv = t.recv as (Either<Nothing, Any?>) -> Tee<I1, I2, O>
+
+                when (side.get()) {
+                    is Left ->
+                        when (p1) {
+                            is Halt -> p2.kill<O>().onComplete { Halt(p1.err) }
+                            is Emit -> tee(p1.tail, p2, tryP { rcv(Right(p1.head)) })
+                            is Await<*, *, *> -> awaitAndThen<F, I2, O>(p1.req, p1.recv) {
+                                tee(it, p2, t)
+                            }
+                        }
+
+                    is Right ->
+                        when (p2) {
+                            is Halt -> p1.kill<O>().onComplete { Halt(p2.err) }
+                            is Emit -> tee(p1, p2.tail, tryP { rcv(Right(p2.head)) })
+                            is Await<*, *, *> -> awaitAndThen<F, I2, O>(p2.req, p2.recv) {
+                                tee(p1, it, t)
+                            }
+                        }
+                }
+            }
+        }
+
         fun <I, O> await1(
             recv: (I) -> Process1<ForIs, O>,
             fallback: Process1<ForIs, O> = halt1<ForIs, O>()
